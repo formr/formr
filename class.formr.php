@@ -3572,47 +3572,65 @@ class Formr {
 	public function send_email($to, $subject, $message, $from='', $html=false) {
 		
 		# really simple method for firing off a quick email
-		# something i was playing around with and forgot about
-		# TODO? may add to this in the future...
+		# something I was playing around with and forgot about...
+		# TODO? may add to / improve this in the future
 		
-		$headers = null;
+		$headers = $msg = null;
 		
 		if($from) {
-			$headers = "From: " . strip_tags($from) . "\r\n";
+			$from = "From: " . $this->_clean_value($from) . "\r\n";
 		}
 		
 		if($html) {
+			
 			# we're sending an HTML email
 			
 			$headers .= "MIME-Version: 1.0\r\n";
 			$headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
 			
-			$msg  = '<html><body>';
+			if($from) {
+				$headers .= $from;
+			}
 			
-			# automatically processes $_POST...
-			if($message == 'POST' || is_array($message)) {
-				foreach($_POST as $key=>$value) {
-					$msg .=  '<p>'.$key.': '.$value."</p>";
+			$msg .= '<html><body>';
+		}
+		
+		# loop through $_POST and print key => value
+		if(strtolower($message) == 'post' || is_array($message)) {
+			
+			foreach($_POST as $key => $value) {
+				
+				if($key != 'submit') {
+					
+					# if key is prepended with an underscore, replace all underscores with a space
+					# _First_Name becomes First Name
+					
+					if($key[0] == '_') {
+						$key = ltrim($key,'_');
+						$key = str_replace('_', ' ', $key);
+					}
+					
+					if($html) {
+						$msg .= '<p>'.$key.': '.$this->_clean_value($value)."</p>\r\n";
+					} else {
+						$msg .= $key.': '.$this->clean_value($value)."\r\n";
+					}
 				}
-			} else {
-				$msg .= $message;
 			}
-			$msg .= '</body></html>';
-			
-			if($sent = mail($to, $subject, $msg, $headers)) {
-				return true;
-			} else {
-				return false;
-			}
-			
 		} else {
+			# message is supplied by user
+			$msg .= $message;
+		}
 			
-			# we're sending a text email
-			if(mail($to, $subject, $message, $headers)) {
-				return true;
-			} else {
-				return false;
-			}
+		if($html) {
+			$msg .= '</body></html>';
+		}
+		
+		# send the email
+		if(mail($to, $subject, $msg, $headers)) {
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
