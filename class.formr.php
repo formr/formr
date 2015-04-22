@@ -1637,13 +1637,12 @@ class Formr {
 			# run it through the validate function
 			foreach($data as $key => $value) {
 				
-				# $value[0] = field name
-				# $value[1] = custom strings
-				# $value[2] = validation rules
+				# $value[0] = custom strings
+				# $value[1] = validation rules
 				
-				if(isset($value[2])) {
+				if(isset($value[1])) {
 					# a validation rule was set
-					$keys[$key] = $this->post($key,$value[1],$value[2]);
+					$keys[$key] = $this->post($key,$value[0],$value[1]);
 				} else {
 					# a validation rule was not set
 					$keys[$key] = $this->post($key,$value[0]);
