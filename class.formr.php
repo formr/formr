@@ -3486,7 +3486,7 @@ class Formr {
 			}
 			elseif($data['type'] == 'button') {
 				$item    = $this->input_button($data);
-				$return .= $this->_wrapper($item,$data);
+				$submit  = $this->_wrapper($item,$data);
 			}
 			elseif($data['type'] == 'submit') {
 				# instead of using $item, we set the $submit variable.

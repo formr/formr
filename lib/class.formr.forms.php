@@ -108,11 +108,17 @@ class Forms extends MyForms {
 			// now we'll build the corresponding key and human readable text and validation rules for the fastpost() function
 			$data = array(
 				'email'		=> array('Email address','valid_email'),
-				'password'	=> array('Password','min_length[6]|crypt'),
-				'confirm'	=> array('Confirm Password','min_length[6]|matches[password]|crypt'),
+				'password'	=> array('Password','min_length[6]|hash'),
+				'confirm'	=> array('Confirm Password','min_length[6]|matches[password]'),
 			);
 			return $data;
 		}
+	}
+	
+	
+	# alias for signup
+	public static function registration($validate='') {
+		return static::signup($validate);	
 	}
 	
 	
