@@ -3601,6 +3601,19 @@ class Formr {
 				
 				if($key != 'submit') {
 					
+					if($key == 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+						$this->errors[$key] = 'Please enter a valid email address';
+					}
+			
+					# check if required
+					if($this->_check_required($key)) {
+						
+						# add to errors array
+						if(empty($value)) {
+							$this->errors[$key] = '<strong>'.$key.'</strong> is required';
+						}
+					}
+					
 					# if key is prepended with an underscore, replace all underscores with a space
 					# _First_Name becomes First Name
 					
@@ -3612,7 +3625,7 @@ class Formr {
 					if($html) {
 						$msg .= '<p>'.$key.': '.$this->_clean_value($value)."</p>\r\n";
 					} else {
-						$msg .= $key.': '.$this->clean_value($value)."\r\n";
+						$msg .= $key.': '.$this->_clean_value($value)."\r\n";
 					}
 				}
 			}
@@ -3626,11 +3639,13 @@ class Formr {
 		}
 		
 		# send the email
-		if(mail($to, $subject, $msg, $headers)) {
-			return true;
-		} else {
-			return false;
+		if(!$this->errors()) {
+			if(mail($to, $subject, $msg, $headers)) {
+				return true;
+			}
 		}
+		
+		return false;
 	}
 	
 	public function send_html_email($to, $subject, $message, $from='') {
