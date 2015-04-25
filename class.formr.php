@@ -3591,7 +3591,9 @@ class Formr {
 				$headers .= $from;
 			}
 			
-			$msg .= '<html><body>';
+			$msg .= "<html>\r\n";
+			$msg .= "<body>\r\n";
+			$msg .= "<table cellpadding=\"4\" cellspacing=\"0\" border=\"0\">\r\n";
 		}
 		
 		# loop through $_POST and print key => value
@@ -3601,7 +3603,8 @@ class Formr {
 				
 				if($key != 'submit') {
 					
-					if($key == 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+					# make sure it's a valid email address
+					if((strpos(strtolower($key), 'email') !== false) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
 						$this->errors[$key] = 'Please enter a valid email address';
 					}
 			
@@ -3610,7 +3613,7 @@ class Formr {
 						
 						# add to errors array
 						if(empty($value)) {
-							$this->errors[$key] = '<strong>'.$key.'</strong> is required';
+							$this->errors[$key] = '<strong>'.str_replace('_', ' ', ltrim($key, '_')).'</strong> is required';
 						}
 					}
 					
@@ -3618,14 +3621,16 @@ class Formr {
 					# _First_Name becomes First Name
 					
 					if($key[0] == '_') {
-						$key = ltrim($key,'_');
-						$key = str_replace('_', ' ', $key);
+						$key = str_replace('_', ' ', ltrim($key, '_'));
 					}
 					
 					if($html) {
-						$msg .= '<p>'.$key.': '.$this->_clean_value($value)."</p>\r\n";
+						$msg .= "<tr>\r\n";
+						$msg .= "\t<td>$key</td>\r\n";
+						$msg .= "\t<td>".$this->_clean_value($value)."</td>\r\n";
+						$msg .= "</tr>\r\n";
 					} else {
-						$msg .= $key.': '.$this->_clean_value($value)."\r\n";
+						$msg .= $key.": \t".$this->_clean_value($value)."\r\n";
 					}
 				}
 			}
@@ -3635,7 +3640,9 @@ class Formr {
 		}
 			
 		if($html) {
-			$msg .= '</body></html>';
+			$msg .= "</table>\r\n";
+			$msg .= "</body>\r\n";
+			$msg .= "</html>\r\n";
 		}
 		
 		# send the email
