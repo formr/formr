@@ -5,8 +5,6 @@
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
- * version 1.0
- *
  * https://formr.github.io
  *
  * copyright(c) 2013-2015 Tim Gavin
