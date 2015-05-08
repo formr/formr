@@ -1,8 +1,8 @@
 # Formr
 
-Formr is a PHP micro-framework which helps you build and validate forms quickly, painlessly, and without all the messy overhead.
+Formr is a PHP micro-framework which installs easily and helps you build, layout and validate forms quickly, painlessly, and without all the complicated, messy overhead.
 
-You can find the docs here: [http://formr.github.io](http://formr.github.io)
+Find docs and screencasts here: [http://formr.github.io](http://formr.github.io)
 
 # Features
 
