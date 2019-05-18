@@ -7,7 +7,7 @@
  *
  * https://formr.github.io
  *
- * copyright(c) 2013-2015 Tim Gavin
+ * copyright(c) 2013-2019 Tim Gavin
  * https://github.com/timgavin
  *
  * requires php >= 5.4 and gd2 (for uploads)
@@ -1469,6 +1469,15 @@ class Formr {
 		return $return;
 	}
 
+	protected function is_not_empty($value) {
+		# check if value is not empty - including zeros
+		if(!empty($value) || (isset($value) && $value === "0")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 
 
 	# MESSAGING
@@ -2281,7 +2290,7 @@ class Formr {
 		}
 
 		# echo an error if the field name hasn't been supplied
-		if(empty($data['name'])) {
+		if(!$this->is_not_empty($data['name'])) {
 			echo '<p style="color:red">You must provide a name for the <strong>'.$data['type'].'</strong> element.</p>';
 			return false;
 		}
@@ -2344,7 +2353,7 @@ class Formr {
 			}
 
 			# print an error message alerting the user this field needs a value
-			if(empty($data['value'])) {
+			if(!$this->is_not_empty($data['value'])) {
 				echo '<p style="color:red">Please enter a value for the '.$data['type'].': <strong>'.$data['name'].'</strong></p>';
 			}
 
@@ -2388,7 +2397,7 @@ class Formr {
 		foreach($data as $key => $value) {
 			//if($key != 'string' && $key != 'checked' && $key != 'required' && $key != 'inline') {
 			if(!in_array($key,$this->no_keys)) {
-				if($value) {
+				if($value != '') {
 					$return .= ' '.$key.'="'.$value.'"';
 				}
 			}
@@ -2398,8 +2407,8 @@ class Formr {
 		$return .= $this->_fix_classes($return, $data);
 
 		# an ID wasn't provided; use the name field as the ID
-		# do not auto-generate an ID if the filed is an array
-		if(empty($data['id'])) {
+		# do not auto-generate an ID if the field is an array
+		if(!$this->is_not_empty($data['id'])) {
 			if(substr(rtrim($data['name']), -1) != ']') {
 				$return .= ' id="'.$data['name'].'"';
 			}
@@ -2886,13 +2895,13 @@ class Formr {
 	protected function _create_textarea($data) {
 
 		# echo an error if the field name hasn't been supplied
-		if(empty($data['name'])) {
+		if(!$this->is_not_empty($data['name'])) {
 			echo '<p style="color:red">You must provide a name for the <strong>'.$data['type'].'</strong> element.</p>';
 			return false;
 		}
 
 		# if ID is empty, create an ID using the name
-		if(empty($data['id'])) {
+		if(!$this->is_not_empty($data['id'])) {
 			$data['id'] = $data['name'];
 		}
 
@@ -2930,7 +2939,7 @@ class Formr {
 			$return .= $_POST[$data['name']];
 		} else {
 			# insert the default value if available
-			if(!empty($data['value'])) {
+			if($this->is_not_empty($data['value'])) {
 				$return .= $data['value'];
 			}
 		}
@@ -2979,7 +2988,7 @@ class Formr {
 	protected function _create_select($data) {
 
 		# echo an error if the field name hasn't been supplied
-		if(empty($data['name'])) {
+		if(!$this->is_not_empty($data['name'])) {
 			echo '<p style="color:red">You must provide a name for the <strong>'.$data['type'].'</strong> element.</p>';
 			return false;
 		}
@@ -2988,7 +2997,7 @@ class Formr {
 		$return  = '<select name="'.$data['name'].'"';
 
 		# if an ID wasn't supplied, create one from the field name
-		if(empty($data['id'])) {
+		if(!$this->is_not_empty($data['id'])) {
 			$data['id'] = $data['name'];
 		}
 
@@ -3194,7 +3203,7 @@ class Formr {
 			$return = '<a name="'.$data['name'].'"></a>';
 		}
 
-		if(empty($data['id'])) {
+		if($this->is_not_empty($data['id'])) {
 			$data['id'] = $data['name'];
 		}
 
@@ -3227,7 +3236,7 @@ class Formr {
 			if(!in_array($data['type'],$this->_input_types('button'))) {
 
 				# add the label text
-				if(!empty($data['label'])) {
+				if($this->is_not_empty($data['label'])) {
 					$return .= $data['label'];
 				}
 
