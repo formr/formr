@@ -157,7 +157,8 @@ class Wrapper extends Formr {
 		
 		# always add a label...
 		# if the label is empty add .sr-only, otherwise add .control-label
-		if(!empty($data['label'])) {
+		// if(!empty($data['label'])) {
+			if(!empty($data['label']) || (isset($data['label']) && $data['label'] === "0")) {
 			$label_class = static::bootstrap_css('label');
 		} else {
 			$label_class = 'sr-only';
@@ -166,11 +167,11 @@ class Wrapper extends Formr {
 		# see if we're in a checkbox array...
 		if(substr($data['name'],-1) == ']') {
 			# we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
-			$return .= $this->_t(1).'<label for="'.$data['id'].'">'.$this->_nl(1);
+			$return .= $this->_t(1).'<label for="'.$data['id'].'">'.$data['label'].$this->_nl(1);
 		} else {
 			if($data['type'] == 'checkbox' || $data['type'] == 'radio') {
 				# no default class on a checkbox or radio
-				$return .= $this->_nl(1).$this->_t(1).'<label class="'.$label_class.'" for="'.$data['id'].'">'.$this->_nl(1).$this->_t(1);
+				$return .= $this->_nl(1).$this->_t(1).'<label class="'.$label_class.'" for="'.$data['id'].'">'.$data['label'].$this->_nl(1).$this->_t(1);
 			} else {
 				$return .= $this->_nl(1).$this->_t(1).'<label class="'.$label_class.'" for="'.$data['id'].'">'.$data['label'];
 			}
