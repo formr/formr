@@ -5,9 +5,10 @@ class Wrapper extends Formr
 
     public $container;
 
-    public function __construct($errors)
+    public function __construct($errors, $instance)
     {
         $this->errors = $errors;
+        $this->instance = $instance;
     }
 
     # default css classes - go ahead and add/change whatever you like...
@@ -91,7 +92,7 @@ class Wrapper extends Formr
         }
 
         # if an ID is not present, create one using the name field
-        if (!$this->is_not_empty($data['id'])) {
+        if (!$this->instance->is_not_empty($data['id'])) {
             $data['id'] = $data['name'];
         }
 
@@ -103,7 +104,7 @@ class Wrapper extends Formr
 
             # notice that we're adding an id to the enclosing div, so that you may prepend/append jQuery, etc.
             if (substr($data['value'], -1) != ']') {
-                $return = $this->_nl(1) . '<div id="_' . $data['id'] . '" class="';
+                $return = $this->instance->_nl(1) . '<div id="_' . $data['id'] . '" class="';
 
                 # inline checkbox
                 if (!empty($data['checkbox-inline'])) {
@@ -112,13 +113,13 @@ class Wrapper extends Formr
                     $return .= static::bootstrap_css('checkbox');
                 }
             } else {
-                $return = $this->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('div') . '">';
+                $return = $this->instance->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('div') . '">';
             }
         } elseif ($data['type'] == 'radio') {
             # input is a radio
             # don't print the label if we're printing an array
             if (substr($data['value'], -1) != ']') {
-                $return = $this->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('radio');
+                $return = $this->instance->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('radio');
 
                 # inline radio
                 if (!empty($data['radio-inline'])) {
@@ -127,14 +128,14 @@ class Wrapper extends Formr
                     $return .= static::bootstrap_css('radio');
                 }
             } else {
-                $return = $this->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('div') . '">';
+                $return = $this->instance->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('div') . '">';
             }
         } else {
-            $return = $this->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('div');
+            $return = $this->instance->_nl(1) . '<div id="_' . $data['id'] . '" class="' . static::bootstrap_css('div');
         }
 
         # concatenate the error class if required
-        if ($this->in_errors($data['name'])) {
+        if ($this->instance->in_errors($data['name'])) {
             $return .= ' ' . static::bootstrap_css('error');
         }
 
@@ -145,7 +146,7 @@ class Wrapper extends Formr
 
         # always add a label...
         # if the label is empty add .sr-only, otherwise add .control-label
-        if ($this->is_not_empty($data['label'])) {
+        if ($this->instance->is_not_empty($data['label'])) {
             $label_class = static::bootstrap_css('label');
         } else {
             $label_class = 'sr-only';
@@ -154,31 +155,33 @@ class Wrapper extends Formr
         # see if we're in a checkbox array...
         if (substr($data['name'], -1) == ']') {
             # we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
-            $return .= $this->_t(1) . '<label for="' . $data['id'] . '">' . $data['label'] . $this->_nl(1);
+            $return .= $this->instance->_t(1) . '<label for="' . $data['id'] . '">' . $data['label'] . $this->instance->_nl(1);
         } else {
             if ($data['type'] == 'checkbox' || $data['type'] == 'radio') {
                 # no default class on a checkbox or radio
                 # don't insert the label text here; we're doing it elsewhere
-                if($this->is_not_empty($data['label'])) {
-                    $return .= $this->_nl(1) . $this->_t(1) . '<label class="' . $label_class . '" for="' . $data['id'] . '">' . $this->_nl(1) . $this->_t(1);
+                if($this->instance->is_not_empty($data['label'])) {
+                    $return .= $this->instance->_nl(1) . $this->instance->_t(1) . '<label class="' . $label_class . '" for="' . $data['id'] . '">' . $this->instance->_nl(1) . $this->instance->_t(1);
                 }
             } else {
-                $return .= $this->_nl(1) . $this->_t(1) . '<label class="' . $label_class . '" for="' . $data['id'] . '">' . $data['label'];
+                $return .= $this->instance->_nl(1) . $this->instance->_t(1) . '<label class="' . $label_class . '" for="' . $data['id'] . '">' . $data['label'];
             }
         }
 
         # add a required field indicator
-        if ($this->_check_required($data['name']) && $this->is_not_empty($data['label'])) {
-            $return .= $this->required_indicator;
+        if ($this->instance->_check_required($data['name']) && $this->instance->is_not_empty($data['label'])) {
+            if ($data['type'] != 'checkbox' && $data['type'] != 'radio') {
+                $return .= $this->instance->required_indicator;
+            }
         }
 
         # close the label if NOT a checkbox or radio
         if ($data['type'] != 'checkbox' && $data['type'] != 'radio') {
-            $return .= '</label>' . $this->_nl(1);
+            $return .= '</label>' . $this->instance->_nl(1);
         }
 
         # add the field element
-        $return .= $this->_t(1) . $element;
+        $return .= $this->instance->_t(1) . $element;
 
         # inline help text
         if (!empty($data['inline'])) {
@@ -186,24 +189,28 @@ class Wrapper extends Formr
             # help-block text
             # if the text is surrounded by square brackets, show only on form error
             if (mb_substr($data['inline'], 0, 1) == '[') {
-                if ($this->in_errors($data['name'])) {
+                if ($this->instance->in_errors($data['name'])) {
                     # trim the brackets and show on error
-                    $return .= $this->_nl(1) . $this->_t(1) . '<p class="' . static::bootstrap_css('help') . '">' . trim($data['inline'], '[]') . '</p>';
+                    $return .= $this->instance->_nl(1) . $this->instance->_t(1) . '<p class="' . static::bootstrap_css('help') . '">' . trim($data['inline'], '[]') . '</p>';
                 }
             } else {
                 # show this text on page load
-                $return .= $this->_nl(1) . $this->_t(1) . '<p class="' . static::bootstrap_css('help') . '">' . $data['inline'] . '</p>';
+                $return .= $this->instance->_nl(1) . $this->instance->_t(1) . '<p class="' . static::bootstrap_css('help') . '">' . $data['inline'] . '</p>';
             }
         }
 
         # checkbox/radio: add the label text and close the label tag
         if (!empty($data['label']) && $data['type'] == 'checkbox' || $data['type'] == 'radio') {
             $return .= ' '.$data['label'];
-            $return .= $this->_nl(1) . $this->_t(1) . '</label>' . $this->_nl(1);
-            $return .= '</div>' . $this->_nl(1);
+            # add a required field indicator
+            if ($this->instance->_check_required($data['name']) && $this->instance->is_not_empty($data['label'])) {
+                $return .= $this->instance->required_indicator;
+            }
+            $return .= $this->instance->_nl(1) . $this->instance->_t(1) . '</label>' . $this->instance->_nl(1);
+            $return .= '</div>' . $this->instance->_nl(1);
         } else {
             # close the controls div
-            $return .= $this->_nl(1) . '</div>' . $this->_nl(1);
+            $return .= $this->instance->_nl(1) . '</div>' . $this->instance->_nl(1);
         }
 
         return $return;

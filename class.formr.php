@@ -488,7 +488,7 @@ class Formr
             # $method = the method's name in the Wrapper class
             $method = $wrapper['type'];
 
-            $wrapper = new Wrapper($this->errors);
+            $wrapper = new Wrapper($this->errors, $this);
             return $wrapper->$method($element, $data);
         } else {
 
