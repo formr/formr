@@ -197,23 +197,22 @@ class Formr
 
     public function form_info()
     {
-
         # prints the current form settings
 
         # set some defaults
         $info = array(
-            'Form ID'                => '',
-            'Form name'                => '',
-            'Form method'            => '',
-            'Charset'                => 'utf-8',
-            'HTML5'                    => 'FALSE',
-            'HTML5'                    => 'FALSE',
-            'All Fields Required'     => 'FALSE',
-            'Link to Error'            => 'FALSE',
-            'Inline Validation'        => 'FALSE',
-            'Required Indicator'    => '',
-            'FastForm Wrapper'        => '',
-            'HTML Purifier'            => 'FALSE',
+            'Form ID' => '',
+            'Form name' => '',
+            'Form method' => '',
+            'Charset' => 'utf-8',
+            'HTML5' => 'FALSE',
+            'HTML5' => 'FALSE',
+            'All Fields Required' => 'FALSE',
+            'Link to Error' => 'FALSE',
+            'Inline Validation' => 'FALSE',
+            'Required Indicator' => '',
+            'FastForm Wrapper'=> '',
+            'HTML Purifier' => 'FALSE',
         );
         $return = '';
 
@@ -271,7 +270,6 @@ class Formr
 
     public function submit($submit = 'submit')
     {
-
         # checks if submit button was clicked
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             return true;
@@ -329,7 +327,6 @@ class Formr
 
     public function value($name, $value = '')
     {
-
         # return SESSION value
         if ($this->session) {
             $_SESSION[$this->session][$name] = $this->_clean_value($_POST[$name]);
@@ -358,7 +355,6 @@ class Formr
 
     protected function _generate_hash($length = 32)
     {
-
         # don't add vowels and we won't get dirty words...
         $chars = 'BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz1234567890';
 
@@ -386,19 +382,18 @@ class Formr
 
     protected function _wrapper_type()
     {
-
         # determines what our field element wrapper will be
 
         # set the default to none (no wrapper)
-        $return['type']  = 'none';
-        $return['open']  = '';
+        $return['type'] = 'none';
+        $return['open'] = '';
         $return['close'] = '';
 
         if (is_array($this->wrapper)) {
 
             # the user entered a custom wrapper
-            $return['type']  = 'array';
-            $return['open']  = $this->wrapper[0];
+            $return['type'] = 'array';
+            $return['open'] = $this->wrapper[0];
             $return['close'] = $this->wrapper[1];
             return $return;
         } else {
@@ -416,34 +411,34 @@ class Formr
 
             # wrapper is a list
             if ($str == 'ul') {
-                $return['type']  = 'ul';
-                $return['open']  = '<ul class="' . $this->controls['list-ul'] . '">';
+                $return['type'] = 'ul';
+                $return['open'] = '<ul class="' . $this->controls['list-ul'] . '">';
                 $return['close'] = '</ul>';
                 return $return;
             }
             if ($str == 'ol') {
-                $return['type']  = 'ol';
-                $return['open']  = '<ol class="' . $this->controls['list-ol'] . '">';
+                $return['type'] = 'ol';
+                $return['open'] = '<ol class="' . $this->controls['list-ol'] . '">';
                 $return['close'] = '</ol>';
                 return $return;
             }
             if ($str == 'dl') {
-                $return['type']  = 'dl';
-                $return['open']  = '<dl class="' . $this->controls['list-dl'] . '">';
+                $return['type'] = 'dl';
+                $return['open'] = '<dl class="' . $this->controls['list-dl'] . '">';
                 $return['close'] = '</dl>';
                 return $return;
             }
 
             # wrapper is inline
             if ($str == 'p') {
-                $return['type']  = 'p';
-                $return['open']  = '<p>';
+                $return['type'] = 'p';
+                $return['open'] = '<p>';
                 $return['close'] = '</p>';
                 return $return;
             }
             if ($str == 'div') {
-                $return['type']  = 'div';
-                $return['open']  = '<div class="' . $this->controls['div'] . '">';
+                $return['type'] = 'div';
+                $return['open'] = '<div class="' . $this->controls['div'] . '">';
                 $return['close'] = '</div>';
                 return $return;
             }
@@ -452,7 +447,6 @@ class Formr
 
     protected function _wrapper($element, $data)
     {
-
         # wraps and formats field elements
         # $element is the field element in HTML
         # $data is the $data array containing the element's arguments
@@ -564,7 +558,6 @@ class Formr
 
     protected function _html5($str = '')
     {
-
         # define HTML5 specific items here
         # TODO: this is outdated - everything should be HTML5 at this point...
 
@@ -585,7 +578,6 @@ class Formr
 
     protected function _input_types($type)
     {
-
         # defines input types for use in other methods
         if ($type == 'button') {
             return array('submit', 'reset', 'button');
@@ -600,7 +592,6 @@ class Formr
 
     protected function _attributes($data)
     {
-
         # adds additional attributes and classes to form fields
 
         $string = $classes = null;
@@ -670,7 +661,6 @@ class Formr
 
     protected function _fix_classes($string, $data)
     {
-
         # 'fixes' the class attribute
         # merges existing and default classes...
 
@@ -701,18 +691,17 @@ class Formr
 
     protected function _set_array_values($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '')
     {
-
         # puts the entered strings into an array
         if (!is_array($data)) {
             $data = array(
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline,
-                'selected'    => $selected,
-                'options'    => $options
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline,
+                'selected' => $selected,
+                'options' => $options
             );
         }
         return $data;
@@ -720,7 +709,6 @@ class Formr
 
     protected function _clean_value($str = '', $html = false)
     {
-
         # makes entered values a little safer.
 
         # this function was left somewhat sparse because i didn't want to assume i knew what kind of data you were going to allow,
@@ -791,7 +779,6 @@ class Formr
 
     protected function _parse_fastform_values($key, $data)
     {
-
         if (!is_array($data)) {
             # the fastform() values are in a string
             # explode them and get each value
@@ -889,7 +876,6 @@ class Formr
 
     protected function _fastform_define_field_type($key, $data)
     {
-
         # this method assigns a field type based on the $key's value
         if (!is_array($data)) {
             $data = array();
@@ -955,7 +941,6 @@ class Formr
 
     protected function _build_input_groups($data)
     {
-
         # we're builing a checkbox or radio group based on multiple field names inside $data['value']
         # check if $data['value'] starts with a left bracket
         # if so, we know we have multiple values
@@ -1031,7 +1016,6 @@ class Formr
 
     protected function _check_filesize($handle)
     {
-
         $kb = 1024;
         $mb = $kb * 1024;
 
@@ -1050,14 +1034,12 @@ class Formr
 
     protected function _get_file_extension($handle)
     {
-
         # get's a file's extension
         return strtolower(ltrim(strrchr($handle['name'], '.'), '.'));
     }
 
     protected function _check_upload_accepted_types($handle)
     {
-
         # get the accepted file types
         # we can check either the extension or the mime type, depending on whta the user entered
 
@@ -1082,14 +1064,12 @@ class Formr
 
     protected function _slug_filename($filename)
     {
-
         # slug the filename to make it safer
         return strtolower(preg_replace('/[^A-Z0-9._-]/i', '_', $filename));
     }
 
     protected function _rename_file($handle)
     {
-
         $new_filename = null;
 
         # if the file extension is .jpeg, rename to .jpg
@@ -1139,7 +1119,6 @@ class Formr
 
     protected function _upload_accepted_types()
     {
-
         if ($this->upload_accepted_types) {
             # we're allowing jpg, gif and png
             if ($this->upload_accepted_types == 'images') {
@@ -1156,7 +1135,6 @@ class Formr
 
     protected function _upload_accepted_mimes()
     {
-
         if ($this->upload_accepted_mimes) {
 
             # we're allowing jpg, gif and png
@@ -1174,7 +1152,6 @@ class Formr
 
     protected function _upload_files($name)
     {
-
         # don't upload if there are form errors
         if (!empty($this->errors)) {
             return false;
@@ -1194,10 +1171,10 @@ class Formr
 
                         # make for a prettier array and reassign the key/values
 
-                        $handle['key']      = $name;
-                        $handle['name']     = $_FILES[$name]['name'][$i];
-                        $handle['size']     = $_FILES[$name]['size'][$i];
-                        $handle['type']     = $_FILES[$name]['type'][$i];
+                        $handle['key'] = $name;
+                        $handle['name'] = $_FILES[$name]['name'][$i];
+                        $handle['size'] = $_FILES[$name]['size'][$i];
+                        $handle['type'] = $_FILES[$name]['type'][$i];
                         $handle['tmp_name'] = $_FILES[$name]['tmp_name'][$i];
 
                         // put each array into the $files array
@@ -1213,10 +1190,10 @@ class Formr
 
                     # make for a prettier array and reassign the key/values
 
-                    $handle['key']      = $name;
-                    $handle['name']     = $_FILES[$name]['name'];
-                    $handle['size']     = $_FILES[$name]['size'];
-                    $handle['type']     = $_FILES[$name]['type'];
+                    $handle['key'] = $name;
+                    $handle['name'] = $_FILES[$name]['name'];
+                    $handle['size'] = $_FILES[$name]['size'];
+                    $handle['type'] = $_FILES[$name]['type'];
                     $handle['tmp_name'] = $_FILES[$name]['tmp_name'];
 
                     return $this->_process_image($handle);
@@ -1229,7 +1206,6 @@ class Formr
 
     protected function _process_image($handle)
     {
-
         # get the file's extension
         $handle['ext'] = $this->_get_file_extension($handle);
 
@@ -1284,7 +1260,6 @@ class Formr
 
     protected function _resize_image($handle, $resize_key, $resize_values)
     {
-
         # don't upload if there are form errors
         if (!empty($this->errors)) {
             return false;
@@ -1395,7 +1370,6 @@ class Formr
 
     protected function _check_required($name)
     {
-
         # checks the field name to see if that field is required
 
         $this->required_fields = array();
@@ -1493,7 +1467,6 @@ class Formr
     # MESSAGING
     public function messages($open_tag = '', $close_tag = '')
     {
-
         # this function prints client-side validation error messages to the browser
 
         $return = null;
@@ -1569,53 +1542,49 @@ class Formr
 
     public function warning_message($str, $flash = false)
     {
-
         if ($flash == true) {
             return $_SESSION['flash']['warning'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-w'] . '" role="alert">';
-        $return .= '	<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
-        $return .=         $str;
+        $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        $return .=      $str;
         $return .= '</div>';
         $this->message = $return;
     }
     public function success_message($str, $flash = false)
     {
-
         if ($flash == true) {
             return $_SESSION['flash']['success'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-s'] . '" role="alert">';
-        $return .= '	<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
-        $return .=         $str;
+        $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        $return .=      $str;
         $return .= '</div>';
         $this->message = $return;
     }
     public function error_message($str, $flash = false)
     {
-
         if ($flash == true) {
             return $_SESSION['flash']['error'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-e'] . '" role="alert">';
-        $return .= '	<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
-        $return .=         $str;
+        $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        $return .=      $str;
         $return .= '</div>';
         $this->message = $return;
     }
     public function info_message($str, $flash = false)
     {
-
         if ($flash == true) {
             return $_SESSION['flash']['info'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-i'] . '" role="alert">';
-        $return .= '	<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
-        $return .=         $str;
+        $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        $return .=      $str;
         $return .= '</div>';
         $this->message = $return;
     }
@@ -1635,7 +1604,6 @@ class Formr
 
     public function fastpost($name)
     {
-
         # for the truly lazy! ;)
 
         # returns an associative array of all posted keys/values, minus the submit button (if it's named 'submit')
@@ -1676,7 +1644,6 @@ class Formr
 
     protected function _post($name, $label = '', $rules = '')
     {
-
         # this method processes the $_POST/$_GET values and performs validation (if required)
 
         # set the variable in which we'll store our $_POST/$_GET data
@@ -1794,7 +1761,7 @@ class Formr
         $return = null;
 
         # get the $data array ready for the _process_post() method
-        $data['post']  = $post;
+        $data['post'] = $post;
         $data['label'] = $label;
         $data['name']  = $name;
 
@@ -1829,11 +1796,10 @@ class Formr
 
     protected function _process_post($data)
     {
-
-        $name  = $data['name'];
-        $post  = $data['post'];
+        $name = $data['name'];
+        $post = $data['post'];
         $label = $data['label'];
-        $rule  = $data['rule'];
+        $rule = $data['rule'];
 
         # allow HTML
         if ($rule == 'allow_html') {
@@ -2024,7 +1990,6 @@ class Formr
 
     protected function _fp_rules($key)
     {
-
         # used during fastpost()
         # if a field name matches, why not do some automatic validation?
         $rules = $this->fastpost_rules();
@@ -2038,7 +2003,6 @@ class Formr
 
     protected function fastpost_rules()
     {
-
         # validation rules for the fastpost() method
 
         # basically, we're using common field names, and if a posted field name
@@ -2047,16 +2011,16 @@ class Formr
         # 'field name' => 'validation rule'
 
         $rules = array(
-            'email'            => 'valid_email',
-            'zip'            => 'int|min_length[5]|max_length[10]',
-            'zip_code'        => 'int|min_length[5]|max_length[10]',
-            'postal'        => 'alphanumeric|min_length[6]|max_length[7]',
-            'postal_code'    => 'alphanumeric|min_length[6]|max_length[7]',
-            'age'            => 'int',
-            'weight'        => 'int',
-            'url'            => 'valid_url',
-            'website'        => 'valid_url',
-            'ip_address'    => 'valid_ip'
+            'email' => 'valid_email',
+            'zip' => 'int|min_length[5]|max_length[10]',
+            'zip_code' => 'int|min_length[5]|max_length[10]',
+            'postal' => 'alphanumeric|min_length[6]|max_length[7]',
+            'postal_code' => 'alphanumeric|min_length[6]|max_length[7]',
+            'age' => 'int',
+            'weight' => 'int',
+            'url' => 'valid_url',
+            'website' => 'valid_url',
+            'ip_address' => 'valid_ip'
         );
 
         return $rules;
@@ -2067,7 +2031,6 @@ class Formr
     # FORM
     protected function _form($data)
     {
-
         # define the form action
         if (!empty($data['action'])) {
             # use action passed directly to function
@@ -2136,7 +2099,6 @@ class Formr
 
     public function form_open($name = '', $id = '', $action = '', $method = '', $string = '', $hidden = '')
     {
-
         if (!$method) {
             if ($this->method == 'get') {
                 $method = 'get';
@@ -2146,12 +2108,12 @@ class Formr
         }
         $data = array(
             'form_type' => 'open',
-            'action'     => $action,
-            'method'    => $method,
-            'name'        => $name,
-            'id'        => $id,
-            'string'     => $string,
-            'hidden'     => $hidden
+            'action' => $action,
+            'method' => $method,
+            'name' => $name,
+            'id' => $id,
+            'string' => $string,
+            'hidden' => $hidden
         );
 
         return $this->_form($data);
@@ -2159,15 +2121,14 @@ class Formr
 
     public function form_open_multipart($name = '', $id = '', $action = '', $method = '', $string = '', $hidden = '')
     {
-
         $data = array(
             'form_type' => 'multipart',
-            'action'     => $action,
-            'method'    => $method,
-            'name'        => $name,
-            'id'        => $id,
-            'string'     => $string,
-            'hidden'     => $hidden
+            'action' => $action,
+            'method'=> $method,
+            'name' => $name,
+            'id' => $id,
+            'string' => $string,
+            'hidden' => $hidden
         );
 
         return $this->_form($data);
@@ -2184,7 +2145,6 @@ class Formr
     # BUTTONS
     protected function _button($data)
     {
-
         # build the button tag
         $return  = '<button type="button"';
 
@@ -2226,7 +2186,6 @@ class Formr
 
     public function input_submit($data = '', $label = '', $value = '', $id = '', $string = '')
     {
-
         if (!is_array($data)) {
 
             if (!$data) {
@@ -2242,12 +2201,12 @@ class Formr
             }
 
             $data = array(
-                'type'        => 'submit',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string
+                'type' => 'submit',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string
             );
         } else {
             $data['type'] = 'submit';
@@ -2258,15 +2217,14 @@ class Formr
 
     public function input_reset($data = '', $label = '', $value = '', $id = '', $string = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'reset',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string
+                'type' => 'reset',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string
             );
         } else {
             $data['type'] = 'reset';
@@ -2276,15 +2234,14 @@ class Formr
 
     public function input_button($data = '', $label = '', $value = '', $id = '', $string = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'button',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string
+                'type' => 'button',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string
             );
         } else {
             $data['type'] = 'button';
@@ -2307,7 +2264,6 @@ class Formr
     # INPUTS
     protected function _create_input($data)
     {
-
         if (!isset($_POST)) {
             if (empty($data['value'])) {
                 return false;
@@ -2469,16 +2425,15 @@ class Formr
 
     public function input_text($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'text',
-                'name'        => $data,
-                'id'        => $id,
-                'value'        => $value,
-                'string'    => $string,
-                'label'        => $label,
-                'inline'    => $inline
+                'type' => 'text',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'label' => $label,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'text';
@@ -2488,7 +2443,6 @@ class Formr
 
     public function input_hidden($data, $value = '')
     {
-
         $return = '';
 
         if (!is_array($data)) {
@@ -2514,16 +2468,15 @@ class Formr
 
     public function input_upload($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'file',
-                'name'        => $data,
-                'id'        => $id,
-                'value'        => $value,
-                'string'    => $string,
-                'label'        => $label,
-                'inline'    => $inline
+                'type' => 'file',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'label' => $label,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'file';
@@ -2533,16 +2486,15 @@ class Formr
 
     public function input_file($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'file',
-                'name'        => $data,
-                'id'        => $id,
-                'value'        => $value,
-                'string'    => $string,
-                'label'        => $label,
-                'inline'    => $inline
+                'type' => 'file',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'label' => $label,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'file';
@@ -2552,17 +2504,16 @@ class Formr
 
     public function input_upload_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'file',
-                'multiple'    => true,
-                'name'        => $data,
-                'id'        => $id,
-                'value'        => $value,
-                'string'    => $string,
-                'label'        => $label,
-                'inline'    => $inline
+                'type' => 'file',
+                'multiple' => true,
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'label' => $label,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'file';
@@ -2573,16 +2524,15 @@ class Formr
 
     public function input_password($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'password',
-                'name'        => $data,
-                'id'        => $id,
-                'value'        => $value,
-                'string'    => $string,
-                'label'        => $label,
-                'inline'    => $inline
+                'type' => 'password',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'label' => $label,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'password';
@@ -2592,17 +2542,16 @@ class Formr
 
     public function input_radio($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'radio',
-                'name'        => $data,
-                'id'        => $id,
-                'value'        => $value,
-                'string'    => $string,
-                'selected'    => $selected,
-                'label'        => $label,
-                'inline'    => $inline
+                'type' => 'radio',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'selected' => $selected,
+                'label' => $label,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'radio';
@@ -2612,18 +2561,17 @@ class Formr
 
     public function input_radio_inline($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'                => 'radio',
-                'name'                => $data,
-                'id'                => $id,
-                'value'                => $value,
-                'string'            => $string,
-                'selected'            => $selected,
-                'label'                => $label,
-                'inline'            => $inline,
-                'checkbox-inline'     => 'inline'
+                'type' => 'radio',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'selected' => $selected,
+                'label' => $label,
+                'inline' => $inline,
+                'checkbox-inline' => 'inline'
             );
         } else {
             $data['type'] = 'radio';
@@ -2634,17 +2582,16 @@ class Formr
 
     public function input_checkbox($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'checkbox',
-                'name'        => $data,
-                'id'        => $id,
-                'value'        => $value,
-                'string'    => $string,
-                'selected'    => $selected,
-                'label'        => $label,
-                'inline'    => $inline
+                'type' => 'checkbox',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'selected' => $selected,
+                'label' => $label,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'checkbox';
@@ -2654,18 +2601,17 @@ class Formr
 
     public function input_checkbox_inline($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'                => 'checkbox',
-                'name'                => $data,
-                'id'                => $id,
-                'value'                => $value,
-                'string'            => $string,
-                'selected'            => $selected,
-                'label'                => $label,
-                'inline'            => $inline,
-                'checkbox-inline'     => 'inline'
+                'type' => 'checkbox',
+                'name' => $data,
+                'id' => $id,
+                'value' => $value,
+                'string' => $string,
+                'selected' => $selected,
+                'label' => $label,
+                'inline' => $inline,
+                'checkbox-inline' => 'inline'
             );
         } else {
             $data['type'] = 'checkbox';
@@ -2676,16 +2622,15 @@ class Formr
 
     public function input_image($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'image',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'image',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'image';
@@ -2699,16 +2644,15 @@ class Formr
     # HTML5 FIELD ELEMENTS
     public function input_color($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'color',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'color',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'color';
@@ -2717,16 +2661,15 @@ class Formr
     }
     public function input_email($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'email',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'email',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'email';
@@ -2735,16 +2678,15 @@ class Formr
     }
     public function input_date($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'date',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'date',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'date';
@@ -2753,16 +2695,15 @@ class Formr
     }
     public function input_datetime($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'datetime',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'datetime',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'datetime';
@@ -2771,16 +2712,15 @@ class Formr
     }
     public function input_datetime_local($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'datetime-local',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'datetime-local',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'datetime-local';
@@ -2789,16 +2729,15 @@ class Formr
     }
     public function input_month($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'month',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'month',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'month';
@@ -2807,16 +2746,15 @@ class Formr
     }
     public function input_number($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'number',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'number',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'number';
@@ -2825,16 +2763,15 @@ class Formr
     }
     public function input_range($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'range',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'range',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'range';
@@ -2843,16 +2780,15 @@ class Formr
     }
     public function input_search($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'search',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'search',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'search';
@@ -2861,16 +2797,15 @@ class Formr
     }
     public function input_tel($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'tel',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'tel',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'tel';
@@ -2879,16 +2814,15 @@ class Formr
     }
     public function input_time($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'time',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'time',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'time';
@@ -2897,16 +2831,15 @@ class Formr
     }
     public function input_url($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'url',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'url',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'url';
@@ -2915,16 +2848,15 @@ class Formr
     }
     public function input_week($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'week',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'week',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'week';
@@ -2938,7 +2870,6 @@ class Formr
     # TEXTAREA
     protected function _create_textarea($data)
     {
-
         # echo an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
             echo '<p style="color:red">You must provide a name for the <strong>' . $data['type'] . '</strong> element.</p>';
@@ -3009,16 +2940,15 @@ class Formr
 
     public function input_textarea($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'textarea',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline
+                'type' => 'textarea',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline
             );
         } else {
             $data['type'] = 'textarea';
@@ -3032,7 +2962,6 @@ class Formr
     # SELECT MENU
     protected function _create_select($data)
     {
-
         # echo an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
             echo '<p style="color:red">You must provide a name for the <strong>' . $data['type'] . '</strong> element.</p>';
@@ -3174,7 +3103,6 @@ class Formr
 
     protected function _dropdowns($menu)
     {
-
         # this function enables the Dropdowns class to be used as a plugin
         # all we're doing is returning the selected array from the Dropdowns class
 
@@ -3187,18 +3115,17 @@ class Formr
 
     public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'select',
-                'name'        => $data,
-                'label'        => $label,
-                'value'        => $value,
-                'id'        => $id,
-                'string'    => $string,
-                'inline'    => $inline,
-                'selected'    => $selected,
-                'options'    => $options
+                'type' => 'select',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline,
+                'selected' => $selected,
+                'options' => $options
             );
         } else {
             $data['type'] = 'select';
@@ -3212,7 +3139,6 @@ class Formr
     # FIELDSET
     public function fieldset_open($legend = '', $string = '')
     {
-
         $return = '<fieldset';
 
         if ($string) {
@@ -3245,7 +3171,6 @@ class Formr
     # LABELS
     protected function _create_label($data)
     {
-
         $return = null;
 
         # if there's a post error, create an <a> anchor for this field
@@ -3305,14 +3230,13 @@ class Formr
 
     public function label($data, $label = '', $id = '', $string = '')
     {
-
         if (!is_array($data)) {
             $data = array(
-                'type'        => 'label',
-                'name'        => $data,
-                'label'        => $label,
-                'id'        => $id,
-                'string'    => $string,
+                'type' => 'label',
+                'name' => $data,
+                'label' => $label,
+                'id' => $id,
+                'string' => $string,
                 'label_type' => 'label'
             );
         } else {
@@ -3325,15 +3249,14 @@ class Formr
 
     public function label_open($data, $label = '', $id = '', $string = '')
     {
-
         # opens a <label> tag
 
         if (!is_array($data)) {
             $data = array(
-                'name'        => $data,
-                'label'        => $label,
-                'id'        => $id,
-                'string'    => $string,
+                'name' => $data,
+                'label' => $label,
+                'id' => $id,
+                'string' => $string,
                 'label_type' => 'open'
             );
         } else {
@@ -3345,7 +3268,6 @@ class Formr
 
     public function label_close($data = '')
     {
-
         # closes a <label> tag
         # this is handy if we want to put our label text *after* the form element
 
@@ -3377,7 +3299,6 @@ class Formr
     # FAST FORM
     protected function _faster_form($form_name, $multipart)
     {
-
         # this method enables the Forms class to be used as a plugin so that we can store
         # arrays of frequently used forms and pass them through the fastform() function
 
@@ -3394,7 +3315,6 @@ class Formr
 
     public function fastform($input, $multipart = '')
     {
-
         # method for automatically building and laying out a form with multiple elements
 
         if (is_string($input)) {
@@ -3550,15 +3470,15 @@ class Formr
             $return .= $submit;
         } else {
             # create a default submit with no options
-            $data['type']     = 'submit';
-            $data['name']     = 'submit';
-            $data['label']    = '';
-            $data['value']    = $this->submit;
-            $data['id']       = 'submit';
-            $data['string']   = '';
-            $data['inline']   = '';
+            $data['type'] = 'submit';
+            $data['name'] = 'submit';
+            $data['label'] = '';
+            $data['value'] = $this->submit;
+            $data['id'] = 'submit';
+            $data['string'] = '';
+            $data['inline'] = '';
             $data['selected'] = '';
-            $data['options']  = '';
+            $data['options'] = '';
             $item    = $this->input_submit($data);
             $return .= $this->_wrapper($item, $data);
         }
@@ -3600,8 +3520,7 @@ class Formr
     # MISC
     public function heading($name, $string)
     {
-
-        # useful in questionnaires, and the like.
+        # useful in questionnaires and the like.
         # put your string in here and it'll be highlighted when the field receives an error
         if (array_key_exists($name, $this->errors)) {
             return '<h2><span class="error">' . $string . '</span></h2>';
@@ -3612,7 +3531,6 @@ class Formr
 
     public function send_email($to, $subject, $message, $from = '', $html = false)
     {
-
         # really simple method for firing off a quick email
         # something I was playing around with and forgot about...
         # TODO? may add to / improve this in the future
