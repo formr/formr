@@ -3296,6 +3296,45 @@ class Formr
 
 
 
+    #  SIMPLE FORM CREATION
+    public function create($string)
+    {
+        # create and wrap inputs using labels as our keys
+        
+        # set our $return var for later
+        $return = null;
+        
+        # break apart the comma delimited string of form labels
+        $parts = explode(',', $string);
+
+        # loop through each part and set the $data array values
+        foreach ($parts as $label) {
+            $data = [
+                'type' => 'text',
+                'name' => strtolower(str_replace(' ', '_', trim($label))),
+                'id' => strtolower(str_replace(' ', '_', trim($label))),
+                'value' => null,
+                'string' => null,
+                'label' => trim($label),
+                'inline' => null
+            ];
+
+            if(strpos(strtolower($label), 'email') !== false) {
+                # label string contains the word 'email', use email input type
+                $return .= $this->input_email($data);
+            } else {
+                # default to text type
+                $return .= $this->input_text($data);
+            }
+        }
+
+        return $return;
+    }
+
+
+
+
+
     # FAST FORM
     protected function _faster_form($form_name, $multipart)
     {
