@@ -23,6 +23,7 @@ Find docs and screencasts here: [http://formr.github.io](http://formr.github.io)
 Simply enter your form fields as a comma delimited string and Formr will build the form, complete with email validation and all values retained upon POST.
 
 ```php
+$form = new Formr('bootstrap');
 echo $form->form_open();
 echo $form->create('First name, Last name, Email address');
 echo $form->input_submit();
