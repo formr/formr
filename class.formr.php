@@ -3319,10 +3319,24 @@ class Formr
                 'inline' => null
             ];
 
+            # label string contains the word 'email', use email input type
             if(strpos(strtolower($label), 'email') !== false) {
-                # label string contains the word 'email', use email input type
                 $return .= $this->input_email($data);
-            } else {
+            }
+            elseif(strpos(strtolower($label), '|') !== false) {
+                # we want to use an specific input type
+                $type = substr($label, strpos($label, '|') + 1);
+                
+                # correct our label text by removing the | and input type
+                $data['label'] = str_replace('|'.$type, '', $label);
+                
+                # define the method's name
+                $name = 'input_'.$type;
+                
+                # return the input
+                $return .= $this->$name($data);
+            }
+            else {
                 # default to text type
                 $return .= $this->input_text($data);
             }
