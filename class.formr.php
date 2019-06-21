@@ -3329,6 +3329,12 @@ class Formr
                 
                 # correct our label text by removing the | and input type
                 $data['label'] = str_replace('|'.$type, '', $label);
+
+                # correct our input's name
+                $data['name'] = strtolower(str_replace(' ', '_', trim($data['label'])));
+                
+                # correct our input's ID
+                $data['id'] = strtolower(str_replace(' ', '_', trim($data['label'])));
                 
                 # define the method's name
                 $name = 'input_'.$type;

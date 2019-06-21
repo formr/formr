@@ -43,7 +43,7 @@ Simply enter your form fields as a comma delimited string and Formr will build t
 ```php
 $form = new Formr('bootstrap');
 echo $form->form_open();
-echo $form->create('First name, Last name, Email address');
+echo $form->create('First name, Last name, Email address, Age|number, Comments|textarea');
 echo $form->input_submit();
 echo $form->form_close();
 ```
@@ -69,6 +69,18 @@ echo $form->form_close();
             Email address
         </label>
         <input type="email" name="email_address" id="email_address" class="form-control">
+    </div>
+    <div id="_age" class="form-group">
+        <label class="control-label" for="age">
+            Email address
+        </label>
+        <input type="number" name="age" id="age" class="form-control">
+    </div>
+    <div id="_comments" class="form-group">
+        <label class="control-label" for="comments">
+            Comments
+        </label>
+        <textarea name="comments" id="comments" class="form-control"></textarea>
     </div>
     <div id="_submit" class="form-group">
         <label class="sr-only" for="submit"></label>
