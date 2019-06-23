@@ -17,17 +17,22 @@
 
 # load the 'plugin' classes
 if (file_exists(dirname(__FILE__) . '/my_classes/my.wrappers.php')) {
+    # load the custom wrapper class
     require_once 'my_classes/my.wrappers.php';
+} else {
+    # load the default wrapper class
+    require_once 'lib/class.formr.wrappers.php';
 }
+
 if (file_exists(dirname(__FILE__) . '/my_classes/my.dropdowns.php')) {
     require_once 'my_classes/my.dropdowns.php';
 }
+
 if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
     require_once 'my_classes/my.forms.php';
 }
 
-# load the default classes
-require_once 'lib/class.formr.wrappers.php';
+# load the remaining default classes
 require_once 'lib/class.formr.dropdowns.php';
 require_once 'lib/class.formr.forms.php';
 
@@ -133,11 +138,6 @@ class Formr
 
     function __construct($wrapper = '')
     {
-
-        # TODO
-        # the wrapper system has been hacked together for a couple of years...
-        # Works well for my needs but needs to be rebuilt to make it more extensible if sharing on GitHub
-
         # determine our field wrapper and CSS classes
 
         if (!$wrapper) {
@@ -146,7 +146,13 @@ class Formr
         } else {
             # user-defined wrapper
             $this->wrapper = strtolower($wrapper);
-            $wrapper_css = $wrapper . '_css';
+
+            # default bootstrap to version 4
+            if($wrapper == 'bootstrap') {
+                $this->wrapper = 'bootstrap4';
+            }
+            
+            $wrapper_css = $this->wrapper . '_css';
         }
 
 
@@ -396,13 +402,16 @@ class Formr
             $return['open'] = $this->wrapper[0];
             $return['close'] = $this->wrapper[1];
             return $return;
+        
         } else {
 
-            if ($this->wrapper == 'bootstrap') {
-
-                # twitter bootstrap form-group
-                $return['type'] = 'bootstrap';
+            # use a pre-defined wrapper
+            if(! in_array($this->wrapper, ['ul', 'ol', 'dl', 'p', 'div'])) {
+                # set the wrapper's name
+                $return['type'] = $this->wrapper;
+                
                 $return['open'] = $return['close'] = null;
+                
                 return $return;
             }
 
@@ -482,8 +491,10 @@ class Formr
             # $method = the method's name in the Wrapper class
             $method = $wrapper['type'];
 
-            $wrapper = new Wrapper($this->errors, $this);
+            $wrapper = new Wrapper($this);
+            
             return $wrapper->$method($element, $data);
+        
         } else {
 
             # default formr wrapper
@@ -614,7 +625,6 @@ class Formr
 
             # don't add the class if it's empty
             if ($this->controls['input']) {
-
                 if (!empty($data['class'])) {
                     $string .= 'class="' . $this->controls['input'] . ' ' . $data['class'] . ' ';
                 } else {
@@ -673,13 +683,38 @@ class Formr
                 if (!empty($this->controls['input'])) {
 
                     if ($data['type'] != 'submit' && $data['type'] != 'button' && $data['type'] != 'checkbox' && $data['type'] != 'radio') {
-                        $return .= ' class="' . $this->controls['input'] . '"';
+                        if($data['type'] == 'file') {
+                            # file input gets its own class
+                            $return .= ' class="' . $this->controls['file'];
+                        } else {
+                            $return .= ' class="' . $this->controls['input'];
+                        }
+
+                        if ($this->in_errors($data['name'])) {
+                            # add bootstrap 4 error class on element
+                            if ($this->wrapper == 'bootstrap4') {
+                                $return .= ' '.$this->controls['is-invalid'];
+                            }
+                        }
+
+                        # close the attribute
+                        $return .= '"';
+                    }
+
+                    # bootstrap 4 inline checkboxes & radios
+                    if(isset($data['checkbox-inline'])) {
+                        if (strpos($this->wrapper, 'bootstrap') !== false) {
+                            $return .= ' class="' . $this->controls['form-check-input'] . '"';
+                        }
                     }
 
                     if ($data['type'] == 'submit' || $data['type'] == 'button') {
-
-                        if ($this->wrapper == 'bootstrap') {
-                            $return .= ' class="' . $this->controls['button'] . '"';
+                        if (strpos($this->wrapper, 'bootstrap') !== false) {
+                            if(!$data['string']) {
+                                $return .= ' class="' . $this->controls['button-primary'] . '"';
+                            } else {
+                                $return .= ' class="' . $this->controls['button'] . '"';
+                            }
                         }
                     }
                 }
@@ -1518,10 +1553,10 @@ class Formr
                     foreach ($this->errors as $key => $value) {
                         if ($this->link_errors == true) {
                             # user wants to link to the form fields upon error
-                            $return .= '<p><a href="#' . $key . '" class="' . $this->controls['link'] . '">' . $value . '</a></p>';
+                            $return .= '<a href="#' . $key . '" class="' . $this->controls['link'] . '">' . $value . '</a><br>';
                         } else {
                             # print the message
-                            $return .= '<p>' . $value . '</p>';
+                            $return .= $value.'<br>';
                         }
                     }
 
@@ -2375,10 +2410,11 @@ class Formr
 
         # loop through the array and print each attribute
         foreach ($data as $key => $value) {
-            //if($key != 'string' && $key != 'checked' && $key != 'required' && $key != 'inline') {
             if (!in_array($key, $this->no_keys)) {
-                if ($value != '') {
-                    $return .= ' ' . $key . '="' . $value . '"';
+                if($key != 'checkbox-inline') {
+                    if ($value != '') {
+                        $return .= ' ' . $key . '="' . $value . '"';
+                    }
                 }
             }
         }
