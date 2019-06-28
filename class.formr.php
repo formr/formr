@@ -39,7 +39,6 @@ require_once 'lib/class.formr.forms.php';
 
 class Formr
 {
-
     # each of these public properties acts as a 'preference' for Formr
     # and can be defined at instantiation. see documentation for more info.
 
@@ -169,7 +168,7 @@ class Formr
                 }
             } catch (ReflectionException $e) {
                 #	method does not exist, spit out error and set default controls
-                echo '<span style="color:red">' . $e->getMessage() . '</span>';
+                echo '<h5 style="color:red">' . $e->getMessage() . '.</h5><p>If you are using custom wrappers, please make sure the custom wrapper file is named "my.wrappers.php". If you are NOT using custom wrappers, please make sure a file does not exist at "my_classes/my.wrappers.php".</p>';
                 $this->controls = Wrapper::css_defaults();
             }
         }
@@ -195,7 +194,7 @@ class Formr
         }
     }
 
-    // die dump - alias of printr()
+    // alias of printr() for Laravel users
     function dd($data)
     {
         return $this->printr($data);
@@ -702,7 +701,7 @@ class Formr
                     }
 
                     # bootstrap 4 inline checkboxes & radios
-                    if(isset($data['checkbox-inline'])) {
+                    if(isset($data['checkbox-inline']) || ($this->type_is_checkbox($data) && !isset($data['checkbox-inline']))) {
                         if (strpos($this->wrapper, 'bootstrap') !== false) {
                             $return .= ' class="' . $this->controls['form-check-input'] . '"';
                         }
@@ -980,7 +979,7 @@ class Formr
         # check if $data['value'] starts with a left bracket
         # if so, we know we have multiple values
 
-        if (mb_substr($data['value'], 0, 1) == '[') {
+        if ($this->is_in_brackets($data['value'])) {
 
             $return = null;
 
@@ -2181,7 +2180,7 @@ class Formr
     protected function _button($data)
     {
         # build the button tag
-        $return  = '<button type="button"';
+        $return  = '<button type="'.$data['type'].'"';
 
         # insert the button's name
         if (empty($data['name'])) {
@@ -2280,6 +2279,24 @@ class Formr
             );
         } else {
             $data['type'] = 'button';
+        }
+
+        return $this->_button($data);
+    }
+    
+    public function input_button_submit($data = '', $label = '', $value = '', $id = '', $string = '')
+    {
+        if (!is_array($data)) {
+            $data = array(
+                'type' => 'submit',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string
+            );
+        } else {
+            $data['type'] = 'submit';
         }
 
         return $this->_button($data);
@@ -3456,7 +3473,7 @@ class Formr
                 $return .= $this->label($data);
             } elseif ($data['type'] == 'radio' || $data['type'] == 'checkbox') {
 
-                if (mb_substr($data['value'], 0, 1) == '[') {
+                if ($this->is_in_brackets($data['value'])) {
 
                     # we have a radio/checkbox array
                     # loop through the value in the array, create elements and put them all into one wrapper with one label
@@ -3731,5 +3748,52 @@ class Formr
         } else {
             return $ip_address;
         }
+    }
+    
+    public function make_id($data)
+    {
+        # create an ID from the element's name attribute if an ID was not specified
+        if($this->is_not_empty($data['id'])) {
+            return $data['id'];
+        }
+
+        return $data['name'];
+    }
+
+    public function insert_required_indicator($data)
+    {
+        # insert the required_field indicator if applicable
+        if($this->_check_required($data['name']) && $this->is_not_empty($data['label'])) {
+            return $this->required_indicator;
+        }
+    }
+    
+    public function type_is_checkbox($data)
+    {
+        # determines if the element is a checkbox or radio
+        if($data['type'] == 'checkbox' || $data['type'] == 'radio') {
+            return true;
+        }
+
+        return false;
+    }
+    
+    public function is_array($data)
+    {
+        # determines is the element's name is an array
+        if(substr($data, -1) == ']') {
+            return true;
+        }
+
+        return false;
+    }
+    
+    public function is_in_brackets($data)
+    {
+        if(mb_substr($data, 0, 1) == '[') {
+            return true;
+        }
+
+        return false;
     }
 }
