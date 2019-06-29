@@ -276,7 +276,27 @@ class Formr
     public function submit($submit = 'submit')
     {
         # checks if submit button was clicked
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST')
+        {
+            # check if we're using csrf
+            if (isset($_POST['csrf_token']))
+            {
+                # check if token in SESSION equals token in POST array
+                if (hash_equals($_SESSION['token'], $_POST['csrf_token']))
+                {
+                    # compare current time to time of token expiration
+                    if (time() >= $_SESSION['token-expires']) {
+                        $this->add_to_errors('Session has timed out. Please refresh the page.');
+                        
+                        return false;
+                    }
+                } else {
+                    $this->add_to_errors('Token mismatch. Please refresh the page.');
+                    
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -3795,5 +3815,28 @@ class Formr
         }
 
         return false;
+    }
+
+    public function csrf($timeout = 3600)
+    {
+        # add csrf protection
+        #remember to put session_start() at the top of your script!
+
+        if (! $this->submit())
+        {
+            if (function_exists('mcrypt_create_iv')) {
+                $token = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+            } else {
+                $token = bin2hex(openssl_random_pseudo_bytes(32));
+            }
+
+            # put the token into a session
+            $_SESSION['token'] = $token;
+
+            # token expires in 1 hour
+            $_SESSION['token-expires'] = time() + $timeout;
+
+            return '<input type="hidden" name="csrf_token" value="'.$token.'">';
+        }
     }
 }

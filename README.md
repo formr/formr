@@ -19,6 +19,7 @@ If you find Formr useful, please consider starring the project and/or making a [
 - Extensible: easily create your own field element wrappers
 - Send plain text and HTML emails
 - Upload and resize images
+- Generate CSRF tokens and set the expiration time
 - Object-oriented; supports multiple forms per page
 - Little helpers to assist in building, layout, testing and debugging
 - And a ton of other cool stuff!
