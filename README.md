@@ -6,6 +6,8 @@ Find docs and screencasts here: [http://formr.github.io](http://formr.github.io)
 
 If you find Formr useful, please consider starring the project and/or making a [donation](https://paypal.me/timgavin). Thank you!
 
+![formr](https://user-images.githubusercontent.com/1012049/60391635-c9f4f280-9aa7-11e9-8167-fce28a70220c.gif)
+
 ## Features
 
 - Create complex forms with server-side processing and validation in only minutes
