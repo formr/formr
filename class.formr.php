@@ -3370,12 +3370,16 @@ class Formr
 
 
     #  SIMPLE FORM CREATION
-    public function create($string)
+    public function create($string, $form = false)
     {
         # create and wrap inputs using labels as our keys
         
         # set our $return var for later
         $return = null;
+
+        if($form) {
+            $return .= $this->form_open();
+        }
         
         # break apart the comma delimited string of form labels
         $parts = explode(',', $string);
@@ -3421,7 +3425,18 @@ class Formr
             }
         }
 
+        if($form) {
+            $return .= $this->input_button_submit();
+            $return .= $this->form_close();
+        }
+
         return $return;
+    }
+
+    # alias of create(), except opens and closes form tag, plus adds submit button
+    public function create_form($string)
+    {
+        return $this->create($string, true);
     }
 
 
