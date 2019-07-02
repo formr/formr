@@ -6,8 +6,6 @@ Find docs and screencasts here: [http://formr.github.io](http://formr.github.io)
 
 If you find Formr useful, please consider starring the project and/or making a [donation](https://paypal.me/timgavin). Thank you!
 
-![formr](https://user-images.githubusercontent.com/1012049/60391635-c9f4f280-9aa7-11e9-8167-fce28a70220c.gif)
-
 ## Features
 
 - Create complex forms with server-side processing and validation in only minutes
@@ -258,9 +256,33 @@ You have full control over how you build your forms...
 
 ## Validation
 
-Formr can easly process and validate your forms.
+#### Formr can easly process and validate your forms
 
-The following is a very basic example, however Formr's validation methods are quite powerful and include among other things comparing values between fields and hashing using `bcrypt()`
+Like the `create()` method, we can pass a list of our form labels to the `validate()` method, which will get the POSTed values of our form fields and put them into an array. If your field name is `email`, the `valid_email` validation rule will be applied automatically.
+
+#### Basic usage
+
+```php
+$form->validate('Name, Email, Comments');
+```
+Let's make sure the form was submitted, then get the value of our email field.
+
+```php
+if($form->submit()) {
+    $data = $form->validate('Name, Email, Comments');
+    $email = $data['email'];
+}
+```
+
+Let's make sure the `Name` field is a minimum of 3 characters and a maximum of 30 by adding our validation rules wrapped in parentheses.
+
+```php
+$form->validate('Name(min_length[3]|max_length[30]), Email, Comments');
+```
+
+## Fine-Tune Your Validation
+
+Of course you can get more in-depth with your validation too. The following is a very basic example, however Formr's validation methods are quite powerful and include among other things comparing values between fields and hashing using `bcrypt()`
 
 Let's get the `POST` value of an `email` field.
 

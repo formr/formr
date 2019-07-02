@@ -2080,6 +2080,49 @@ class Formr
         return $rules;
     }
 
+    public function validate($string)
+    {
+        # even easier and more automatic way to process and validate your form fields
+        
+        # break apart the comma delimited string of form labels
+        $parts = explode(',', $string);
+
+        $array = [];
+
+        foreach ($parts as $label)
+        {
+            $key = strtolower(str_replace(' ', '_', trim($label)));
+
+            $rules = null;
+            
+            # we are adding validation rules to this field
+            // if(strpos(strtolower($label), '||') !== false)
+            if(preg_match( '!\(([^\)]+)\)!', $label, $match))
+            {                
+                # get our field's validation rule(s)
+                $rules = $match[1];
+                
+                # get the text before the double pipe for our new label
+                $explode = explode('(', $label, 2);
+                
+                # set our new label text
+                $label = $explode[0];
+                
+                # set our field's name
+                $key = strtolower(str_replace(' ', '_', trim($label)));
+            }
+
+            if(strpos($key, 'email') !== false) {
+                # this is an email address, so let's add the valid_email rule as well
+                $array[$key] = $this->post($key, ucwords($key), 'valid_email|' . $rules);
+            } else {
+                $array[$key] = $this->post($key, $label, $rules);
+            }
+        }
+
+        return $array;
+    }
+
 
 
     # FORM
@@ -3853,5 +3896,10 @@ class Formr
 
             return '<input type="hidden" name="csrf_token" value="'.$token.'">';
         }
+    }
+
+    public function redirect($url)
+    {
+        header('Location: '.$url);
     }
 }
