@@ -43,8 +43,51 @@ $form = new Formr('bootstrap');
 ```
 
 ## Basic Example
+Simply enter your form fields as a comma delimited string and Formr will build the form, complete with opening and closing tags, a submit button, and email validation - plus all values retained upon `POST`. Easy!
 
-Simply enter your form fields as a comma delimited string and Formr will build the form, complete with email validation and all values retained upon POST.
+```php
+$form = new Formr('bootstrap');
+echo $form->create_form('Name, Email, Comments|textarea');
+```
+
+### Produces the following HTML
+
+```html
+<form action="/index.php" method="post" accept-charset="utf-8">
+
+    <div id="_name" class="form-group">
+        <label class="control-label" for="name">
+            Name
+        </label>
+        <input type="text" name="name" id="name" class="form-control">
+    </div>
+
+    <div id="_email" class="form-group">
+        <label class="control-label" for="email">
+            Email
+        </label>
+        <input type="email" name="email" id="email" class="form-control">
+    </div>
+
+    <div id="_comments" class="form-group">
+        <label class="control-label" for="comments">
+            Comments
+        </label>
+        <textarea name="comments" id="comments" class="form-control"></textarea>
+    </div>
+
+    <div id="_button" class="form-group">
+        <label class="sr-only" for="button"></label>
+        <button type="submit" name="button" id="button" class="btn btn-primary">Submit</button>
+    </div>
+
+</form>
+```
+
+
+## Basic Example with More Control
+
+Using the `create()` method tells Formr you want control over adding the form tags and submit button yourself. Otherwise it's the same as the Basic Example above.
 
 ```php
 $form = new Formr('bootstrap');
@@ -95,47 +138,6 @@ echo $form->form_close();
 </form>
 ```
 
-## Really Basic Example
-Using the `form_create()` method will not only create the form and add basic validation as in the previous example, it will also open the form, add a submit button, and close the form. This is about as easy as you can get!
-
-```php
-$form = new Formr('bootstrap');
-echo $form->create_form('Name, Email, Comments|textarea');
-```
-
-### Produces the following HTML
-
-```html
-<form action="/index.php" method="post" accept-charset="utf-8">
-
-    <div id="_name" class="form-group">
-        <label class="control-label" for="name">
-            Name
-        </label>
-        <input type="text" name="name" id="name" class="form-control">
-    </div>
-
-    <div id="_email" class="form-group">
-        <label class="control-label" for="email">
-            Email
-        </label>
-        <input type="email" name="email" id="email" class="form-control">
-    </div>
-
-    <div id="_comments" class="form-group">
-        <label class="control-label" for="comments">
-            Comments
-        </label>
-        <textarea name="comments" id="comments" class="form-control"></textarea>
-    </div>
-
-    <div id="_button" class="form-group">
-        <label class="sr-only" for="button"></label>
-        <button type="submit" name="button" id="button" class="btn btn-primary">Submit</button>
-    </div>
-
-</form>
-```
 
 ## Pre-Built Forms
 
