@@ -301,27 +301,36 @@ if($form->submit())
     $last_name = $form->post('last_name');
     $email = $form->post('email_address', 'Email', 'valid_email');
     
-    // email the results
-    $to = 'recipient@email.com';
-    $from = 'me@domain.com';
-    $subject = 'Ahoy, Matey!';
+    // let's email the results...
+    $to = 'me@domain.com';
+    $from = 'donotreply@domain.com';
+    $subject = 'Contact Form Submission';
     
     // this takes all of the POST values and automatically formats them in an HTML email!
-    $form->send_email($to, $subject, 'POST', $from, 'HTML');
+    if($form->send_email($to, $subject, 'POST', $from, 'HTML'))
+    {
+        // email sent; print a thank you message
+        $form->success_message('Thank you for filling out our form!');
+    }
 }
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Formr</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <?php
+            // print messages, formatted using Bootstrap alerts
+            echo $form->messages();
 
-// print any error messages if they're available
-echo $form->messages()
-
-// open the form
-echo $form->form_open();
-
-// add the form fields
-echo $form->create('First name, Last name, Email address');
-
-// add a submit button
-echo $form->input_submit();
-
-// close the form
-echo $form->form_close();
+            // create the form
+            echo $form->create_form('First name, Last name, Email address, Message|textarea');
+        ?>
+    </div>
+</body>
+</html>
 ```
