@@ -3458,6 +3458,11 @@ class Formr
                 
                 # define the method's name
                 $name = 'input_'.$type;
+
+                # add a default value for checkbox or radio
+                if($type == 'checkbox' || $type == 'radio') {
+                    $data['value'] = $data['name'];
+                }
                 
                 # return the input
                 $return .= $this->$name($data);
