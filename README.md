@@ -317,18 +317,16 @@ $form->required = '*';
 
 // check if the form has been submitted
 if($form->submit())
-{
-    // get the values of our form fields
-    $first_name = $form->post('first_name');
-    $last_name = $form->post('last_name');
-    $email = $form->post('email_address', 'Email', 'valid_email');
+{    
+    // make sure our Message field has at least 10 characters
+    $form->validate('Message(min_length[10])');
     
-    // let's email the results...
+    // let's email the form
     $to = 'me@domain.com';
     $from = 'donotreply@domain.com';
     $subject = 'Contact Form Submission';
     
-    // this takes all of the POST values and automatically formats them in an HTML email!
+    // this processes our form, cleans the input, and formats it into an HTML email
     if($form->send_email($to, $subject, 'POST', $from, 'HTML'))
     {
         // email sent; print a thank you message

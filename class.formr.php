@@ -3752,7 +3752,7 @@ class Formr
 
             foreach ($_POST as $key => $value) {
 
-                if ($key != 'submit') {
+                if ($key != 'submit' && $key != 'button') {
 
                     # make sure it's a valid email address
                     if ((strpos(strtolower($key), 'email') !== false) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
