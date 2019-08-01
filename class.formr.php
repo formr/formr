@@ -1512,7 +1512,7 @@ class Formr
     protected function is_not_empty($value)
     {
         # check if value is not empty - including zeros
-        if (!empty($value) || (isset($value) && $value === "0")) {
+        if (!empty($value) || (isset($value) && $value === "0") || (isset($value) && $value === 0)) {
             return true;
         } else {
             return false;
