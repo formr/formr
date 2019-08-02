@@ -3256,7 +3256,7 @@ class Formr
                     $return .= $this->_t(2) . '<option value="' . $key . '" selected="selected">' . $value . '</option>' . $this->_nl(1);
                 }
                 # print selected option on form load
-                elseif (!isset($_POST[$data['name']]) && $data['selected'] == $key || (is_array($data['selected']) && in_array($key, $data['selected']))) {
+                elseif (!isset($_POST[$data['name']]) && $data['selected'] === $key || (is_array($data['selected']) && in_array($key, $data['selected']))) {
                     # populate the field's value (on page load) with the session value
                     if ($this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
                         if ($_SESSION[$this->session][$data['name']] == $key) {
@@ -3269,7 +3269,7 @@ class Formr
                 # print remaining options
                 else {
                     # user has entered a value in the 'values' argument
-                    if (!isset($_POST[$data['name']]) && $data['value'] == $key) {
+                    if (!isset($_POST[$data['name']]) && $data['value'] === $key) {
                         $return .= $this->_t(2) . '<option value="' . $key . '" selected="selected">' . $value . '</option>' . $this->_nl(1);
                     } else {
                         $return .= $this->_t(2) . '<option value="' . $key . '">' . $value . '</option>' . $this->_nl(1);
