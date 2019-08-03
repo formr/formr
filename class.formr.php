@@ -2561,7 +2561,7 @@ class Formr
 
 
             # check the element on initial form load
-            if (!$_POST) {
+            if (!isset($_POST[$data['name']])) {
                 if (!empty($data['selected'])) {
                     if ($data['selected'] == $data['value'] || ($data['selected'] == 'checked' || $data['selected'] == 'selected')) {
                         $return .= ' checked="checked"';
