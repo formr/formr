@@ -2669,14 +2669,10 @@ class Formr
             # insert the closing bracket
             $return .= $this->_html5('>');
         } else {
-            foreach ($data as $key => $value) {
-
-                # build the element
-                $return .= '<input type="hidden" name="' . $key . '" id="' . $key . '" value="' . $value . '"';
-
-                # insert the closing bracket
-                $return .= $this->_html5('>') . $this->_nl(1);
-            }
+            
+            # build the element
+            $return .= '<input type="hidden" name="' . $data['name'] . '" id="' . $data['name'] . '" value="' . $data['value'] . '">';
+         
         }
 
         return $return;
@@ -3634,6 +3630,10 @@ class Formr
         }
 
         # loop through the array and print/process each field value
+
+        # create an empty array outside of looping to store hidden inputs
+        $hidden = array();
+
         foreach ($input as $key => $data) {
 
             # check if it's required
@@ -3641,17 +3641,17 @@ class Formr
 
             # see if the entered values are in a string or an array
             $data = $this->_parse_fastform_values($key, $data);
-
+            
             # tell other methods we're using fastform()
             $data['fastform'] = true;
 
             # print out the form fields
-
-            $hidden = '';
+            
             if ($data['type'] == 'hidden') {
                 # we're putting the hidden fields into an array and
                 # printing them at the end of the form
-                $hidden[] .= $this->input_hidden($data);
+                $hidden[] = $this->input_hidden($data);
+                
             } elseif ($data['type'] == 'label') {
                 $return .= $this->label($data);
             } elseif ($data['type'] == 'radio' || $data['type'] == 'checkbox') {
