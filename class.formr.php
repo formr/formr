@@ -153,7 +153,7 @@ class Formr
             if($wrapper == 'bootstrap') {
                 $this->wrapper = 'bootstrap4';
             }
-
+            
             $wrapper_css = $this->wrapper . '_css';
         }
 
@@ -290,12 +290,12 @@ class Formr
                     # compare current time to time of token expiration
                     if (time() >= $_SESSION['token-expires']) {
                         $this->add_to_errors('Session has timed out. Please refresh the page.');
-
+                        
                         return false;
                     }
                 } else {
                     $this->add_to_errors('Token mismatch. Please refresh the page.');
-
+                    
                     return false;
                 }
             }
@@ -424,16 +424,16 @@ class Formr
             $return['open'] = $this->wrapper[0];
             $return['close'] = $this->wrapper[1];
             return $return;
-
+        
         } else {
 
             # use a pre-defined wrapper
             if(! in_array($this->wrapper, ['ul', 'ol', 'dl', 'p', 'div'])) {
                 # set the wrapper's name
                 $return['type'] = $this->wrapper;
-
+                
                 $return['open'] = $return['close'] = null;
-
+                
                 return $return;
             }
 
@@ -501,7 +501,6 @@ class Formr
             return $wrapper->default_wrapper($wrapper_context, $element, $data);
 
         }
-
     }
 
     protected function _html5($str = '')
@@ -1933,7 +1932,7 @@ class Formr
                 } else {
                     $this->errors[$name] = $label . ' must only contain letters and numbers';
                 }
-
+                
                 return false;
             }
 
@@ -2098,7 +2097,7 @@ class Formr
     public function validate($string)
     {
         # even easier and more automatic way to process and validate your form fields
-
+        
         # break apart the comma delimited string of form labels
         $parts = explode(',', $string);
 
@@ -2109,20 +2108,20 @@ class Formr
             $key = strtolower(str_replace(' ', '_', trim($label)));
 
             $rules = null;
-
+            
             # we are adding validation rules to this field
             // if(strpos(strtolower($label), '||') !== false)
             if(preg_match( '!\(([^\)]+)\)!', $label, $match))
-            {
+            {                
                 # get our field's validation rule(s)
                 $rules = $match[1];
-
+                
                 # get the text before the double pipe for our new label
                 $explode = explode('(', $label, 2);
-
+                
                 # set our new label text
                 $label = $explode[0];
-
+                
                 # set our field's name
                 $key = strtolower(str_replace(' ', '_', trim($label)));
             }
@@ -2361,7 +2360,7 @@ class Formr
 
         return $this->_button($data);
     }
-
+    
     public function input_button_submit($data = '', $label = '', $value = '', $id = '', $string = '')
     {
         if (!is_array($data)) {
@@ -3431,14 +3430,14 @@ class Formr
     public function create($string, $form = false)
     {
         # create and wrap inputs using labels as our keys
-
+        
         # set our $return var for later
         $return = null;
 
         if($form) {
             $return .= $this->form_open();
         }
-
+        
         # break apart the comma delimited string of form labels
         $parts = explode(',', $string);
 
@@ -3461,16 +3460,16 @@ class Formr
             elseif(strpos(strtolower($label), '|') !== false) {
                 # we want to use an specific input type
                 $type = substr($label, strpos($label, '|') + 1);
-
+                
                 # correct our label text by removing the | and input type
                 $data['label'] = str_replace('|'.$type, '', $label);
 
                 # correct our input's name
                 $data['name'] = strtolower(str_replace(' ', '_', trim($data['label'])));
-
+                
                 # correct our input's ID
                 $data['id'] = strtolower(str_replace(' ', '_', trim($data['label'])));
-
+                
                 # define the method's name
                 $name = 'input_'.$type;
 
@@ -3478,7 +3477,7 @@ class Formr
                 if($type == 'checkbox' || $type == 'radio') {
                     $data['value'] = $data['name'];
                 }
-
+                
                 # return the input
                 $return .= $this->$name($data);
             }
@@ -3847,7 +3846,7 @@ class Formr
             return $ip_address;
         }
     }
-
+    
     public function make_id($data)
     {
         # create an ID from the element's name attribute if an ID was not specified
@@ -3865,7 +3864,7 @@ class Formr
             return $this->required_indicator;
         }
     }
-
+    
     public function type_is_checkbox($data)
     {
         # determines if the element is a checkbox or radio
@@ -3875,7 +3874,7 @@ class Formr
 
         return false;
     }
-
+    
     public function is_array($data)
     {
         # determines is the element's name is an array
@@ -3885,7 +3884,7 @@ class Formr
 
         return false;
     }
-
+    
     public function is_in_brackets($data)
     {
         if(mb_substr($data, 0, 1) == '[') {
@@ -3926,7 +3925,7 @@ class Formr
     private function _suppress_validation_errors($data)
     {
         # suppress Formr's default validation error messages and only show user-defined messages
-
+        
         if(array_key_exists('string', $data) && $this->custom_validation_messages) {
             return true;
         }
