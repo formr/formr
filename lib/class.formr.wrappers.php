@@ -43,6 +43,86 @@ class Wrapper extends Formr
         return $array;
     }
 
+    # default field wrapper
+    public function default_wrapper($wrapper, $element, $data) {
+        $return = null;
+
+        # optional: add a comment for easier debugging in the html
+        $return .= $this->_nl(2);
+        if (in_array($data['type'], $this->_input_types('checkbox'))) {
+            $return .= $this->_comment($data['id']);
+        } else {
+            $return .= $this->_comment($data['name']);
+        }
+
+        $return .= $this->_nl(1);
+
+        # the types of html tags & lists we'll accept. note: this does not include bootstrap or other frameworks
+        $accepted_tags = array('p', 'div', 'ul', 'ol', 'dl');
+        $list_tags = array('ul', 'ol', 'dl');
+
+        if ($wrapper['open']) {
+            # don't print if using ul, li, dl
+            if (!in_array($wrapper['type'], $list_tags)) {
+                $return .= $wrapper['open'];
+            }
+            $return .= $this->_nl(1);
+        }
+
+        # add the list tag if using fastForm
+        if (!empty($data['fastform'])) {
+            if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
+                $return .= '<li>';
+            }
+            if ($wrapper['type'] == 'dl') {
+                $return .= '<dt>';
+            }
+        }
+
+        # checkboxes and radios
+        if (in_array($data['type'], $this->_input_types('checkbox'))) {
+            # wrap checkboxes and radios in a label because it's the decent thing to do
+            if (!empty($data['label'])) {
+                $return .= $this->label_open($data['value'], $data['label'], $data['id']) . "\n\t";
+            }
+            $return .= $element;
+            if (!empty($data['label'])) {
+                $return .= ' ' . $this->label_close($data);
+            }
+        } else {
+            # everything else
+            if (!empty($data['label'])) {
+                $return .= $this->label($data['name'], $data['label'], $data['id']);
+                $return .= $this->_nl(1);
+            }
+            # add the element
+            $return .= $element;
+        }
+
+        # add a line break
+        $return .= $this->_nl(1);
+
+        # close the list tag if using fastForm
+        if (!empty($data['fastform'])) {
+            if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
+                $return .= '</li>';
+            }
+            if ($wrapper['type'] == 'dl') {
+                $return .= '</dt>';
+            }
+        }
+
+        # close the wrapper
+        if ($wrapper['close']) {
+            # don't print if using ul, li, dl
+            if (!in_array($wrapper['type'], $list_tags)) {
+                $return .= $wrapper['close'];
+            }
+            $return .= $this->_nl(1);
+        }
+
+        return $return;
+    }
 
     # bootstrap 3 css classes
     public static function bootstrap3_css($key = '')
