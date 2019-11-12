@@ -214,7 +214,6 @@ class Formr
             'Form method' => '',
             'Charset' => 'utf-8',
             'HTML5' => 'FALSE',
-            'HTML5' => 'FALSE',
             'All Fields Required' => 'FALSE',
             'Link to Error' => 'FALSE',
             'Inline Validation' => 'FALSE',
