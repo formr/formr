@@ -588,26 +588,6 @@ class Formr
         }
     }
 
-    protected function _html5($str = '')
-    {
-        # define HTML5 specific items here
-        # TODO: this is outdated - everything should be HTML5 at this point...
-
-        if ($str == '>') {
-            # define the form element's closing bracket
-            if ($this->html5) {
-                return '>';
-            } else {
-                return '/>';
-            }
-        }
-
-        if ($str == 'required' && $this->html5) {
-            # HTML5 'required' field attribute
-            return 'required';
-        }
-    }
-
     protected function _input_types($type)
     {
         # defines input types for use in other methods
@@ -2618,11 +2598,11 @@ class Formr
 
         # for HTML5 browsers
         if ($this->_check_required($data['name']) && $data['type'] != 'submit' && $data['type'] != 'reset') {
-            $return .= ' ' . $this->_html5('required');
+            $return .= ' required';
         }
 
         # insert the closing bracket
-        $return .= $this->_html5('>');
+        $return .= '>';
 
         # if using inline validation
         $return .= $this->inline($data['name']);
@@ -2666,7 +2646,7 @@ class Formr
             $return = '<input type="hidden" name="' . $data . '" id="' . $data . '" value="' . $value . '"';
 
             # insert the closing bracket
-            $return .= $this->_html5('>');
+            $return .= '>';
         } else {
             foreach ($data as $key => $value) {
 
@@ -2674,7 +2654,7 @@ class Formr
                 $return .= '<input type="hidden" name="' . $key . '" id="' . $key . '" value="' . $value . '"';
 
                 # insert the closing bracket
-                $return .= $this->_html5('>') . $this->_nl(1);
+                $return .= '>' . $this->_nl(1);
             }
         }
 
@@ -3119,7 +3099,7 @@ class Formr
 
         # for HTML5 browsers
         if ($this->_check_required($data['name'], $data)) {
-            $return .= ' ' . $this->_html5('required');
+            $return .= ' required';
         }
 
         # close the opening tag
@@ -3209,7 +3189,7 @@ class Formr
 
         # for HTML5 browsers
         if ($this->_check_required($data['name'], $data)) {
-            $return .= ' ' . $this->_html5('required');
+            $return .= ' required';
         }
 
         # close the opening tag
