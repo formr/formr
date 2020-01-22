@@ -2561,15 +2561,15 @@ class Formr
 
 
             # check the element on initial form load
-            if (!isset($_POST[$data['name']])) {
+
+            $pname = rtrim($data['name'], '[]');
+            if (!isset($_POST[$pname])) {
                 if (!empty($data['selected'])) {
                     if ($data['selected'] == $data['value'] || ($data['selected'] == 'checked' || $data['selected'] == 'selected')) {
                         $return .= ' checked="checked"';
                     }
                 }
             } else {
-
-                $pname = rtrim($data['name'], '[]');
 
                 # check the element after the form has been posted
                 if (isset($_POST[$pname]) && $_POST[$pname] == $data['value']) {
@@ -3256,7 +3256,7 @@ class Formr
                     $return .= $this->_t(2) . '<option value="' . $key . '" selected="selected">' . $value . '</option>' . $this->_nl(1);
                 }
                 # print selected option on form load
-                elseif (!isset($_POST[$data['name']]) && $data['selected'] === $key || (is_array($data['selected']) && in_array($key, $data['selected']))) {
+                elseif (!isset($_POST[$data['name']]) && $data['selected'] == $key || (is_array($data['selected']) && in_array($key, $data['selected']))) {
                     # populate the field's value (on page load) with the session value
                     if ($this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
                         if ($_SESSION[$this->session][$data['name']] == $key) {
