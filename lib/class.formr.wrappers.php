@@ -308,7 +308,8 @@ class Wrapper extends Formr
         }
 
         # see if we're in a checkbox array...
-        if ($this->formr->is_array($data['name'])) {
+        $pname = rtrim($data['name'],'[]');
+        if ($this->formr->is_array($pname)) {
             # we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
             $return .= $this->t.'<label for="'.$data['id'].'">'.$data['label'].$this->nl;
         } else {
