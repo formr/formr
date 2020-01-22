@@ -2505,7 +2505,7 @@ class Formr
 
         if (!in_array($data['type'], $this->_input_types('checkbox'))) {
 
-            if (isset($_POST[$data['name']]) && !empty($_POST[$data['name']]) && $data['type'] != 'password') {
+            if (isset($_POST[$data['name']]) && $data['type'] != 'password') {
 
                 # run the data through the clean_value function and clean it
                 if ($this->session_values && $this->session) {
