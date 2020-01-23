@@ -312,7 +312,7 @@ class Formr
 
         $key = trim($key, '[]');
 
-        if (in_array($key, $this->errors)) {
+        if (array_key_exists($key, $this->errors)) {
             return true;
         }
 
