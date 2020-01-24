@@ -327,7 +327,7 @@ class Wrapper extends Formr
         }
 
         # add a required field indicator (*)
-        if ($this->formr->_check_required($data['name']) && $this->formr->is_not_empty($data['label'])) {
+        if ($this->formr->_check_required($data['name']) && $data['type'] != 'submit' && $this->formr->is_not_empty($data['label'])) {
             if (! $this->formr->type_is_checkbox($data)) {
                 $return .= $this->formr->required_indicator;
             }
