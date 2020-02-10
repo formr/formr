@@ -119,7 +119,7 @@ echo $form->form_close();
     </div>
     <div id="_age" class="form-group">
         <label class="control-label" for="age">
-            Email address
+            Age
         </label>
         <input type="number" name="age" id="age" class="form-control">
     </div>
