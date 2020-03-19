@@ -471,38 +471,17 @@ class Formr
     {
         # wraps and formats field elements
         # $element is the field element in HTML
-        # $data is the $data array containing the element's arguments
+        # $data is the $data array containing the element's attributes
 
-        $return = null;
+        # get the wrapper type
+        $wrapper_context = $this->_wrapper_type();
 
-
-        # get the wrapper type, plus open and close tags
-        $wrapper = $this->_wrapper_type();
-
-
-        # the types of html tags & lists we'll accept. note: this does not include bootstrap or other frameworks
-        $accepted_tags = array('p', 'div', 'ul', 'ol', 'dl');
-        $list_tags = array('ul', 'ol', 'dl');
-
-
-        # optional: add a comment for easier debugging in the html
-        $return .= $this->_nl(2);
-        if (in_array($data['type'], $this->_input_types('checkbox'))) {
-            $return .= $this->_comment($data['id']);
-        } else {
-            $return .= $this->_comment($data['name']);
-        }
-
-        $return .= $this->_nl(1);
-
-
-        # user wants to enclose the element in a custom field wrapper (such as bootstrap) from the wrapper class
-
+        # enclose the element in a custom field wrapper (such as bootstrap) from the Wrapper class
         if (!empty($this->wrapper) && !in_array($this->wrapper, $this->default_wrapper_types)) {
 
             # dynamically build the method's name...
             # $method = the method's name in the Wrapper class
-            $method = $wrapper['type'];
+            $method = $wrapper_context['type'];
 
             $wrapper = new Wrapper($this);
             
@@ -510,73 +489,10 @@ class Formr
         
         } else {
 
-            # default formr wrapper
-
-            # TODO
-            # This needs to be moved to the Wrapper class at some point...
-
-            # open the wrapper
-            if ($wrapper['open']) {
-                # don't print if using ul, li, dl
-                if (!in_array($wrapper['type'], $list_tags)) {
-                    $return .= $wrapper['open'];
-                }
-                $return .= $this->_nl(1);
-            }
-
-            # add the list tag if using fastForm
-            if (!empty($data['fastform'])) {
-                if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
-                    $return .= '<li>';
-                }
-                if ($wrapper['type'] == 'dl') {
-                    $return .= '<dt>';
-                }
-            }
-
-            # checkboxes and radios
-            if (in_array($data['type'], $this->_input_types('checkbox'))) {
-                # wrap checkboxes and radios in a label because it's the decent thing to do
-                if (!empty($data['label'])) {
-                    $return .= $this->label_open($data['value'], $data['label'], $data['id']) . "\n\t";
-                }
-                $return .= $element;
-                if (!empty($data['label'])) {
-                    $return .= ' ' . $this->label_close($data);
-                }
-            } else {
-                # everything else
-                if (!empty($data['label'])) {
-                    $return .= $this->label($data['name'], $data['label'], $data['id']);
-                    $return .= $this->_nl(1);
-                }
-                # add the element
-                $return .= $element;
-            }
-
-            # add a line break
-            $return .= $this->_nl(1);
-
-            # close the list tag if using fastForm
-            if (!empty($data['fastform'])) {
-                if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
-                    $return .= '</li>';
-                }
-                if ($wrapper['type'] == 'dl') {
-                    $return .= '</dt>';
-                }
-            }
-
-            # close the wrapper
-            if ($wrapper['close']) {
-                # don't print if using ul, li, dl
-                if (!in_array($wrapper['type'], $list_tags)) {
-                    $return .= $wrapper['close'];
-                }
-                $return .= $this->_nl(1);
-            }
-
-            return $return;
+          # enclose the element in the default wrapper
+          $wrapper = new Wrapper($this);
+          
+          return $wrapper->default_wrapper($wrapper_context, $element, $data);
         }
     }
 
