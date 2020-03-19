@@ -2618,7 +2618,7 @@ class Formr
         }
 
         if (!empty($data['multiple'])) {
-            $return .= ' multiple="multiple"';
+            $return .= ' multiple';
         }
 
         # add user-entered string and additional attributes
@@ -3194,8 +3194,8 @@ class Formr
         }
 
         # if we're selecting multiple items
-        if (is_array($data['selected'])) {
-            $return .= ' multiple="multiple"';
+        if (is_array($data['selected']) || isset($data['multiple'])) {
+            $return .= ' multiple';
         }
 
         # add ID
@@ -3330,7 +3330,7 @@ class Formr
         return Dropdowns::$menu();
     }
 
-    public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '')
+    public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $multiple = false)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3347,7 +3347,17 @@ class Formr
         } else {
             $data['type'] = 'select';
         }
+
+        if($multiple == true) {
+            $data['multiple'] = 'multiple';
+        }
+
         return $this->_create_select($data);
+    }
+
+    public function input_select_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '')
+    {
+        return $this->input_select($data, $label, $value, $id, $string, $inline, $selected, $options, true);
     }
 
 
