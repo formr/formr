@@ -1997,7 +1997,7 @@ class Formr
 
             # sanitize integer
             if ($rule == 'sanitize_int') {
-                $post = filter_var($post, FILTER_SANITIZE_INT);
+                $post = filter_var($post, FILTER_SANITIZE_NUMBER_INT);
             }
 
             # md5
@@ -3887,7 +3887,7 @@ class Formr
     public function csrf($timeout = 3600)
     {
         # add csrf protection
-        #remember to put session_start() at the top of your script!
+        # remember to put session_start() at the top of your script!
 
         if (! $this->submit())
         {
