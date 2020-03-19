@@ -87,9 +87,6 @@ class Formr
     # use session values in form fields on page load
     public $session_values = null;
 
-    # HTML5 is on by default
-    public $html5 = true;
-
     # comment each form field for easier debugging
     public $comments = false;
 
@@ -213,8 +210,6 @@ class Formr
             'Form name' => '',
             'Form method' => '',
             'Charset' => 'utf-8',
-            'HTML5' => 'FALSE',
-            'HTML5' => 'FALSE',
             'All Fields Required' => 'FALSE',
             'Link to Error' => 'FALSE',
             'Inline Validation' => 'FALSE',
@@ -235,10 +230,6 @@ class Formr
         $info['Form method'] = strtoupper($this->method);
 
         $info['Charset'] = $this->charset;
-
-        if ($this->html5 == true) {
-            $info['HTML5'] = 'TRUE';
-        }
 
         if ($this->required === '*') {
             $info['All Fields Required'] = 'TRUE';
@@ -586,26 +577,6 @@ class Formr
             }
 
             return $return;
-        }
-    }
-
-    protected function _html5($str = '')
-    {
-        # define HTML5 specific items here
-        # TODO: this is outdated - everything should be HTML5 at this point...
-
-        if ($str == '>') {
-            # define the form element's closing bracket
-            if ($this->html5) {
-                return '>';
-            } else {
-                return '/>';
-            }
-        }
-
-        if ($str == 'required' && $this->html5) {
-            # HTML5 'required' field attribute
-            return 'required';
         }
     }
 
@@ -2624,13 +2595,13 @@ class Formr
         # add user-entered string and additional attributes
         $return .= $this->_attributes($data);
 
-        # for HTML5 browsers
+        # if required
         if ($this->_check_required($data['name']) && $data['type'] != 'submit' && $data['type'] != 'reset') {
-            $return .= ' ' . $this->_html5('required');
+            $return .= ' required';
         }
 
         # insert the closing bracket
-        $return .= $this->_html5('>');
+        $return .= '>';
 
         # if using inline validation
         $return .= $this->inline($data['name']);
@@ -2674,7 +2645,7 @@ class Formr
             $return = '<input type="hidden" name="' . $data . '" id="' . $data . '" value="' . $value . '"';
 
             # insert the closing bracket
-            $return .= $this->_html5('>');
+            $return .= '>';
         } else {
             # build the element
             $return .= '<input type="hidden" name="' . $data['name'] . '" id="' . $data['name'] . '" value="' . $data['value'] . '">'; 
@@ -2858,7 +2829,7 @@ class Formr
 
 
 
-    # HTML5 FIELD ELEMENTS
+    # ADDITIONAL FIELD ELEMENTS
     public function input_color($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -3119,9 +3090,9 @@ class Formr
         # add user-entered string and additional attributes
         $return .= ' ' . $this->_attributes($data);
 
-        # for HTML5 browsers
+        # if required
         if ($this->_check_required($data['name'], $data)) {
-            $return .= ' ' . $this->_html5('required');
+            $return .= ' required';
         }
 
         # close the opening tag
@@ -3209,9 +3180,9 @@ class Formr
         # add user-entered string and additional attributes
         $return .= ' ' . $this->_attributes($data);
 
-        # for HTML5 browsers
+        # if required
         if ($this->_check_required($data['name'], $data)) {
-            $return .= ' ' . $this->_html5('required');
+            $return .= ' required';
         }
 
         # close the opening tag
