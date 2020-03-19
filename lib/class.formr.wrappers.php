@@ -26,6 +26,7 @@ class Wrapper extends Formr
             'button' => 'button',
             'warning' => 'warning',
             'error' => 'error',
+            'file' => 'file',
             'text-error' => 'text-error',
             'success' => 'success',
             'checkbox' => 'checkbox',

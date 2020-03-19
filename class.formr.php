@@ -1218,7 +1218,7 @@ class Formr
 
         if (!empty($_FILES[$name]['tmp_name'])) {
 
-            if (count($_FILES[$name]['tmp_name']) > 1) {
+            if (is_array($_FILES[$name]['tmp_name']) && count($_FILES[$name]['tmp_name']) > 1) {
 
                 # we're dealing with multiple uploads
 
@@ -1240,6 +1240,7 @@ class Formr
                 }
 
                 return $files;
+            
             } else {
 
                 # we're dealing with a single upload
@@ -2505,6 +2506,11 @@ class Formr
 
         if (!in_array($data['type'], $this->_input_types('checkbox'))) {
 
+            # an ID wasn't specified, let's create one using the name
+            if (empty($data['id'])) {
+                $data['id'] = $data['name'];
+            }
+            
             if (isset($_POST[$data['name']]) && !empty($_POST[$data['name']]) && $data['type'] != 'password') {
 
                 # run the data through the clean_value function and clean it
@@ -2538,6 +2544,7 @@ class Formr
                     }
                 }
             }
+        
         } else {
 
             # checkboxes and radios..
@@ -2669,14 +2676,8 @@ class Formr
             # insert the closing bracket
             $return .= $this->_html5('>');
         } else {
-            foreach ($data as $key => $value) {
-
-                # build the element
-                $return .= '<input type="hidden" name="' . $key . '" id="' . $key . '" value="' . $value . '"';
-
-                # insert the closing bracket
-                $return .= $this->_html5('>') . $this->_nl(1);
-            }
+            # build the element
+            $return .= '<input type="hidden" name="' . $data['name'] . '" id="' . $data['name'] . '" value="' . $data['value'] . '">'; 
         }
 
         return $return;
@@ -3394,7 +3395,7 @@ class Formr
             $return = '<a name="' . $data['name'] . '"></a>';
         }
 
-        if ($this->is_not_empty($data['id'])) {
+        if ($this->is_not_empty($data['id']) && !$this->_input_types('checkbox')) {
             $data['id'] = $data['name'];
         }
 
@@ -3633,6 +3634,9 @@ class Formr
             $return .= $wrapper['open'];
         }
 
+        # create an empty array outside of looping to store hidden inputs
+        $hidden = [];
+
         # loop through the array and print/process each field value
         foreach ($input as $key => $data) {
 
@@ -3646,16 +3650,19 @@ class Formr
             $data['fastform'] = true;
 
             # print out the form fields
-
-            $hidden = '';
-            if ($data['type'] == 'hidden') {
+            
+            if ($data['type'] == 'hidden')
+            {
                 # we're putting the hidden fields into an array and
                 # printing them at the end of the form
-                $hidden[] .= $this->input_hidden($data);
-            } elseif ($data['type'] == 'label') {
+                $hidden = $this->input_hidden($data);
+            }
+            elseif ($data['type'] == 'label')
+            {
                 $return .= $this->label($data);
-            } elseif ($data['type'] == 'radio' || $data['type'] == 'checkbox') {
-
+            }
+            elseif ($data['type'] == 'radio' || $data['type'] == 'checkbox')
+            {
                 if ($this->is_in_brackets($data['value'])) {
 
                     # we have a radio/checkbox array
