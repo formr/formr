@@ -7,7 +7,7 @@
  *
  * https://formr.github.io
  *
- * copyright(c) 2013-2019 Tim Gavin
+ * copyright(c) 2013-2020 Tim Gavin
  * https://github.com/timgavin
  *
  * requires php >= 5.6 and gd2 (for uploads)
@@ -194,7 +194,7 @@ class Formr
         }
     }
 
-    // alias of printr() for Laravel users
+    # alias of printr() for Laravel users
     function dd($data)
     {
         return $this->printr($data);
@@ -267,7 +267,7 @@ class Formr
         echo '<h3>Form Settings</h3><tt>' . $return . '</tt><br><br><br>';
     }
 
-    public function submit($submit = 'submit')
+    public function submit()
     {
         # checks if submit button was clicked
         if ($_SERVER['REQUEST_METHOD'] == 'POST')
@@ -284,7 +284,7 @@ class Formr
                         
                         return false;
                     }
-                } else {
+                  } else {
                     $this->add_to_errors('Token mismatch. Please refresh the page.');
                     
                     return false;
@@ -295,6 +295,11 @@ class Formr
         }
 
         return false;
+    }
+
+    # alias of submit()
+    public function submitted() {
+        return $this->submit();
     }
 
     public function in_errors($key)
@@ -547,7 +552,6 @@ class Formr
 
             # add the errors class
             if ($this->in_errors($data['name']) && $this->wrapper != 'bootstrap') {
-                //$classes .= $this->error_class.' ';
                 $classes .= $this->controls['text-error'] . ' ';
             }
 
@@ -1121,7 +1125,7 @@ class Formr
                         $handle['type'] = $_FILES[$name]['type'][$i];
                         $handle['tmp_name'] = $_FILES[$name]['tmp_name'][$i];
 
-                        // put each array into the $files array
+                        # put each array into the $files array
                         array_push($files, $this->_process_image($handle));
                     }
                 }
@@ -1416,7 +1420,7 @@ class Formr
 
         $return = null;
 
-        // flash messages
+        # flash messages
         if (isset($_SESSION['flash'])) {
 
             if (!empty($_SESSION['flash']['success'])) {
@@ -2084,7 +2088,6 @@ class Formr
             $rules = null;
             
             # we are adding validation rules to this field
-            // if(strpos(strtolower($label), '||') !== false)
             if(preg_match( '!\(([^\)]+)\)!', $label, $match))
             {                
                 # get our field's validation rule(s)

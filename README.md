@@ -82,7 +82,6 @@ echo $form->create_form('Name, Email, Comments|textarea');
 </form>
 ```
 
-
 ## Basic Example with More Control
 
 Using the `create()` method tells Formr you want control over adding the form tags and submit button yourself. Otherwise it's the same as the Basic Example above.
@@ -136,10 +135,9 @@ echo $form->form_close();
 </form>
 ```
 
-
 ## Pre-Built Forms
 
-Formr has several common forms already baked in, and it's easy to create and save your own.
+Formr has several common forms already baked in, and it's really easy to create and save your own.
 
 ```php
 $form = new Formr();
@@ -153,22 +151,22 @@ echo $form->fastform('contact');
     <fieldset>
         <label for="fname">
             First name:
-        </label> 
+        </label>
         <input type="text" name="fname" id="fname" class="input">
 
         <label for="lname">
             Last name:
-        </label> 
+        </label>
         <input type="text" name="lname" id="lname" class="input">
 
         <label for="email">
             Email:
-        </label> 
+        </label>
         <input type="email" name="email" id="email" class="input">
 
         <label for="comments">
             Comments:
-        </label> 
+        </label>
         <textarea name="comments" id="comments" class="input" ></textarea>
 
         <input type="submit" name="submit" value="Submit" id="submit">
@@ -180,7 +178,7 @@ echo $form->fastform('contact');
 
 ```php
 $data = [
-    'text' => 'fname, First name:',
+    'text' => 'name, Name:',
     'email' => 'email, Email:',
     'checkbox' => 'agree, I Agree',
 ];
@@ -194,26 +192,26 @@ echo $form->fastform($data);
 ```html
 <form action="/index.php" method="post" accept-charset="utf-8">
     <fieldset>
-        <div id="_fname" class="form-group">
-            <label class="control-label" for="fname">
-                First name:
+        <div id="_name" class="form-group">
+            <label class="control-label" for="name">
+                Name:
             </label>
-            <input type="text" name="fname" class="form-control" id="fname">
+            <input type="text" name="name" class="form-control" id="name">
         </div>
-        
+
         <div id="_email" class="form-group">
             <label class="control-label" for="email">
                 Email:
             </label>
             <input type="email" name="email" class="form-control" id="email">
         </div>
-        
+
         <div id="_agree" class="checkbox">
             <label for="agree">
                 <input type="checkbox" name="agree" value="agree" id="agree"> I Agree
             </label>
         </div>
-        
+
         <div id="_submit" class="form-group">
             <label class="sr-only" for="submit"></label>
             <input type="submit" name="submit" value="Submit" id="submit" class="btn">
@@ -222,13 +220,13 @@ echo $form->fastform($data);
 </form>
 ```
 
-## Build Forms Your Way
+## Build Forms in HTML
 
 You have full control over how you build your forms...
 
 ```html
 <div class="my-wrapper-class">
-    <?php echo $form->input_text('first_name', 'First name'); ?>
+    <?php echo $form->input_text('name', 'Name'); ?>
 </div>
 
 <div class="my-wrapper-class">
@@ -240,10 +238,10 @@ You have full control over how you build your forms...
 
 ```html
 <div class="my-wrapper-class">
-    <label for="first_name">
-        First name
+    <label for="name">
+        Name
     </label>
-    <input type="text" name="first_name" id="first_name">
+    <input type="text" name="name" id="name">
 </div>
 
 <div class="my-wrapper-class">
@@ -254,25 +252,37 @@ You have full control over how you build your forms...
 </div>
 ```
 
+## Retrieving POST Values
+
+It's super easy to retrieve your `POST` values and assign them to variables!
+
+```php
+$name = $form->post('name');
+$email = $form->post('email');
+```
+
 ## Validation
 
 #### Formr can easly process and validate your forms
 
-Like the `create()` method, we can pass a list of our form labels to the `validate()` method, which will get the POSTed values of our form fields and put them into an array. If your field name is `email`, the `valid_email` validation rule will be applied automatically.
+Like the `create()` method, we can pass a list of our form labels to the `validate()` method, which will get the `POST` values of our form fields and put them into an array. If your field name is `email`, a `valid_email` validation rule will be applied automatically!
 
 #### Basic usage
 
 ```php
 $form->validate('Name, Email, Comments');
 ```
-Let's make sure the form was submitted, then get the value of our email field.
+
+Let's make sure the form was submitted, then we'll validate and get the value of our email field from the array.
 
 ```php
-if($form->submit()) {
+if($form->submitted()) {
     $data = $form->validate('Name, Email, Comments');
     $email = $data['email'];
 }
 ```
+
+#### Adding Rules
 
 Let's make sure the `Name` field is a minimum of 3 characters and a maximum of 30 by adding our validation rules wrapped in parentheses.
 
@@ -282,9 +292,9 @@ $form->validate('Name(min_length[3]|max_length[30]), Email, Comments');
 
 ## Fine-Tune Your Validation
 
-Of course you can get more in-depth with your validation too. The following is a very basic example, however Formr's validation methods are quite powerful and include among other things comparing values between fields and hashing using `bcrypt()`
+Of course you can get more in-depth with your validation, and even add custom error messaging! The following is a basic example, however Formr's validation methods are quite powerful and include, among other things, comparing values between fields and hashing using `bcrypt()`
 
-Let's get the `POST` value of an `email` field.
+Let's get the value of our `email` field using the `post()` method.
 
 ```php
 $email = $form->post('email');
@@ -299,7 +309,7 @@ $email = $form->post('email','Email','valid_email');
 We can take that a step further and enter a full custom error message in the second parameter to make our forms even more user-friendly.
 
 ```php
-$form->post('email','Email|Please enter a valid email address','valid_email');
+$email = $form->post('email','Email|Please enter a valid email address','valid_email');
 ```
 
 ## Full Example
@@ -309,23 +319,23 @@ $form->post('email','Email|Please enter a valid email address','valid_email');
 // include the Formr class
 require_once 'Formr/class.formr.php';
 
-// create our form object and use Bootstrap as our form wrapper
+// create our form object and use Bootstrap 4 as our form wrapper
 $form = new Formr('bootstrap');
 
 // make all fields required
 $form->required = '*';
 
 // check if the form has been submitted
-if($form->submit())
-{    
+if($form->submitted())
+{
     // make sure our Message field has at least 10 characters
     $form->validate('Message(min_length[10])');
-    
+
     // let's email the form
     $to = 'me@domain.com';
     $from = 'donotreply@domain.com';
     $subject = 'Contact Form Submission';
-    
+
     // this processes our form, cleans the input, and formats it into an HTML email
     if($form->send_email($to, $subject, 'POST', $from, 'HTML'))
     {
