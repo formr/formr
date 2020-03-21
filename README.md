@@ -25,7 +25,24 @@ If you find Formr useful, please consider starring the project and/or making a [
 - And a ton of other cool stuff!
 
 ## Installation
-Download the .zip file and place the Formr folder in your project, then include the Formr class and create a new form object; that's it!
+
+#### Composer
+Run the following command to install Formr with Composer
+
+```bash
+composer require formr/formr
+```
+
+Then include the `autoload.php` file and create a new form object.
+
+```php
+require_once 'vendor/autoload.php';
+$form = new Formr();
+```
+
+#### Download
+
+Download the .zip file and place the Formr folder in your project, then include the Formr class and create a new form object.
 
 ```php
 require_once 'Formr/class.formr.php';
@@ -33,6 +50,7 @@ $form = new Formr();
 ```
 
 ## Bootstrap Ready
+
 Bootstrap form classes are ready to go! Just tell Formr you want to use Bootstrap when creating a new form and Formr will take care of the rest.
 
 ```php
@@ -41,6 +59,7 @@ $form = new Formr('bootstrap');
 ```
 
 ## Basic Example
+
 Simply enter your form fields as a comma delimited string and Formr will build the form, complete with opening and closing tags, a submit button, and email validation - plus all values retained upon `POST`. Easy!
 
 ```php
