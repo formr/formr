@@ -3787,9 +3787,15 @@ class Formr
                         $key = str_replace('_', ' ', ltrim($key, '_'));
                     }
 
+                    # if key is an array, print all values
+
+                    if (is_array($value)) {
+                        $value = implode(', ',$value);
+                    }
+
                     if ($html) {
                         $msg .= "<tr>\r\n";
-                        $msg .= "\t<td>$key</td>\r\n";
+                        $msg .= "\t<td><strong>$key:</strong></td>\r\n";
                         $msg .= "\t<td>" . $this->_clean_value($value) . "</td>\r\n";
                         $msg .= "</tr>\r\n";
                     } else {
