@@ -986,22 +986,25 @@ class Formr
     protected function _check_upload_accepted_types($handle)
     {
         # get the accepted file types
-        # we can check either the extension or the mime type, depending on whta the user entered
+        # we can check either the extension or the mime type, depending on what the user entered
 
         if (!$this->_upload_accepted_types() && !$this->_upload_accepted_mimes()) {
             $this->errors['accepted-types'] = 'Oops! You must specify the allowed file types using either $upload_accepted_types or $upload_accepted_mimes.';
+            return false;
         }
 
         # see if it's in the accepted upload types
         if ($this->upload_accepted_types && !in_array($handle['ext'], $this->_upload_accepted_types())) {
             $this->errors['accepted-types'] = 'Oops! The file was not uploaded because it is in an unsupported file type.';
+            return false;
         }
 
-        $parts = getimagesize($handle['tmp_name']);
+        $parts = @getimagesize($handle['tmp_name']);
 
         # see if it's in the accepted mime types
         if ($this->upload_accepted_mimes && !in_array($parts['mime'], $this->_upload_accepted_mimes())) {
             $this->errors['accepted-types'] = 'Oops! The file was not uploaded because it is an unsupported mime type.';
+            return false;
         }
 
         return true;
