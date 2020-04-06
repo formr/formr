@@ -1,7 +1,6 @@
 {
     "name": "formr/formr",
     "description": "Formr is a PHP micro-framework which helps you build and validate forms quickly, painlessly, and without all the messy overhead.",
-    "version": "1.1",
     "type": "library",
     "license": "GPL-2.0-only",
     "require": {
