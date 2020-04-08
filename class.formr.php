@@ -2385,16 +2385,17 @@ class Formr
         # open the element
         $return = '<input';
 
-        # populate the field's value (on page load) with the session value
-        if ($data['value'] == '' && $this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
-            $data['value'] = $_SESSION[$this->session][$data['name']];
-        }
 
         # if there are form errors, let's insert the posted value into
         # the array so the user doesn't have to enter the value again.
         # also, don't store passwords; always make the user re-type the password.
 
         if (!in_array($data['type'], $this->_input_types('checkbox'))) {
+
+            # populate the field's value (on page load) with the session value
+            if ($data['value'] == '' && $this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
+                $data['value'] = $_SESSION[$this->session][$data['name']];
+            }
 
             # an ID wasn't specified, let's create one using the name
             if (empty($data['id'])) {
@@ -2438,6 +2439,11 @@ class Formr
         } else {
 
             # checkboxes and radios..
+
+            # check the radio or checkbox (on page load) if field's value equals the session value
+            if ($this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']]) && $data['value'] == $_SESSION[$this->session][$data['name']]) {
+                $data['selected'] ='checked';
+            }
 
             # an ID wasn't specified, let's create one using the value
             if (empty($data['id'])) {
