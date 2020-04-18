@@ -3555,7 +3555,7 @@ class Formr
             {
                 # we're putting the hidden fields into an array and
                 # printing them at the end of the form
-                $hidden = $this->input_hidden($data);
+                array_push($hidden, $this->input_hidden($data));
             }
             elseif ($data['type'] == 'label')
             {
@@ -3692,12 +3692,8 @@ class Formr
 
         # if hidden fields are set, print them now
         if (!empty($hidden)) {
-            if (is_array($hidden)) {
-                foreach ($hidden as $hidval) {
-                    $return .= $hidval;
-                }
-            } else {
-                $return .= $hidden;
+            foreach ($hidden as $hidval) {
+                $return .= $hidval."\r\n";
             }
         }
 

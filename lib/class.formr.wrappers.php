@@ -303,7 +303,7 @@ class Wrapper extends Formr
             'label' => 'control-label',
             'input' => 'form-control',
             'file' => 'form-control-file',
-            'help' => 'help-block',
+            'help' => 'form-text',
             'button' => 'btn',
             'button-primary' => 'btn btn-primary',
             'warning' => 'has-warning',
