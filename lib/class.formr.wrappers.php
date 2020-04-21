@@ -175,6 +175,11 @@ class Wrapper extends Formr
         # if an ID is not present, create one using the name field
         $data['id'] = $this->formr->make_id($data);
 
+        # set the label array value to null if a label is not present
+        if(!isset($data['label'])) {
+            $data['label'] = null;
+        }
+
         $return = null;
 
         if ($data['type'] == 'checkbox') {
@@ -342,6 +347,11 @@ class Wrapper extends Formr
 
         # if an ID is not present, create one using the name field
         $data['id'] = $this->formr->make_id($data);
+
+        # set the label array value to null if a label is not present
+        if(!isset($data['label'])) {
+            $data['label'] = null;
+        }
 
         # create our $return variable
         $return = null;
