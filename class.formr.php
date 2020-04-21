@@ -2766,6 +2766,7 @@ class Formr
         }
         return  $this->_create_input($data);
     }
+    
     public function input_email($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2783,6 +2784,7 @@ class Formr
         }
         return  $this->_create_input($data);
     }
+    
     public function input_date($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2800,6 +2802,7 @@ class Formr
         }
         return  $this->_create_input($data);
     }
+    
     public function input_datetime($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2817,6 +2820,7 @@ class Formr
         }
         return  $this->_create_input($data);
     }
+    
     public function input_datetime_local($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2834,6 +2838,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_month($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2851,6 +2856,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_number($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2868,6 +2874,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_range($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2885,6 +2892,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_search($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2902,6 +2910,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_tel($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2919,6 +2928,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_time($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2936,6 +2946,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_url($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2953,6 +2964,7 @@ class Formr
         }
         return $this->_create_input($data);
     }
+    
     public function input_week($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
     {
         if (!is_array($data)) {
@@ -2969,6 +2981,53 @@ class Formr
             $data['type'] = 'week';
         }
         return $this->_create_input($data);
+    }
+
+    public function input($data)
+    {
+        # create inputs directly from arrays
+
+        if(!array_key_exists('type', $data)) {
+            return $this->_exception('You must assign a field type to the <code>'.$data['name'].'</code> array');
+        }
+        
+        if ($data['type'] == 'select') {
+            return $this->input_select($data);
+        } elseif ($data['type'] == 'text') {
+            return $this->input_text($data);
+        } elseif ($data['type'] == 'password') {
+            return $this->input_password($data);
+        } elseif ($data['type'] == 'textarea') {
+            return $this->input_textarea($data);
+        } elseif ($data['type'] == 'file') {
+            return $this->input_upload($data);
+        } elseif ($data['type'] == 'color') {
+            return $this->input_color($data);
+        } elseif ($data['type'] == 'email') {
+            return $this->input_email($data);
+        } elseif ($data['type'] == 'date') {
+            return $this->input_date($data);
+        } elseif ($data['type'] == 'datetime') {
+            return $this->input_datetime($data);
+        } elseif ($data['type'] == 'datetime-local') {
+            return $this->input_datetime_local($data);
+        } elseif ($data['type'] == 'month') {
+            return $this->input_month($data);
+        } elseif ($data['type'] == 'number') {
+            return $this->input_number($data);
+        } elseif ($data['type'] == 'range') {
+            return $this->input_range($data);
+        } elseif ($data['type'] == 'search') {
+            return $this->input_search($data);
+        } elseif ($data['type'] == 'tel') {
+            return $this->input_tel($data);
+        } elseif ($data['type'] == 'time') {
+            return $this->input_time($data);
+        } elseif ($data['type'] == 'url') {
+            return $this->input_url($data);
+        } elseif ($data['type'] == 'week') {
+            return $this->input_week($data);
+        }
     }
 
 
@@ -3926,5 +3985,12 @@ class Formr
         }
 
         return false;
+    }
+
+    private function _exception($string)
+    {
+        # working on a better error messaging system...
+
+        return '<span style="color:red">!! '.$string.'</span><br>';
     }
 }
