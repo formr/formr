@@ -239,7 +239,8 @@ class Wrapper extends Formr
         # see if we're in a checkbox array...
         if (substr($data['name'], -1) == ']') {
             # we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
-            $return .= $this->t.'<label for="'.$data['id'].'">'.$data['label'].$this->nl;
+            # we'll add the label text later...
+            $return .= $this->t.'<label for="'.$data['id'].'">'.$this->nl;
         } else {
             if ($data['type'] == 'checkbox' || $data['type'] == 'radio') {
                 # no default class on a checkbox or radio
@@ -404,7 +405,8 @@ class Wrapper extends Formr
         # see if we're in a checkbox array...
         if ($this->formr->is_array($data['name'])) {
             # we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
-            $return .= $this->t.'<label for="'.$data['id'].'">'.$data['label'].$this->nl;
+            # we'll add the label text later...
+            $return .= $this->t.'<label for="'.$data['id'].'">'.$this->nl;
         } else {
             # we are not in an array
             if ($this->formr->type_is_checkbox($data)) {
