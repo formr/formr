@@ -3169,7 +3169,12 @@ class Formr
 
         # a string was entered, so we'll grab the appropriate function from the Dropdowns class
         if (!empty($data['options']) && is_string($data['options'])) {
-            $data['options'] = $this->_dropdowns($data['options']);
+            if(isset($data['myarray'])) {
+                # we're passing an array in the 9th parameter of the input_select() method
+                $data['options'] = $this->_dropdowns($data['options'], $data['myarray']);
+            } else {
+                $data['options'] = $this->_dropdowns($data['options']);
+            }
         }
 
         # if a default selected="selected" value is defined, use that one and give it an empty value
@@ -3267,7 +3272,7 @@ class Formr
         }
     }
 
-    protected function _dropdowns($menu)
+    protected function _dropdowns($menu, $data = null)
     {
         # this function enables the Dropdowns class to be used as a plugin
         # all we're doing is returning the selected array from the Dropdowns class
@@ -3275,11 +3280,17 @@ class Formr
         # if needed, strip underscore from the beginning
         $menu = ltrim($menu, '_');
 
-        # load the appropriate function from the Dropdowns class
+        # load the appropriate function from the Dropdowns class...
+        
+        # we're passing an array in the 9th parameter of the input_select() method for the MyDropdowns class
+        if($data) {
+            return Dropdowns::$menu($data);
+        }
+        
         return Dropdowns::$menu();
     }
 
-    public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $multiple = false)
+    public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3291,22 +3302,38 @@ class Formr
                 'string' => $string,
                 'inline' => $inline,
                 'selected' => $selected,
-                'options' => $options
+                'options' => $options,
+                'myarray' => $myarray
             );
         } else {
             $data['type'] = 'select';
         }
 
-        if($multiple == true) {
-            $data['multiple'] = 'multiple';
-        }
-
         return $this->_create_select($data);
     }
 
-    public function input_select_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '')
+    public function input_select_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
     {
-        return $this->input_select($data, $label, $value, $id, $string, $inline, $selected, $options, true);
+        if (!is_array($data)) {
+            $data = array(
+                'type' => 'select',
+                'name' => $data,
+                'label' => $label,
+                'value' => $value,
+                'id' => $id,
+                'string' => $string,
+                'inline' => $inline,
+                'selected' => $selected,
+                'options' => $options,
+                'myarray' => $myarray
+            );
+        } else {
+            $data['type'] = 'select';
+        }
+
+        $data['multiple'] = 'multiple';
+
+        return $this->_create_select($data);
     }
 
 
