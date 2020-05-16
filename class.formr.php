@@ -827,55 +827,55 @@ class Formr
         }
 
         # determines if the field name is in the array's key or value
-        if (mb_substr($key, 0, 8) == 'select' || mb_substr($key, 0, 6) == 'select' || mb_substr($key, 0, 5) == 'state' || mb_substr($key, 0, 6) == 'states' || mb_substr($key, 0, 7) == 'country') {
+        if ($this->_starts_with($key, 'select') || $this->_starts_with($key, 'state') || $this->_starts_with($key, 'states') || $this->_starts_with($key, 'country')) {
             $data['type'] = 'select';
-        } elseif (mb_substr($key, 0, 6) == 'submit') {
+        } elseif ($this->_starts_with($key, 'submit')) {
             $data['type'] = 'submit';
-        } elseif (mb_substr($key, 0, 6) == 'reset') {
+        } elseif ($this->_starts_with($key, 'reset')) {
             $data['type'] = 'reset';
-        } elseif (mb_substr($key, 0, 7) == 'button') {
+        } elseif ($this->_starts_with($key, 'button')) {
             $data['type'] = 'button';
-        } elseif (mb_substr($key, 0, 6) == 'hidden') {
+        } elseif ($this->_starts_with($key, 'hidden')) {
             $data['type'] = 'hidden';
-        } elseif (mb_substr($key, 0, 8) == 'password') {
+        } elseif ($this->_starts_with($key, 'password')) {
             $data['type'] = 'password';
-        } elseif (mb_substr($key, 0, 6) == 'file') {
+        } elseif ($this->_starts_with($key, 'file')) {
             $data['type'] = 'file';
-        } elseif (mb_substr($key, 0, 5) == 'image') {
+        } elseif ($this->_starts_with($key, 'image')) {
             $data['type'] = 'image';
-        } elseif (mb_substr($key, 0, 8) == 'checkbox') {
+        } elseif ($this->_starts_with($key, 'checkbox')) {
             $data['type'] = 'checkbox';
-        } elseif (mb_substr($key, 0, 5) == 'radio') {
+        } elseif ($this->_starts_with($key, 'radio')) {
             $data['type'] = 'radio';
-        } elseif (mb_substr($key, 0, 8) == 'textarea') {
+        } elseif ($this->_starts_with($key, 'textarea')) {
             $data['type'] = 'textarea';
-        } elseif (mb_substr($key, 0, 5) == 'color') {
+        } elseif ($this->_starts_with($key, 'color')) {
             $data['type'] = 'color';
-        } elseif (mb_substr($key, 0, 5) == 'email') {
+        } elseif ($this->_starts_with($key, 'email')) {
             $data['type'] = 'email';
-        } elseif (mb_substr($key, 0, 4) == 'date') {
+        } elseif ($this->_starts_with($key, 'date')) {
             $data['type'] = 'date';
-        } elseif (mb_substr($key, 0, 8) == 'datetime') {
+        } elseif ($this->_starts_with($key, 'datetime')) {
             $data['type'] = 'datetime';
-        } elseif (mb_substr($key, 0, 14) == 'datetime_local') {
+        } elseif ($this->_starts_with($key, 'datetime_local')) {
             $data['type'] = 'datetime_local';
-        } elseif (mb_substr($key, 0, 5) == 'month') {
+        } elseif ($this->_starts_with($key, 'month')) {
             $data['type'] = 'month';
-        } elseif (mb_substr($key, 0, 6) == 'number') {
+        } elseif ($this->_starts_with($key, 'number')) {
             $data['type'] = 'number';
-        } elseif (mb_substr($key, 0, 5) == 'range') {
+        } elseif ($this->_starts_with($key, 'range')) {
             $data['type'] = 'range';
-        } elseif (mb_substr($key, 0, 6) == 'search') {
+        } elseif ($this->_starts_with($key, 'search')) {
             $data['type'] = 'search';
-        } elseif (mb_substr($key, 0, 3) == 'tel') {
+        } elseif ($this->_starts_with($key, 'tel')) {
             $data['type'] = 'tel';
-        } elseif (mb_substr($key, 0, 4) == 'time') {
+        } elseif ($this->_starts_with($key, 'time')) {
             $data['type'] = 'time';
-        } elseif (mb_substr($key, 0, 3) == 'url') {
+        } elseif ($this->_starts_with($key, 'url')) {
             $data['type'] = 'url';
-        } elseif (mb_substr($key, 0, 4) == 'week') {
+        } elseif ($this->_starts_with($key, 'week')) {
             $data['type'] = 'week';
-        } elseif (mb_substr($key, 0, 5) == 'label') {
+        } elseif ($this->_starts_with($key, 'label')) {
             $data['type'] = 'label';
         } else {
             $data['type'] = 'text';
@@ -2079,7 +2079,7 @@ class Formr
         # break apart the comma delimited string of form labels
         $parts = explode(',', $string);
 
-        $array = [];
+        $array = array();
 
         foreach ($parts as $label)
         {
@@ -3206,26 +3206,31 @@ class Formr
                 }
                 $return .= $this->_t(1) . '</optgroup>';
             } else {
-                # if the form has been posted, print selected option
-                if (isset($_POST[$data['name']]) && $_POST[$data['name']] == $key) {
-                    $return .= $this->_t(2) . '<option value="' . $key . '" selected="selected">' . $value . '</option>' . $this->_nl(1);
+                # if the form has been posted, print selected option(s)
+                
+                # check if the select is an array (key has brackets, e.g; <select name="foo[]">)
+                if (isset($_POST[trim($data['name'],'[]')]) && is_array($_POST[trim($data['name'],'[]')]) && in_array($key, $_POST[trim($data['name'],'[]')])) {
+                    $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
+                }
+                elseif (isset($_POST[$data['name']]) && $_POST[$data['name']] == $key) {
+                    $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
                 }
                 # print selected option on form load
                 elseif (!isset($_POST[$data['name']]) && $data['selected'] === $key || (is_array($data['selected']) && in_array($key, $data['selected']))) {
                     # populate the field's value (on page load) with the session value
                     if ($this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
                         if ($_SESSION[$this->session][$data['name']] == $key) {
-                            $return .= $this->_t(2) . '<option value="' . $key . '" selected="selected">' . $value . '</option>' . $this->_nl(1);
+                            $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
                         }
                     } else {
-                        $return .= $this->_t(2) . '<option value="' . $key . '" selected="selected">' . $value . '</option>' . $this->_nl(1);
+                        $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
                     }
                 }
                 # print remaining options
                 else {
                     # user has entered a value in the 'values' argument
                     if (!isset($_POST[$data['name']]) && $data['value'] === $key) {
-                        $return .= $this->_t(2) . '<option value="' . $key . '" selected="selected">' . $value . '</option>' . $this->_nl(1);
+                        $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
                     } else {
                         $return .= $this->_t(2) . '<option value="' . $key . '">' . $value . '</option>' . $this->_nl(1);
                     }
@@ -3499,9 +3504,9 @@ class Formr
 
 
 
-    #  SIMPLE FORM CREATION
     public function create($string, $form = false)
     {
+        #  SIMPLE FORM CREATION
         # create and wrap inputs using labels as our keys
         
         # set our $return var for later
@@ -3568,9 +3573,10 @@ class Formr
         return $return;
     }
 
-    # alias of create(), except opens and closes form tag, plus adds submit button
     public function create_form($string)
     {
+        # alias of create(), except opens and closes form tag, plus adds submit button
+        
         return $this->create($string, true);
     }
 
@@ -3621,7 +3627,7 @@ class Formr
         }
 
         # create an empty array outside of looping to store hidden inputs
-        $hidden = [];
+        $hidden = array();
 
         # loop through the array and print/process each field value
         foreach ($input as $key => $data) {
@@ -3804,8 +3810,9 @@ class Formr
     # MISC
     public function heading($name, $string)
     {
-        # useful in questionnaires and the like.
         # put your string in here and it'll be highlighted when the field receives an error
+        # useful in questionnaires and the like.
+        
         if (array_key_exists($name, $this->errors)) {
             return '<h2><span class="error">' . $string . '</span></h2>';
         } else {
@@ -3930,7 +3937,8 @@ class Formr
     
     public function make_id($data)
     {
-        # create an ID from the element's name attribute if an ID was not specified
+        # create an ID from the element's name attribute (if an ID was not specified)
+        
         if($this->is_not_empty($data['id'])) {
             return $data['id'];
         }
@@ -3941,6 +3949,7 @@ class Formr
     public function insert_required_indicator($data)
     {
         # insert the required_field indicator if applicable
+        
         if($this->_check_required($data['name']) && $this->is_not_empty($data['label'])) {
             return $this->required_indicator;
         }
@@ -3949,6 +3958,7 @@ class Formr
     public function type_is_checkbox($data)
     {
         # determines if the element is a checkbox or radio
+        
         if($data['type'] == 'checkbox' || $data['type'] == 'radio') {
             return true;
         }
@@ -3959,6 +3969,7 @@ class Formr
     public function is_array($data)
     {
         # determines is the element's name is an array
+        
         if(substr($data, -1) == ']') {
             return true;
         }
@@ -3968,6 +3979,8 @@ class Formr
     
     public function is_in_brackets($data)
     {
+        # determines if the given word is contained in brackets
+        
         if(mb_substr($data, 0, 1) == '[') {
             return true;
         }
@@ -3991,7 +4004,7 @@ class Formr
             # put the token into a session
             $_SESSION['token'] = $token;
 
-            # token expires in 1 hour
+            # token expires in given number of seconds (default 1 hour)
             $_SESSION['token-expires'] = time() + $timeout;
 
             return '<input type="hidden" name="csrf_token" value="'.$token.'">';
@@ -4000,7 +4013,16 @@ class Formr
 
     public function redirect($url)
     {
+        # redirect to the given url after the form has been submitted
+        
         header('Location: '.$url);
+    }
+
+    private function _starts_with($key, $str)
+    {
+        # check if a string starts with the given word
+        
+        return mb_substr($key, 0, strlen($str)) == $str;
     }
 
     private function _suppress_validation_errors($data)
@@ -4016,7 +4038,7 @@ class Formr
 
     private function _exception($string)
     {
-        # working on a better error messaging system...
+        # working on a better error messaging system; this may change...
 
         return '<span style="color:red">!! '.$string.'</span><br>';
     }

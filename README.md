@@ -60,7 +60,7 @@ $form = new Formr('bootstrap');
 
 ## Basic Example
 
-Simply enter your form fields as a comma delimited string and Formr will build the form, complete with opening and closing tags, a submit button, and email validation - plus all values retained upon `POST`. Easy!
+Simply enter your form labels as a comma delimited string and Formr will build the form, complete with opening and closing tags, a submit button, and email validation - plus all values retained upon `POST`. Easy!
 
 ```php
 $form = new Formr('bootstrap');
@@ -250,6 +250,10 @@ You have full control over how you build your forms...
 
 <div class="my-wrapper-class">
     <?php echo $form->input_email('email', 'Email address', 'john@example.com', 'emailID', 'placeholder="email@domain.com"'); ?>
+</div>
+
+<div class="my-wrapper-class">
+    <input type="text" name="address" value="<?php echo $form->value('address') ?>">
 </div>
 ```
 
