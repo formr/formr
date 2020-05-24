@@ -1322,7 +1322,7 @@ class Formr
         # checks the field name to see if that field is required
 
         $this->required_fields = array();
-        $this->typested_fields = array();
+        // $this->typested_fields = array();
 
         # all fields are required
         if ($this->required === '*') {
@@ -1674,7 +1674,7 @@ class Formr
             # we have a custom error message string
             $parts = explode($this->delimiter[1], $label);
 
-            # we'll put the human readable label in to the $label property
+            # we'll put the human readable label into the $label property
             $label  = $parts[0];
 
             # we'll put the custom error message string into the $string property
@@ -1714,7 +1714,7 @@ class Formr
         # get the $data array ready for the _process_post() method
         $data['post'] = $post;
         $data['label'] = $label;
-        $data['name']  = $name;
+        $data['name'] = $name;
 
 
         # process validation rules
@@ -2456,28 +2456,26 @@ class Formr
                 $label_for = $data['name'];
             }
 
-
             # check the element on initial form load
-            if (!isset($_POST[$data['name']])) {
-                if (!empty($data['selected'])) {
-                    if ($data['selected'] == $data['value'] || ($data['selected'] == 'checked' || $data['selected'] == 'selected')) {
-                        $return .= ' checked="checked"';
+            if (! $this->submitted()) {
+                if(!isset($_POST[$this->_strip_brackets($data['name'])])) {
+                    if (!empty($data['selected'])) {
+                        if ($data['selected'] == $data['value'] || ($data['selected'] == 'checked' || $data['selected'] == 'selected')) {
+                            $return .= ' checked';
+                        }
                     }
                 }
             } else {
-
-                $pname = rtrim($data['name'], '[]');
-
                 # check the element after the form has been posted
-                if (isset($_POST[$pname]) && $_POST[$pname] == $data['value']) {
-                    $return .= ' checked="checked"';
+                if (isset($_POST[$this->_strip_brackets($data['name'])]) && $_POST[$this->_strip_brackets($data['name'])] == $data['value']) {
+                    $return .= ' checked';
                 }
 
                 # checkbox group
-                elseif (!empty($_POST[$pname]) && is_array($_POST[$pname])) {
-                    foreach ($_POST[$pname] as $pvalue) {
+                elseif (!empty($_POST[$this->_strip_brackets($data['name'])]) && is_array($_POST[$this->_strip_brackets($data['name'])])) {
+                    foreach ($_POST[$this->_strip_brackets($data['name'])] as $pvalue) {
                         if ($pvalue == $data['value']) {
-                            $return .= ' checked="checked"';
+                            $return .= ' checked';
                         }
                     }
                 }
@@ -4023,6 +4021,13 @@ class Formr
         # check if a string starts with the given word
         
         return mb_substr($key, 0, strlen($str)) == $str;
+    }
+
+    private function _strip_brackets($str) {
+        
+        # strip brackets from a string
+        
+        return trim($str, '[]');
     }
 
     private function _suppress_validation_errors($data)
