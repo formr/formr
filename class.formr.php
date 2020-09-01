@@ -1107,7 +1107,7 @@ class Formr
 
         $files = array();
 
-        if (!empty($_FILES[$name]['tmp_name'])) {
+        if (!empty($_FILES[$name]['tmp_name']) && !empty($_FILES[$name]['tmp_name'][0])) {
 
             if (is_array($_FILES[$name]['tmp_name']) && count($_FILES[$name]['tmp_name']) > 1) {
 
@@ -1135,7 +1135,20 @@ class Formr
             } else {
 
                 # we're dealing with a single upload
-                if (!empty($_FILES[$name]['tmp_name']) && is_uploaded_file($_FILES[$name]['tmp_name'])) {
+                
+                if (!empty($_FILES[$name]['tmp_name'][0]) && is_uploaded_file($_FILES[$name]['tmp_name'][0])) {
+                    
+                    # we're using the input_upload_multiple() method, so we have to compensate for the array
+                    
+                    # make for a prettier array and reassign the key/values
+
+                    $handle['key'] = $name;
+                    $handle['name'] = $_FILES[$name]['name'][0];
+                    $handle['size'] = $_FILES[$name]['size'][0];
+                    $handle['type'] = $_FILES[$name]['type'][0];
+                    $handle['tmp_name'] = $_FILES[$name]['tmp_name'][0];
+                }
+                elseif (!empty($_FILES[$name]['tmp_name']) && is_uploaded_file($_FILES[$name]['tmp_name'])) {
 
                     # make for a prettier array and reassign the key/values
 
@@ -1144,9 +1157,9 @@ class Formr
                     $handle['size'] = $_FILES[$name]['size'];
                     $handle['type'] = $_FILES[$name]['type'];
                     $handle['tmp_name'] = $_FILES[$name]['tmp_name'];
-
-                    return $this->_process_image($handle);
                 }
+
+                return $this->_process_image($handle);
             }
         }
 
@@ -1404,6 +1417,7 @@ class Formr
     protected function is_not_empty($value)
     {
         # check if value is not empty - including zeros
+        
         if (!empty($value) || (isset($value) && $value === "0") || (isset($value) && $value === 0)) {
             return true;
         } else {
@@ -3396,11 +3410,6 @@ class Formr
             $return .= ' class="' . $this->controls['text-error'] . '"';
         }
 
-        # add the ID if available
-        //if(!empty($data['id'])) {
-        //$return .= ' id="'.$data['id'].'"';
-        //}
-
         # insert the string data if available
 
         if (!empty($data['string']) && !in_array($data['type'], $this->_input_types('button'))) {
@@ -3504,7 +3513,7 @@ class Formr
 
     public function create($string, $form = false)
     {
-        #  SIMPLE FORM CREATION
+        # SIMPLE FORM CREATION
         # create and wrap inputs using labels as our keys
         
         # set our $return var for later
@@ -3799,6 +3808,7 @@ class Formr
     public function fastform_multipart($data)
     {
         # for file uploads...
+        
         return $this->fastform($data, true);
     }
 
