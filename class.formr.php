@@ -112,6 +112,9 @@ class Formr
     # sanitize input with HTMLPurifier
     public $html_purifier = null;
 
+    # sanitize html $_POST values with FILTER_SANITIZE_SPECIAL_CHARS
+    public $sanitize_html = false;
+
     # suppress Formr's validation error messages and only display your own
     public $custom_validation_messages = false;
 
@@ -307,9 +310,17 @@ class Formr
         # checks the errors array for the supplied key
 
         $key = trim($key, '[]');
-
-        if (in_array($key, $this->errors)) {
+        
+        if (in_array($key, $this->errors) || array_key_exists($key, $this->errors)) {
             return true;
+        }
+
+        # check if a custom message was added via add_to_errors()
+        foreach($this->errors as $string) {
+            # get the key, which comes before the pipe delimeter
+            if(strstr($string, '|', true) == $key) {
+                return true;
+            }
         }
 
         return false;
@@ -532,17 +543,16 @@ class Formr
         }
 
         # add a default class for input types
-        if ((in_array($data['type'], $this->_input_types('text'))) || ($data['type'] == 'select')) {
-
-            # don't add the class if it's empty
-            if ($this->controls['input']) {
-                if (!empty($data['class'])) {
-                    $string .= 'class="' . $this->controls['input'] . ' ' . $data['class'] . ' ';
-                } else {
-                    $string .= ' class="' . $this->controls['input'] . ' ';
-                }
-            }
-        }
+        // if ((in_array($data['type'], $this->_input_types('text'))) || ($data['type'] == 'select')) {
+        //    # don't add the class if it's empty
+        //     if ($this->controls['input']) {
+        //         if (!empty($data['class'])) {
+        //             $string .= 'class="' . $this->controls['input'] . ' ' . $data['class'] . ' ';
+        //         } else {
+        //             $string .= ' class="' . $this->controls['input'] . ' ';
+        //         }
+        //     }
+        // }
 
         # check if field is required
         if ($this->_check_required($data['name'], $data)) {
@@ -579,52 +589,52 @@ class Formr
         return false;
     }
 
-    protected function _fix_classes($string, $data)
+    protected function _fix_classes($element, $data)
     {
         # 'fixes' the class attribute
         # merges existing and default classes...
 
         $return = null;
 
-        if (strpos($string, 'class=') === false) {
+        $excluded_types = array('submit', 'button', 'checkbox', 'radio');
 
-            if (empty($data['string'])) {
+        if ((strpos($element, 'class=') === false) && (strpos($data['string'], 'class=') === false))
+        {
+            if (!empty($this->controls['input']))
+            {
+                if (!in_array($data['type'], $excluded_types))
+                {
+                    if($data['type'] == 'file') {
+                        # file input gets its own class
+                        $return .= ' class="' . $this->controls['file'];
+                    } else {
+                        $return .= ' class="' . $this->controls['input'];
+                    }
 
-                if (!empty($this->controls['input'])) {
+                    if ($this->in_errors($data['name'])) {
+                        # add bootstrap 4 error class on element
+                        if ($this->wrapper == 'bootstrap4') {
+                            $return .= ' '.$this->controls['is-invalid'];
+                        }
+                    }
 
-                    if ($data['type'] != 'submit' && $data['type'] != 'button' && $data['type'] != 'checkbox' && $data['type'] != 'radio') {
-                        if($data['type'] == 'file') {
-                            # file input gets its own class
-                            $return .= ' class="' . $this->controls['file'];
+                    # close the attribute
+                    $return .= '"';
+                }
+
+                # bootstrap 4 inline checkboxes & radios
+                if(isset($data['checkbox-inline']) || ($this->type_is_checkbox($data) && !isset($data['checkbox-inline']))) {
+                    if (strpos($this->wrapper, 'bootstrap') !== false) {
+                        $return .= ' class="' . $this->controls['form-check-input'] . '"';
+                    }
+                }
+
+                if ($data['type'] == 'submit' || $data['type'] == 'button') {
+                    if (strpos($this->wrapper, 'bootstrap') !== false) {
+                        if(!$data['string']) {
+                            $return .= ' class="' . $this->controls['button-primary'] . '"';
                         } else {
-                            $return .= ' class="' . $this->controls['input'];
-                        }
-
-                        if ($this->in_errors($data['name'])) {
-                            # add bootstrap 4 error class on element
-                            if ($this->wrapper == 'bootstrap4') {
-                                $return .= ' '.$this->controls['is-invalid'];
-                            }
-                        }
-
-                        # close the attribute
-                        $return .= '"';
-                    }
-
-                    # bootstrap 4 inline checkboxes & radios
-                    if(isset($data['checkbox-inline']) || ($this->type_is_checkbox($data) && !isset($data['checkbox-inline']))) {
-                        if (strpos($this->wrapper, 'bootstrap') !== false) {
-                            $return .= ' class="' . $this->controls['form-check-input'] . '"';
-                        }
-                    }
-
-                    if ($data['type'] == 'submit' || $data['type'] == 'button') {
-                        if (strpos($this->wrapper, 'bootstrap') !== false) {
-                            if(!$data['string']) {
-                                $return .= ' class="' . $this->controls['button-primary'] . '"';
-                            } else {
-                                $return .= ' class="' . $this->controls['button'] . '"';
-                            }
+                            $return .= ' class="' . $this->controls['button'] . '"';
                         }
                     }
                 }
@@ -652,7 +662,7 @@ class Formr
         return $data;
     }
 
-    protected function _clean_value($str = '', $html = false)
+    protected function _clean_value($str = '', $allow_html = false)
     {
         # makes entered values a little safer.
 
@@ -694,29 +704,36 @@ class Formr
                 $str = trim($str);
 
                 # perform basic sanitization...
-                if ($html == false) {
-
+                if ($allow_html == false) {
                     # strip html tags and prevent against xss
                     $str = strip_tags($str);
                 } else {
-                    # allow html but make it safer
-                    # $str = filter_var($str,FILTER_SANITIZE_SPECIAL_CHARS);
+                    # allow html
+                    if($this->sanitize_html) {
+                        $str = filter_var($str,FILTER_SANITIZE_SPECIAL_CHARS);
+                    } else {
+                        $str = $str;
+                    }
                 }
+
                 return $str;
+            
             } else {
                 # clean and return the array
                 foreach ($str as $value) {
-
-                    if ($html == false) {
-
+                    if ($allow_html == false) {
                         # strip html tags and prevent against xss
                         $value = strip_tags($value);
                     } else {
-
-                        # allow html but make it safer
-                        # $value = filter_var($value,FILTER_SANITIZE_SPECIAL_CHARS);
+                        # allow html
+                        if ($this->sanitize_html) {
+                            $value = filter_var($value,FILTER_SANITIZE_SPECIAL_CHARS);
+                        } else {
+                            $value = $value;
+                        }
                     }
                 }
+
                 return $value;
             }
         }
@@ -1467,7 +1484,6 @@ class Formr
 
             # if custom HTML tags are not provided, let's set a default
             if (empty($open_tag) && empty($close_tag)) {
-                //$open_tag  = '<div class="'.$this->error_class.'">';
                 $open_tag  = '<div class="' . $this->controls['alert-e'] . '">';
                 $close_tag = '</div>';
             }
@@ -1484,7 +1500,12 @@ class Formr
                             $return .= '<a href="#' . $key . '" class="' . $this->controls['link'] . '">' . $value . '</a><br>';
                         } else {
                             # print the message
-                            $return .= $value.'<br>';
+                            if(strpos($value, '|')) {
+                                # remove the key if a custom message was added via add_to_errors()
+                                $return .= ltrim(strstr($value, '|'), '|') . '<br>';
+                            } else {
+                                $return .= $value.'<br>';
+                            }
                         }
                     }
 
@@ -1672,7 +1693,6 @@ class Formr
                 }
             }
         } else {
-            #$post = $this->_clean_value($post);
             $post = $post;
 
             # add value to a session
@@ -1768,9 +1788,9 @@ class Formr
 
         # allow HTML
         if ($rule == 'allow_html') {
-            $html = true;
+            $allow_html = true;
         } else {
-            $html = false;
+            $allow_html = false;
         }
 
         if ($post != null) {
@@ -2045,7 +2065,7 @@ class Formr
         }
 
         # run it through the cleaning method as a final step
-        return $this->_clean_value($post, $html);
+        return $this->_clean_value($post, $allow_html);
     }
 
     protected function _fp_rules($key)
@@ -2421,7 +2441,7 @@ class Formr
                 if ($this->session_values && $this->session) {
                     $data['value'] = $_SESSION[$this->session][$data['name']];
                 } else {
-                    $data['value'] = $this->_clean_value($_POST[$data['name']]);
+                    $data['value'] = $this->_clean_value($_POST[$data['name']], 'allow_html');
                 }
             }
 
@@ -3592,7 +3612,7 @@ class Formr
 
 
     # FAST FORM
-    protected function _faster_form($form_name, $multipart)
+    protected function _faster_form($form_name, $csrf, $multipart)
     {
         # this method enables the Forms class to be used as a plugin so that we can store
         # arrays of frequently used forms and pass them through the fastform() function
@@ -3602,19 +3622,19 @@ class Formr
 
         # pass the array to the fastform() method
         if ($multipart) {
-            return $this->fastform_multipart($data);
+            return $this->fastform_multipart($data, $csrf);
         } else {
-            return $this->fastform($data);
+            return $this->fastform($data, $csrf);
         }
     }
 
-    public function fastform($input, $multipart = '')
+    public function fastform($input, $csrf = false, $multipart = false)
     {
         # method for automatically building and laying out a form with multiple elements
 
         if (is_string($input)) {
             # user entered a string and wants to use a pre-built form in the Forms class
-            return $this->_faster_form($input, $multipart);
+            return $this->_faster_form($input, $csrf, $multipart);
         }
 
         # build the <form> tag
@@ -3622,6 +3642,10 @@ class Formr
             $return = $this->form_open_multipart();
         } else {
             $return = $this->form_open();
+        }
+
+        if ($csrf) {
+            $return .= $this->csrf();
         }
 
         # add a fieldset
@@ -3805,11 +3829,11 @@ class Formr
         return $return;
     }
 
-    public function fastform_multipart($data)
+    public function fastform_multipart($data, $csrf = false)
     {
         # for file uploads...
         
-        return $this->fastform($data, true);
+        return $this->fastform($data, $csrf, 'multipart');
     }
 
 
@@ -4001,22 +4025,19 @@ class Formr
         # add csrf protection
         # remember to put session_start() at the top of your script!
 
-        if (! $this->submit())
-        {
-            if (function_exists('mcrypt_create_iv')) {
-                $token = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
-            } else {
-                $token = bin2hex(openssl_random_pseudo_bytes(32));
-            }
-
-            # put the token into a session
-            $_SESSION['token'] = $token;
-
-            # token expires in given number of seconds (default 1 hour)
-            $_SESSION['token-expires'] = time() + $timeout;
-
-            return '<input type="hidden" name="csrf_token" value="'.$token.'">';
+        if (function_exists('mcrypt_create_iv')) {
+            $token = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+        } else {
+            $token = bin2hex(openssl_random_pseudo_bytes(32));
         }
+
+        # put the token into a session
+        $_SESSION['token'] = $token;
+
+        # token expires in given number of seconds (default 1 hour)
+        $_SESSION['token-expires'] = time() + $timeout;
+
+        return '<input type="hidden" name="csrf_token" value="'.$token.'">';
     }
 
     public function redirect($url)
