@@ -598,7 +598,7 @@ class Formr
 
         $excluded_types = array('submit', 'button', 'checkbox', 'radio');
 
-        if ((strpos($element, 'class=') === false) && (strpos($data['string'], 'class=') === false))
+        if ((strpos($element, 'class=') === false) && (isset($data['string']) && strpos($data['string'], 'class=') === false))
         {
             if (!empty($this->controls['input']))
             {
@@ -1813,7 +1813,7 @@ class Formr
             }
 
             # min length
-            if (mb_substr($rule, 0, 10) == 'min_length') {
+            if (mb_substr($rule, 0, 10) == 'min_length' || mb_substr($rule, 0, 3) == 'min') {
 
                 preg_match_all("/\[(.*?)\]/", $rule, $matches);
                 $match = $matches[1][0];
@@ -1831,7 +1831,7 @@ class Formr
             }
 
             # max length
-            if (mb_substr($rule, 0, 10) == 'max_length') {
+            if (mb_substr($rule, 0, 10) == 'max_length' || mb_substr($rule, 0, 3) == 'max') {
 
                 preg_match_all("/\[(.*?)\]/", $rule, $matches);
                 $match = $matches[1][0];
@@ -1849,7 +1849,7 @@ class Formr
             }
 
             # exact length
-            if (mb_substr($rule, 0, 12) == 'exact_length') {
+            if (mb_substr($rule, 0, 12) == 'exact_length' || mb_substr($rule, 0, 5) == 'exact') {
 
                 preg_match_all("/\[(.*?)\]/", $rule, $matches);
                 $match = $matches[1][0];
