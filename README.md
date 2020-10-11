@@ -8,17 +8,18 @@ If you find Formr useful, please consider starring the project and/or making a [
 
 ## Features
 
-- Create complex forms with server-side processing and validation in only minutes
+- Create complex forms with server-side processing and validation in only seconds
 - Bootstrap ready; automatically wrap all of your form elements and messages in Bootstrap classes
 - Instantly make one field required, all fields required, or all but one field required
 - Built-in `POST` validation rules, including validating email, comparisons, slugging and hashing
 - Automatically build and format `label` tags, saving lots of time
 - Create and validate radio groups and checkbox arrays in seconds
 - Automatically wrap field elements in `p`, `div`, `ul`, `ol`, `dl`, Bootstrap's `.form-control` or roll your own
-- Extensible: roll your own form &amp; validation sets and dropdown menus and share 'em with others
-- Extensible: easily create your own field element wrappers
+- Extensible: easily create and save your own field element wrappers
+- Extensible: easily create and save your own dropdown menus
+- Extensible: easily create and save your own form & validation sets
+- Upload images: resize, rename, and create thumbnails
 - Send plain text and HTML emails
-- Upload and resize images
 - Generate CSRF tokens and set the expiration time
 - Object-oriented; supports multiple forms per page
 - Little helpers to assist in building, layout, testing and debugging
@@ -37,7 +38,7 @@ Then include the `autoload.php` file and create a new form object.
 
 ```php
 require_once 'vendor/autoload.php';
-$form = new Formr();
+$form = new Formr\Formr();
 ```
 
 #### Download
@@ -46,7 +47,7 @@ Download the .zip file and place the Formr folder in your project, then include 
 
 ```php
 require_once 'Formr/class.formr.php';
-$form = new Formr();
+$form = new Formr\Formr();
 ```
 
 ## Bootstrap Ready
@@ -54,8 +55,7 @@ $form = new Formr();
 Bootstrap form classes are ready to go! Just tell Formr you want to use Bootstrap when creating a new form and Formr will take care of the rest.
 
 ```php
-require_once 'Formr/class.formr.php';
-$form = new Formr('bootstrap');
+$form = new Formr\Formr('bootstrap');
 ```
 
 ## Basic Example
@@ -63,7 +63,7 @@ $form = new Formr('bootstrap');
 Simply enter your form labels as a comma delimited string and Formr will build the form, complete with opening and closing tags, a submit button, and email validation - plus all values retained upon `POST`. Easy!
 
 ```php
-$form = new Formr('bootstrap');
+$form = new Formr\Formr('bootstrap');
 echo $form->create_form('Name, Email, Comments|textarea');
 ```
 
@@ -106,10 +106,10 @@ echo $form->create_form('Name, Email, Comments|textarea');
 Using the `create()` method tells Formr you want control over adding the form tags and submit button yourself. Otherwise it's the same as the Basic Example above.
 
 ```php
-$form = new Formr('bootstrap');
+$form = new Formr\Formr('bootstrap');
 echo $form->form_open();
 echo $form->create('First name, Last name, Email address, Age|number, Comments|textarea');
-echo $form->input_submit();
+echo $form->submit_button();
 echo $form->form_close();
 ```
 
@@ -149,17 +149,17 @@ echo $form->form_close();
     </div>
     <div id="_submit" class="form-group">
         <label class="sr-only" for="submit"></label>
-        <input type="submit" name="submit" value="Submit" class="btn" id="submit">
+        <button type="submit" name="submit" id="submit" class="btn btn-primary">Submit</button>
     </div>
 </form>
 ```
 
 ## Pre-Built Forms
 
-Formr has several common forms already baked in, and it's really easy to create and save your own.
+Formr has several common forms already baked in, and it's really easy to [create and save your own](https://github.com/formr/extend).
 
 ```php
-$form = new Formr();
+$form = new Formr\Formr();
 echo $form->fastform('contact');
 ```
 
@@ -202,7 +202,7 @@ $data = [
     'checkbox' => 'agree, I Agree',
 ];
 
-$form = new Formr('bootstrap');
+$form = new Formr\Formr('bootstrap');
 echo $form->fastform($data);
 ```
 
@@ -245,11 +245,11 @@ You have full control over how you build your forms...
 
 ```html
 <div class="my-wrapper-class">
-    <?php echo $form->input_text('name', 'Name'); ?>
+    <?php echo $form->text('name', 'Name'); ?>
 </div>
 
 <div class="my-wrapper-class">
-    <?php echo $form->input_email('email', 'Email address', 'john@example.com', 'emailID', 'placeholder="email@domain.com"'); ?>
+    <?php echo $form->email('email', 'Email address', 'john@example.com', 'emailID', 'placeholder="email@domain.com"'); ?>
 </div>
 
 <div class="my-wrapper-class">
@@ -277,7 +277,7 @@ You have full control over how you build your forms...
 
 ## Retrieving POST Values
 
-It's super easy to retrieve your `POST` values and assign them to variables!
+It's super easy to retrieve your `$_POST` values and assign them to variables!
 
 ```php
 $name = $form->post('name');
@@ -288,7 +288,7 @@ $email = $form->post('email');
 
 #### Formr can easly process and validate your forms
 
-Like the `create()` method, we can pass a list of our form labels to the `validate()` method, which will get the `POST` values of our form fields and put them into an array. If your field name is `email`, a `valid_email` validation rule will be applied automatically!
+Like the `create()` method, we can pass a list of our form labels to the `validate()` method, which will get the `$_POST` values of our form fields and put them into an array. If your field name is `email`, a `valid_email` validation rule will be applied automatically!
 
 #### Basic usage
 
@@ -307,10 +307,10 @@ if($form->submitted()) {
 
 #### Adding Rules
 
-Let's make sure the `Name` field is a minimum of 3 characters and a maximum of 30 by adding our validation rules wrapped in parentheses.
+Let's make sure `Name` is a minimum of 2 characters and a maximum of 30 by adding our validation rules wrapped in parentheses.
 
 ```php
-$form->validate('Name(min_length[3]|max_length[30]), Email, Comments');
+$form->validate('Name(min[2]|max[30]), Email, Comments');
 ```
 
 ## Fine-Tune Your Validation
@@ -343,7 +343,7 @@ $email = $form->post('email','Email|Please enter a valid email address','valid_e
 require_once 'Formr/class.formr.php';
 
 // create our form object and use Bootstrap 4 as our form wrapper
-$form = new Formr('bootstrap');
+$form = new Formr\Formr('bootstrap');
 
 // make all fields required
 $form->required = '*';

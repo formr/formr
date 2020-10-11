@@ -1,26 +1,22 @@
 <?php
 
-class Forms extends MyForms
+class Forms extends Formr\Formr
 {
-
-    // these functions contain pre-built form arrays that you can simply pass through the fastform() function.
-    // you can also build validation sets for each field as well.
-    // be one of the cool kids; build a whole mess of form and validation sets and share 'em with your friends.
-    // Help extend Formr! :)
-
+    # these methods are used to wrap your form elements.
+    # documentation: https://github.com/formr/extend
 
     public static function contact($validate = '')
     {
-        if (!$validate) {
-
+        if (!$validate)
+        {
             /**
-				in this section is where we'll build the form using an array. the array key contains the input type, and 
-				the array value contains all of the field's attributes.
-				
-				'array_key'  => 'array value'
-				
-				'field input type' => 'name , label text , value , input ID , string , .inline-text , selected/checked , $options'
-             */
+                this section is where we'll build the form using an array. the array key contains 
+                the input type, and the array value contains all of the field's attributes.
+
+                'array_key'  => 'array value'
+
+                'field input type' => 'name , label text , value , input ID , string , .inline-text , selected/checked , $options'
+            */
 
             return [
                 'text1' => 'fname,First name:,,fname,,[please enter your first name]',
@@ -31,16 +27,16 @@ class Forms extends MyForms
                 'text4' => 'zip,Zip/Postal Code:,,zip,,[please enter your zip code]',
                 'select2' => 'country,Country:,,country,,[please select your country],US,country',
                 'textarea' => 'comments,Comments:,,comments,,[please enter some comments]',
-                'submit' => 'submit,,Submit Form,submit,class="btn-primary"'
+                'submit' => 'submit,,Submit Form,submit'
             ];
         } else {
 
             /**
-				now we'll build the corresponding key and human readable text and validation rules for the fastpost() method
-				the key MUST match the field name! Separate your validation rules with a pipe | character, NOT a comma!
-				
-				'field name' => 'human readable text, validation rules'
-             */
+                now we'll build the corresponding key and human readable text and validation rules for the fastpost() method.
+                the key MUST match the field name! Separate your validation rules with a pipe | character, NOT a comma!
+
+                'field name' => '[human readable text, validation rules']
+            */
 
             return [
                 'fname' => ['Please enter your first name'],
@@ -58,7 +54,7 @@ class Forms extends MyForms
     public static function short_contact($validate = '')
     {
         if (!$validate) {
-            // here we'll build the form array for the fastform() function
+            # here we'll build the form array for the fastform() function
             return [
                 'text1' => 'fname,First name:,,fname',
                 'text2' => 'lname,Last name:,,lname',
@@ -66,7 +62,7 @@ class Forms extends MyForms
                 'textarea' => 'comments,Comments:,,comments'
             ];
         } else {
-            // now we'll build the corresponding key and human readable text and validation rules for the fastpost() function
+            # now we'll build the corresponding key and human readable text and validation rules for the fastpost() function
             return [
                 'fname' => ['First name'],
                 'lname' => ['Last name'],
@@ -79,14 +75,14 @@ class Forms extends MyForms
     public static function signup($validate = '')
     {
         if (!$validate) {
-            // here we'll build the form array for the fastform() function
+            # here we'll build the form array for the fastform() function
             return [
                 'text1' => 'email,Email:,,email',
                 'password2' => 'password,Password:,,password,placeholder="password"',
                 'password3' => 'confirm,Confirm password:,,confirm,placeholder="confirm password"'
             ];
         } else {
-            // now we'll build the corresponding key and human readable text and validation rules for the fastpost() function
+            # now we'll build the corresponding key and human readable text and validation rules for the fastpost() function
             return [
                 'email' => ['Email address', 'valid_email'],
                 'password' => ['Password', 'min_length[6]|hash'],
@@ -104,14 +100,14 @@ class Forms extends MyForms
     public static function login($validate = '')
     {
         if (!$validate) {
-            // here we'll build the form array for the fastform() function
+            # here we'll build the form array for the fastform() function
             return [
                 'text' => 'username,,,username,placeholder="username"',
                 'password' => 'password,,,password,placeholder="password"',
-                'submit' => 'submit,,Login,,class="btn-primary"'
+                'submit' => 'submit,,Login'
             ];
         } else {
-            // build the corresponding key and human readable text and validation rules for the fastpost() function
+            # build the corresponding key and human readable text and validation rules for the fastpost() function
             return [
                 'username' => ['Username', 'required'],
                 'password' => ['Password', 'required|hash']
@@ -122,7 +118,7 @@ class Forms extends MyForms
     public static function canadian_contact($validate = '')
     {
         if (!$validate) {
-            // here we'll build the form array for the fastform() function
+            # here we'll build the form array for the fastform() function
             return [
                 'text1' => 'fname,First name:,,fname',
                 'text2' => 'lname,Last name:,,lname',
@@ -134,7 +130,7 @@ class Forms extends MyForms
                 'textarea' => 'comments,Comments:,,comments'
             ];
         } else {
-            // build the cooresponding key, human readable text and validation rules for the fastpost() function
+            # build the cooresponding key, human readable text and validation rules for the fastpost() function
             return [
                 'fname' => ['First name'],
                 'lname' => ['Last name'],

@@ -1,7 +1,9 @@
 <?php
 
+namespace Formr;
+
 /**
- * Formr
+ * Formr (1.2)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -14,14 +16,14 @@
  *
  **/
 
+# load the default classes
+require_once 'lib/class.formr.dropdowns.php';
+require_once 'lib/class.formr.forms.php';
+require_once 'lib/class.formr.wrappers.php';
 
 # load the 'plugin' classes
 if (file_exists(dirname(__FILE__) . '/my_classes/my.wrappers.php')) {
-    # load the custom wrapper class
     require_once 'my_classes/my.wrappers.php';
-} else {
-    # load the default wrapper class
-    require_once 'lib/class.formr.wrappers.php';
 }
 
 if (file_exists(dirname(__FILE__) . '/my_classes/my.dropdowns.php')) {
@@ -32,17 +34,13 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
     require_once 'my_classes/my.forms.php';
 }
 
-# load the remaining default classes
-require_once 'lib/class.formr.dropdowns.php';
-require_once 'lib/class.formr.forms.php';
-
 
 class Formr
 {
-    # each of these public properties acts as a 'preference' for Formr
+    # each of these public properties acts as a 'preference' for Formr,
     # and can be defined at instantiation. see documentation for more info.
 
-    # fields are not required by default
+    # form fields are not required by default
     public $required = false;
 
     # form's ID
@@ -97,8 +95,8 @@ class Formr
     # max file size for uploaded files (2MB)
     public $upload_max_filesize = 2097152;
 
-    # the full path the the directory in which we're uploading files
-    public $upload_directory = null;
+    # the full path to the directory in which we're uploading files
+    public $upload_dir = null;
 
     # rename a file after upload
     public $upload_rename = null;
@@ -127,7 +125,6 @@ class Formr
     # default wrapper types which Formr supports
     public $default_wrapper_types = array('div', 'p', 'ul', 'ol', 'dl', 'li');
 
-
     # default string delimiters
     # $delimiter[0] is for separating field values in fastform()
     # $delimiter[1] is for parsing values within fastform() strings and the post() validation rules
@@ -138,9 +135,16 @@ class Formr
     # we don't want to create form attributes from these keywords if they're in the $data array
     private $no_keys = array('string', 'checked', 'selected', 'required', 'inline', 'label', 'fastform', 'options', 'group', 'multiple');
 
-    function __construct($wrapper = '')
+    # use Formr's default wrapper
+    private $use_default_wrapper = true;
+
+    function __construct($wrapper = '', $session = null)
     {
         # determine our field wrapper and CSS classes
+
+        if (file_exists(dirname(__FILE__) . '/my_classes/my.wrappers.php')) {
+            $this->use_default_wrapper = false;
+        }
 
         if (!$wrapper) {
             # no wrapper, default divs and css
@@ -150,31 +154,53 @@ class Formr
             $this->wrapper = strtolower($wrapper);
 
             # default bootstrap to version 4
-            if($wrapper == 'bootstrap') {
+            if ($wrapper == 'bootstrap') {
                 $this->wrapper = 'bootstrap4';
             }
-            
             $wrapper_css = $this->wrapper . '_css';
         }
 
-
         if (!$this->wrapper || in_array($this->wrapper, $this->default_wrapper_types)) {
             # use default css
-            $this->controls = Wrapper::css_defaults();
+            if (!$this->use_default_wrapper) {
+                $this->controls = \MyWrappers::css_defaults();
+            } else {
+                $this->controls = \Wrapper::css_defaults();
+            }
         } else {
             # custom wrapper/control types
             try {
                 # check the Controls class for the supplied method
-                $method = new ReflectionMethod('wrapper::' . $wrapper_css);
-                if ($method->isStatic()) {
-                    $this->controls = Wrapper::$wrapper_css();
+                if (!$this->use_default_wrapper) {
+                    $method = new \ReflectionMethod('mywrappers::' . $wrapper_css);
+                    if ($method->isStatic()) {
+                        $this->controls = \MyWrappers::$wrapper_css();
+                    }
+                } else {
+                    $method = new \ReflectionMethod('wrapper::' . $wrapper_css);
+                    if ($method->isStatic()) {
+                        $this->controls = \Wrapper::$wrapper_css();
+                    }
                 }
-            } catch (ReflectionException $e) {
+            } catch (\ReflectionException $e) {
                 #	method does not exist, spit out error and set default controls
-                echo '<h5 style="color:red">' . $e->getMessage() . '.</h5><p>If you are using custom wrappers, please make sure the custom wrapper file is named "my.wrappers.php". If you are NOT using custom wrappers, please make sure a file does not exist at "my_classes/my.wrappers.php".</p>';
-                $this->controls = Wrapper::css_defaults();
+                die('<div style="color: red; padding: 30px"><h2>Whoops!</h2><h4>' . $e->getMessage() . '.</h4><p>If you are using Custom Wrappers, please make sure the Custom Wrapper file is located at "<code>my_classes/my.wrappers.php</code>", and that you spelled your Wrapper name correctly.</p><p>If you are NOT using Custom Wrappers, please make sure a file does not exist at "<code>my_classes/my.wrappers.php</code>".</p></div>');
+
+                if (!$this->use_default_wrapper) {
+                    $this->controls = \MyWrappers::css_defaults();
+                } else {
+                    $this->controls = \Wrapper::css_defaults();
+                }
             }
         }
+
+        # create the formr session
+        if (!isset($_SESSION['formr'])) {
+            $_SESSION['formr'] = [];
+        }
+
+        # for checkbox array values
+        $this->checkbox_values = [];
     }
 
     # HELPERS & UTILITY
@@ -278,19 +304,94 @@ class Formr
             # check if we're using csrf
             if (isset($_POST['csrf_token']))
             {
-                # check if token in SESSION equals token in POST array
-                if (hash_equals($_SESSION['token'], $_POST['csrf_token']))
-                {
-                    # compare current time to time of token expiration
-                    if (time() >= $_SESSION['token-expires']) {
-                        $this->add_to_errors('Session has timed out. Please refresh the page.');
-                        
+                if(!isset($_SESSION)) {
+                    echo $this->_echo_error_message('CSRF requires <code>session_start()</code> at the top of the script.');
+                } else {
+                    # check if token in SESSION equals token in POST array
+                    if (hash_equals($_SESSION['formr']['token'], $_POST['csrf_token'])) {
+                        # compare current time to time of token expiration
+                        if (time() >= $_SESSION['formr']['token-expires']) {
+                            $this->add_to_errors('Session has timed out. Please refresh the page.');
+
+                            return false;
+                        }
+                    } else {
+                        $this->add_to_errors('Token mismatch. Please refresh the page.');
+
                         return false;
                     }
-                  } else {
-                    $this->add_to_errors('Token mismatch. Please refresh the page.');
-                    
-                    return false;
+                }
+            }
+
+            if($this->session && $this->session_values && isset($_SESSION[$this->session])) {
+                
+                # Here is where we are handling checkbox arrays in our session.
+                # We have created a hidden element inside the _create_input() method which contains the array's values.
+                # example: <input type="hidden" name="colors" value="red,green,blue">
+                # We're going to go through those values and match them against what was posted...
+                
+                # here's where we'll store the checkbox array values we get from the hidden element(s)
+                $created_checkbox_values = [];
+                
+                # here's where we'll store the values of the checkboxes that were ticked upon submit
+                $posted_checkbox_values = [];
+
+                foreach ($_POST as $key => $value) {
+                    # check if the post value is an array
+                    if (is_array($value)) {
+                        foreach($value as $k => $v) {
+                            # put the posted checkbox value into the posted array
+                            $posted_checkbox_values[$key][] = $v;
+                        }
+                    }
+
+                    # the checkbox array's hidden element value is a string, so let's explode it and put it into our array
+                    if (strpos($key, '_values') !== false) {
+                        $created_checkbox_values[str_replace('_values', '', $key)] = explode(',', $_POST[$key]);
+                    }
+                }
+
+                # we're now going to compare the form's checkbox values to the values that were actually posted
+                if(!empty($posted_checkbox_values)) {
+                    foreach($created_checkbox_values as $key => $array) {
+                        # if a checkbox value is *not* posted in an array group, remove it from the session
+                        if(!empty($posted_checkbox_values[$key]) && isset($_SESSION[$this->session][$key])) {
+                            $clean1 = array_diff($posted_checkbox_values[$key], $array);
+                            $clean2 = array_diff($array, $posted_checkbox_values[$key]);
+                            $output = array_merge($clean1, $clean2);
+                            foreach ($output as $value) {
+                                foreach ($_SESSION[$this->session][$key] as $skey => $svalue) {
+                                    if ($svalue == $value) {
+                                        unset($_SESSION[$this->session][$key][$skey]);
+                                    }
+                                }
+                            }
+                        } else {
+                            # no checkbox values were posted in an array group, so remove the checkbox value from the session's array group
+                            foreach ($array as $array_key => $array_value) {
+                                if (isset($_SESSION[$this->session][$key])) {
+                                    # if the array is empty, just remove it
+                                    if (empty($_SESSION[$this->session][$key])) {
+                                        unset($_SESSION[$this->session][$key]);
+                                    } else {
+                                        # remove each un-posted checkbox value from the session
+                                        foreach ($_SESSION[$this->session][$key] as $skey => $svalue) {
+                                            if ($svalue == $array_value) {
+                                                unset($_SESSION[$this->session][$key][$skey]);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    # no checkbox arrays were posted at all, so remove the checkbox array(s) from the session
+                    foreach ($created_checkbox_values as $key => $value) {
+                        if(isset($_SESSION[$this->session][$key])) {
+                            unset($_SESSION[$this->session][$key]);
+                        }
+                    }
                 }
             }
 
@@ -489,23 +590,40 @@ class Formr
         # get the wrapper type
         $wrapper_context = $this->_wrapper_type();
 
+        if (!$this->use_default_wrapper) {
+            $wrapper = new \MyWrappers($this);
+        } else {
+            $wrapper = new \Wrapper($this);
+        }
+
         # enclose the element in a custom field wrapper (such as bootstrap) from the Wrapper class
-        if (!empty($this->wrapper) && !in_array($this->wrapper, $this->default_wrapper_types)) {
+        if (!empty($this->wrapper) && !in_array($this->wrapper, $this->default_wrapper_types)){
 
             # dynamically build the method's name...
             # $method = the method's name in the Wrapper class
             $method = $wrapper_context['type'];
-
-            $wrapper = new Wrapper($this);
-            
             return $wrapper->$method($element, $data);
         
         } else {
 
-          # enclose the element in the default wrapper
-          $wrapper = new Wrapper($this);
-          
+          # enclose the element in the default wrapper          
           return $wrapper->default_wrapper($wrapper_context, $element, $data);
+        }
+    }
+
+    protected function _open_list_wrapper()
+    {
+        $wrapper = $this->_wrapper_type();
+        if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol' || $wrapper['type'] == 'dl') {
+            return $wrapper['open'];
+        }
+    }
+
+    protected function _close_list_wrapper()
+    {
+        $wrapper = $this->_wrapper_type();
+        if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol' || $wrapper['type'] == 'dl') {
+            return $wrapper['close'];
         }
     }
 
@@ -598,7 +716,7 @@ class Formr
 
         $excluded_types = array('submit', 'button', 'checkbox', 'radio');
 
-        if ((strpos($element, 'class=') === false) && (isset($data['string']) && strpos($data['string'], 'class=') === false))
+        if ((strpos($element, 'class=') === false) || (isset($data['string']) && strpos($data['string'], 'class=') === false))
         {
             if (!empty($this->controls['input']))
             {
@@ -634,6 +752,10 @@ class Formr
                         if(!$data['string']) {
                             $return .= ' class="' . $this->controls['button-primary'] . '"';
                         } else {
+                            $return .= ' class="' . $this->controls['button'] . '"';
+                        }
+                    } else {
+                        if (!$data['string']) {
                             $return .= ' class="' . $this->controls['button'] . '"';
                         }
                     }
@@ -844,7 +966,7 @@ class Formr
         }
 
         # determines if the field name is in the array's key or value
-        if ($this->_starts_with($key, 'select') || $this->_starts_with($key, 'state') || $this->_starts_with($key, 'states') || $this->_starts_with($key, 'country')) {
+        if ($this->_starts_with($key, 'select') || $this->_starts_with($key, 'dropdown') || $this->_starts_with($key, 'state') || $this->_starts_with($key, 'states') || $this->_starts_with($key, 'country')) {
             $data['type'] = 'select';
         } elseif ($this->_starts_with($key, 'submit')) {
             $data['type'] = 'submit';
@@ -1058,6 +1180,21 @@ class Formr
                 $new_filename = $this->_generate_hash() . '.' . $handle['ext'];
             }
         }
+        
+        # rename the uploaded file with a custom string
+        if (mb_substr($this->upload_rename, 0, 6) == 'string')
+        {
+            # strip everything which surrounds our new filename
+            $string = trim($this->upload_rename, 'string[]');
+
+            # append the uploaded file's extension to our new filename
+            $new_filename = $string . '.' . $handle['ext'];
+
+            # generate a random filename if there is already a file with the same name
+            if(file_exists($this->upload_dir.'/'. $new_filename)) {
+                $new_filename = $string . '-' . mt_rand(1000,9999) . '.' . $handle['ext'];
+            }
+        }
 
         # rename the uploaded file with a timestamp
         if ($this->upload_rename == 'timestamp') {
@@ -1218,7 +1355,7 @@ class Formr
         $upload_directory = $this->upload_dir . $handle['name'];
 
         # move the file to its final destination
-        if (move_uploaded_file($handle['tmp_name'], $upload_directory)) {
+        if (@move_uploaded_file($handle['tmp_name'], $upload_directory)) {
 
             # see if we're resizing the image
             if ($this->upload_resize) {
@@ -1452,26 +1589,26 @@ class Formr
         $return = null;
 
         # flash messages
-        if (isset($_SESSION['flash'])) {
+        if (isset($_SESSION['formr']['flash'])) {
 
-            if (!empty($_SESSION['flash']['success'])) {
-                $this->success_message($_SESSION['flash']['success']);
+            if (!empty($_SESSION['formr']['flash']['success'])) {
+                $this->success_message($_SESSION['formr']['flash']['success']);
             }
 
-            if (!empty($_SESSION['flash']['error'])) {
-                $this->error_message($_SESSION['flash']['error']);
+            if (!empty($_SESSION['formr']['flash']['error'])) {
+                $this->error_message($_SESSION['formr']['flash']['error']);
             }
 
-            if (!empty($_SESSION['flash']['warning'])) {
-                $this->warning_message($_SESSION['flash']['warning']);
+            if (!empty($_SESSION['formr']['flash']['warning'])) {
+                $this->warning_message($_SESSION['formr']['flash']['warning']);
             }
 
-            if (!empty($_SESSION['flash']['info'])) {
-                $this->info_message($_SESSION['flash']['info']);
+            if (!empty($_SESSION['formr']['flash']['info'])) {
+                $this->info_message($_SESSION['formr']['flash']['info']);
             }
 
-            $_SESSION['flash'] = NULL;
-            unset($_SESSION['flash']);
+            $_SESSION['formr']['flash'] = NULL;
+            unset($_SESSION['formr']['flash']);
         }
 
         # returns a user-defined message
@@ -1527,7 +1664,7 @@ class Formr
     public function warning_message($str, $flash = false)
     {
         if ($flash == true) {
-            return $_SESSION['flash']['warning'] = $str;
+            return $_SESSION['formr']['flash']['warning'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-w'] . '" role="alert">';
@@ -1539,7 +1676,7 @@ class Formr
     public function success_message($str, $flash = false)
     {
         if ($flash == true) {
-            return $_SESSION['flash']['success'] = $str;
+            return $_SESSION['formr']['flash']['success'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-s'] . '" role="alert">';
@@ -1551,7 +1688,7 @@ class Formr
     public function error_message($str, $flash = false)
     {
         if ($flash == true) {
-            return $_SESSION['flash']['error'] = $str;
+            return $_SESSION['formr']['flash']['error'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-e'] . '" role="alert">';
@@ -1563,7 +1700,7 @@ class Formr
     public function info_message($str, $flash = false)
     {
         if ($flash == true) {
-            return $_SESSION['flash']['info'] = $str;
+            return $_SESSION['formr']['flash']['info'] = $str;
         }
 
         $return  = '<div class="' . $this->controls['alert-i'] . '" role="alert">';
@@ -1571,6 +1708,20 @@ class Formr
         $return .=      $str;
         $return .= '</div>';
         $this->message = $return;
+    }
+    private function _echo_success_message($str)
+    {
+        $return  = '<div style="margin: 20px 20px 40px 20px; padding:15px; background: #53A451; color: white; border-radius: 5px; text-align: center">';
+        $return .=      $str;
+        $return .= '</div>';
+        echo $return;
+    }
+    private function _echo_error_message($str)
+    {
+        $return  = '<div style="margin: 20px 20px 40px 20px; padding:15px; background: #CB444A; color: white; border-radius: 5px; text-align: center">';
+        $return .=      $str;
+        $return .= '</div>';
+        echo $return;
     }
 
 
@@ -1606,7 +1757,11 @@ class Formr
             # this part works with the Forms class to allow for quick validation by using pre-built form/validation sets
 
             # create the array by passing the function name and the validate flag to the Forms class
-            $data = Forms::$name('validate');
+            if (!$this->use_default_wrapper) {
+                $data = MyForms::$name('validate');
+            } else {
+                $data = Forms::$name('validate');   
+            }
 
             # run it through the validate function
             foreach ($data as $key => $value) {
@@ -1637,14 +1792,12 @@ class Formr
         if ($this->uploads && !empty($_FILES[$name]['tmp_name'])) {
 
             if (!$this->upload_dir) {
-                $this->errors[$name] = 'Please specify an upload directory.';
+                $this->_echo_error_message('Please specify an upload directory with $form->upload_dir.');
                 return false;
             }
             if (!$this->upload_accepted_types && !$this->upload_accepted_mimes) {
-                if (!empty($data['type']) == 'file') {
-                    $this->errors[$name] = 'Please specify the type of file allowed for upload.';
-                    return false;
-                }
+                $this->_echo_error_message('Please specify the accepted file types with $upload_accepted_mimes or $upload_accepted_types.');
+                return false;
             }
             if ($return = $this->_upload_files($name)) {
                 return $return;
@@ -1672,35 +1825,30 @@ class Formr
         if (is_array($post)) {
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 foreach ($_POST[$name] as $key => $value) {
-                    #$post[$name][$key] = $this->_clean_value($value);
-                    $post[$name][$key] = $value;
-
-                    # add each value to a session
                     if ($this->session) {
-                        #$_SESSION[$this->session][$key] = $this->_clean_value($value);
-                        $_SESSION[$this->session][$key] = $value;
+                        if(@!in_array($value, $_SESSION[$this->session][$name])) {
+                            $_SESSION[$this->session][$name][] = $value;
+                        }
+                    } else {
+                        $post[$name] = $value;
                     }
                 }
             } else {
                 foreach ($_GET[$name] as $key => $value) {
-                    #$post[$name][$key] = $this->_clean_value($value);
-                    $post[$name][$key] = $value;
-                    # add each value to a session
                     if ($this->session) {
-                        #$_SESSION[$this->session][$key] = $this->_clean_value($value);
-                        $_SESSION[$this->session][$key] = $value;
+                        if (@!in_array($value, $_SESSION[$this->session][$name])) {
+                            $_SESSION[$this->session][$name][] = $value;
+                        }
+                    } else {
+                        $post[$name] = $value;
                     }
                 }
             }
         } else {
-            $post = $post;
-
-            # add value to a session
-            if ($this->session) {
+            if ($this->session && !empty($post)) {
                 $_SESSION[$this->session][$name] = $post;
             }
         }
-
 
         # check to see if we have a human readable string and a custom error message string
         if (!empty($label) && stristr($label, $this->delimiter[1])) {
@@ -1716,7 +1864,6 @@ class Formr
 
             $data['string'] = $string;
         }
-
 
         # check if this is required
         # we can't check if isset($_POST[$name]) because checkboxes and radios don't
@@ -1750,7 +1897,6 @@ class Formr
         $data['label'] = $label;
         $data['name'] = $name;
 
-
         # process validation rules
         # if we're posting an array, don't run it through the validation rules because
         # each individual value could break the validation for the entire group
@@ -1775,7 +1921,7 @@ class Formr
             return $return;
         } else {
             # return the array without validation
-            return $post[$name];
+            return $post;
         }
     }
 
@@ -2258,7 +2404,19 @@ class Formr
 
     public function form_close()
     {
-        return $this->_nl(1) . '</form>' . $this->_nl(1);
+        $return = null;
+        
+        # put checkbox array values into hidden elements
+        # we'll match them inside the submit() method after the form has been submitted
+        if ($this->session && $this->session_values && !empty($this->checkbox_values)) {
+            foreach ($this->checkbox_values as $key => $value) {
+                $return .= $this->_nl(1) . $this->input_hidden($key . '_values', implode(',', $value));
+            }
+        }
+        
+        $return .= $this->_nl(1) . '</form>' . $this->_nl(1);
+
+        return $return;
     }
 
 
@@ -2390,6 +2548,20 @@ class Formr
         return $this->_button($data);
     }
 
+    public function submit_button($value = 'Submit')
+    {
+        $data = array(
+            'type' => 'submit',
+            'name' => 'submit',
+            'label' => null,
+            'value' => $value,
+            'id' => 'submit',
+            'string' => null
+        );
+
+        return $this->_button($data);
+    }
+
     public function inline($name)
     {
         # add div if using inline errors
@@ -2412,7 +2584,7 @@ class Formr
 
         # echo an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
-            echo '<p style="color:red">You must provide a name for the <strong>' . $data['type'] . '</strong> element.</p>';
+            $this->_echo_error_message('You must provide a name for the <strong>' . $data['type'] . '</strong> element.');
             return false;
         }
 
@@ -2420,8 +2592,10 @@ class Formr
         $return = '<input';
 
         # populate the field's value (on page load) with the session value
-        if ($data['value'] == '' && $this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
-            $data['value'] = $_SESSION[$this->session][$data['name']];
+        if (!in_array($data['type'], $this->_input_types('checkbox'))) {
+            if ($data['value'] == '' && $this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
+                $data['value'] = $_SESSION[$this->session][$data['name']];
+            }
         }
 
         # if there are form errors, let's insert the posted value into
@@ -2432,14 +2606,19 @@ class Formr
 
             # an ID wasn't specified, let's create one using the name
             if (empty($data['id'])) {
-                $data['id'] = $data['name'];
+                $data['id'] = trim($data['name'], '[]');
             }
             
+            # assign the value
             if (isset($_POST[$data['name']]) && !empty($_POST[$data['name']]) && $data['type'] != 'password') {
-
-                # run the data through the clean_value function and clean it
                 if ($this->session_values && $this->session) {
-                    $data['value'] = $_SESSION[$this->session][$data['name']];
+                    if($data['type'] != 'submit' && $data['type'] != 'button') {
+                        if(empty($data['value'])) {
+                            $this->_echo_error_message('Please define $'.$data['name'].' = $form->post(\''.$data['name'].'\')');
+                        } else {
+                            $data['value'] = $_SESSION[$this->session][$data['name']];
+                        }
+                    }
                 } else {
                     $data['value'] = $this->_clean_value($_POST[$data['name']], 'allow_html');
                 }
@@ -2473,6 +2652,17 @@ class Formr
 
             # checkboxes and radios..
 
+            if($this->session && $this->session_values) {
+                # let's see if our checkboxes are an array
+                if(strstr($data['name'], '[]')) {
+                    # put the values into an array, then we'll put them into a hidden element inside the form_close() method
+                    # we do this so we can match the form values against what was actually posted (or not posted)
+                    if(!in_array($data['value'], $this->checkbox_values)) {
+                        $this->checkbox_values[trim($data['name'], '[]')][] = $data['value'];
+                    }
+                }
+            }
+
             # an ID wasn't specified, let's create one using the value
             if (empty($data['id'])) {
                 $data['id'] = $data['value'];
@@ -2480,33 +2670,60 @@ class Formr
 
             # print an error message alerting the user this field needs a value
             if (!$this->is_not_empty($data['value'])) {
-                echo '<p style="color:red">Please enter a value for the ' . $data['type'] . ': <strong>' . $data['name'] . '</strong></p>';
-            }
-
-            # use the field's ID for the label if a radio or checkbox
-            if (in_array($data['type'], $this->_input_types('checkbox')) && !empty($data['id'])) {
-                $label_for = $data['id'];
-            } else {
-                $label_for = $data['name'];
+                $this->_echo_error_message('Please enter a value for the ' . $data['type'] . ': <strong>' . $data['name'] . '</strong>');
             }
 
             # check the element on initial form load
-            if (! $this->submitted()) {
-                if(!isset($_POST[$this->_strip_brackets($data['name'])])) {
-                    if (!empty($data['selected'])) {
-                        if ($data['selected'] == $data['value'] || ($data['selected'] == 'checked' || $data['selected'] == 'selected')) {
+            if (! $this->submitted())
+            {
+                if(!isset($_POST[$this->_strip_brackets($data['name'])]))
+                {
+                    # tick the checkbox/radio if value is in the session
+                    if ($this->session_values && $this->session && !empty($_SESSION[$this->session])) {
+                        if (strstr($data['name'], '[]')) {
+                            # we are in a checkbox array
+                            if(isset($_SESSION[$this->session][$this->_strip_brackets($data['name'])])) {
+                                foreach ($_SESSION[$this->session][$this->_strip_brackets($data['name'])] as $key => $value) {
+                                    if ($data['value'] == $value) {
+                                        $return .= ' checked';
+                                    }
+                                }
+                            }
+                        } else {
+                            foreach($_SESSION[$this->session] as $key => $value) {
+                                if ($data['name'] == $key && $data['value'] == $value) {
+                                    $return .= ' checked';
+                                }
+                            }
+                        }
+                    } else {
+                        # tick the checkbox/radio if value is selected
+                        if (!empty($data['selected'])) {
+                            if ($data['selected'] == $data['value'] || ($data['selected'] == 'checked' || $data['selected'] == 'selected')) {
+                                $return .= ' checked';
+                            }
+                        }
+                    }
+                }
+
+                # check the session for checkbox groups/arrays
+                if(!empty($_SESSION[$this->session])) {
+                    foreach ($_SESSION[$this->session] as $value) {
+                        if($data['value'] == $value) {
                             $return .= ' checked';
                         }
                     }
                 }
+
             } else {
+
                 # check the element after the form has been posted
                 if (isset($_POST[$this->_strip_brackets($data['name'])]) && $_POST[$this->_strip_brackets($data['name'])] == $data['value']) {
                     $return .= ' checked';
                 }
 
-                # checkbox group
-                elseif (!empty($_POST[$this->_strip_brackets($data['name'])]) && is_array($_POST[$this->_strip_brackets($data['name'])])) {
+                # checkbox group / checkbox array
+                if (!empty($_POST[$this->_strip_brackets($data['name'])]) && is_array($_POST[$this->_strip_brackets($data['name'])])) {
                     foreach ($_POST[$this->_strip_brackets($data['name'])] as $pvalue) {
                         if ($pvalue == $data['value']) {
                             $return .= ' checked';
@@ -2515,7 +2732,6 @@ class Formr
                 }
             }
         }
-
 
         # loop through the array and print each attribute
         foreach ($data as $key => $value) {
@@ -2531,11 +2747,11 @@ class Formr
         # 'fix' the classes attribute
         $return .= $this->_fix_classes($return, $data);
 
-        # an ID wasn't provided; use the name field as the ID
+        # last resort: an ID wasn't provided; use the name field as the ID
         # do not auto-generate an ID if the field is an array
         if (!$this->is_not_empty($data['id'])) {
             if (substr(rtrim($data['name']), -1) != ']') {
-                $return .= ' id="' . $data['name'] . '"';
+                $return .= ' id="' . trim($data['name'],'[]') . '"';
             }
         }
 
@@ -2553,7 +2769,7 @@ class Formr
 
         # insert the closing bracket
         $return .= '>';
-
+        
         # if using inline validation
         $return .= $this->inline($data['name']);
 
@@ -2848,7 +3064,7 @@ class Formr
                 'inline' => $inline
             );
         } else {
-            $data['type'] = 'datetime';
+            $data['type'] = 'datetime-local';
         }
         return  $this->_create_input($data);
     }
@@ -3318,13 +3534,21 @@ class Formr
         $menu = ltrim($menu, '_');
 
         # load the appropriate function from the Dropdowns class...
-        
+
         # we're passing an array in the 9th parameter of the input_select() method for the MyDropdowns class
-        if($data) {
-            return Dropdowns::$menu($data);
+        if (file_exists(dirname(__FILE__) . '/my_classes/my.dropdowns.php')) {
+            if ($data) {
+                return \MyDropdowns::$menu($data);
+            }
+
+            return \MyDropdowns::$menu();
+        } else {
+            if ($data) {
+                return \Dropdowns::$menu($data);
+            }
+
+            return \Dropdowns::$menu();
         }
-        
-        return Dropdowns::$menu();
     }
 
     public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
@@ -3371,6 +3595,160 @@ class Formr
         $data['multiple'] = 'multiple';
 
         return $this->_create_select($data);
+    }
+
+    
+    
+    
+    # INPUT ALIASES, FOR EVEN FASTER FORM BUILDING
+    public function text($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_text($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function hidden($name, $value = '')
+    {
+        return $this->input_hidden($name, $value);
+    }
+
+    public function file($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_file($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function file_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_upload_multiple($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function upload($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_upload($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function upload_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_upload_multiple($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function password($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_password($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function radio($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    {
+        return $this->input_radio($name, $label, $value, $id, $string, $inline, $selected);
+    }
+    
+    public function radio_inline($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    {
+        return $this->input_radio_inline($name, $label, $value, $id, $string, $inline, $selected);
+    }
+
+    public function checkbox($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    {
+        return $this->input_checkbox($name, $label, $value, $id, $string, $inline, $selected);
+    }
+    
+    public function checkbox_inline($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    {
+        return $this->input_checkbox_inline($name, $label, $value, $id, $string, $inline, $selected);
+    }
+
+    public function email($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_email($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function textarea($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_textarea($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function select($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    {
+        return $this->input_select($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+    }
+    
+    public function select_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    {
+        return $this->input_select_multiple($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+    }
+
+    public function dropdown($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    {
+        return $this->input_select($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+    }
+    
+    public function dropdown_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    {
+        return $this->input_select_multiple($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+    }
+
+    public function color($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_color($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function date($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_date($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function datetime($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_datetime_local($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function datetime_local($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_datetime_local($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function month($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_month($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function number($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_number($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function range($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_range($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function search($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_search($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function tel($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_tel($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function time($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_time($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function url($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_url($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function week($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    {
+        return $this->input_week($name, $label, $value, $id, $string, $inline);
+    }
+
+    public function button($name = '', $label = '', $value = '', $id = '', $string = '')
+    {
+        return $this->input_button($name, $label, $value, $id, $string);
     }
 
 
@@ -3530,7 +3908,7 @@ class Formr
 
 
 
-
+    # SIMPLE FORM CREATION
     public function create($string, $form = false)
     {
         # SIMPLE FORM CREATION
@@ -3540,7 +3918,11 @@ class Formr
         $return = null;
 
         if($form) {
-            $return .= $this->form_open();
+            if($form == 'multipart') {
+                $return .= $this->form_open_multipart();
+            } else {
+                $return .= $this->form_open();
+            }
         }
         
         # break apart the comma delimited string of form labels
@@ -3558,8 +3940,10 @@ class Formr
                 'inline' => null
             ];
 
+            $return .= $this->_open_list_wrapper();
+
             # label string contains the word 'email', use email input type
-            if(strpos(strtolower($label), 'email') !== false) {
+            if(strpos(strtolower($label), 'email') !== false && strpos(strtolower($label), '|email') === false) {
                 $return .= $this->input_email($data);
             }
             elseif(strpos(strtolower($label), '|') !== false) {
@@ -3583,13 +3967,21 @@ class Formr
                     $data['value'] = $data['name'];
                 }
                 
-                # return the input
-                $return .= $this->$name($data);
+                # we want to create a multiple file upload element
+                if($type == 'file[]') {
+                    $data['name'] = $data['name'].'[]';
+                    $return .= $this->input_upload_multiple($data); 
+                } else {
+                    # return the input
+                    $return .= $this->$name($data);
+                }
             }
             else {
                 # default to text type
                 $return .= $this->input_text($data);
             }
+
+            $return .= $this->_close_list_wrapper();
         }
 
         if($form) {
@@ -3606,6 +3998,13 @@ class Formr
         
         return $this->create($string, true);
     }
+    
+    public function create_form_multipart($string)
+    {
+        # alias of create_form(), except adds enctype="multipart/form-data"
+        
+        return $this->create($string, 'multipart');
+    }
 
 
 
@@ -3618,7 +4017,12 @@ class Formr
         # arrays of frequently used forms and pass them through the fastform() function
 
         # create the array by passing the function name to the Forms class
-        $data = Forms::$form_name();
+
+        if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
+            $data = \MyForms::$form_name();
+        } else {
+            $data = \Forms::$form_name();
+        }
 
         # pass the array to the fastform() method
         if ($multipart) {
@@ -3652,10 +4056,7 @@ class Formr
         $return .= $this->fieldset_open();
 
         # lets see if we need to wrap this in a list...
-        $wrapper = $this->_wrapper_type();
-        if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol' || $wrapper['type'] == 'dl') {
-            $return .= $wrapper['open'];
-        }
+        $return .= $this->_open_list_wrapper();
 
         # create an empty array outside of looping to store hidden inputs
         $hidden = array();
@@ -3718,7 +4119,7 @@ class Formr
                     # wrap it
                     $return .= $this->_wrapper($item, $data);
                 }
-            } elseif ($data['type'] == 'select' || $data['type'] == 'select') {
+            } elseif ($data['type'] == 'select') {
                 $item    = $this->input_select($data);
                 $return .= $this->_wrapper($item, $data);
             } elseif ($data['type'] == 'text') {
@@ -3743,7 +4144,7 @@ class Formr
                 $item    = $this->input_date($data);
                 $return .= $this->_wrapper($item, $data);
             } elseif ($data['type'] == 'datetime') {
-                $item    = $this->input_datetime($data);
+                $item    = $this->input_datetime_local($data);
                 $return .= $this->_wrapper($item, $data);
             } elseif ($data['type'] == 'datetime-local') {
                 $item    = $this->input_datetime_local($data);
@@ -3804,14 +4205,12 @@ class Formr
             $data['inline'] = '';
             $data['selected'] = '';
             $data['options'] = '';
-            $item    = $this->input_submit($data);
+            $item = $this->input_submit($data);
             $return .= $this->_wrapper($item, $data);
         }
 
         # close the list tag
-        if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol' || $wrapper['type'] == 'dl') {
-            $return .= $this->_nl(1) . $wrapper['close'];
-        }
+        $return .= $this->_close_list_wrapper();
 
         # if hidden fields are set, print them now
         if (!empty($hidden)) {
@@ -4032,10 +4431,10 @@ class Formr
         }
 
         # put the token into a session
-        $_SESSION['token'] = $token;
+        $_SESSION['formr']['token'] = $token;
 
         # token expires in given number of seconds (default 1 hour)
-        $_SESSION['token-expires'] = time() + $timeout;
+        $_SESSION['formr']['token-expires'] = time() + $timeout;
 
         return '<input type="hidden" name="csrf_token" value="'.$token.'">';
     }
@@ -4077,5 +4476,21 @@ class Formr
         # working on a better error messaging system; this may change...
 
         return '<span style="color:red">!! '.$string.'</span><br>';
+    }
+
+    public function unset_session()
+    {
+        # deletes the formr, and user-defined sessions, handy for testing
+
+        unset($_SESSION['formr']);
+
+        if (isset($_SESSION[$this->session])) {
+            unset($_SESSION[$this->session]);
+        }
+
+        echo $this->_echo_success_message("SESSION[$this->session] has been unset");
+
+        $this->session = null;
+        $this->session_values = null;
     }
 }

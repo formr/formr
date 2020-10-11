@@ -1,12 +1,12 @@
 <?php
 
-class Dropdowns extends MyDropdowns
+class Dropdowns extends Formr\Formr
 {
+    # these methods contain arrays which are to be used in dropdown menus.
+    # documentation: https://formr.github.io/methods/#drop-downs-use-strings
+    # extend formr and create your own: https://github.com/formr/extend
 
-    // contains arrays of US states, Canadian provinces/territories, countries of the world and many more - to be used in dropdown menus
-    // you can easily add your own and then call them by using the input_select() function or in the fastform() function
-
-    // months with full name as key
+    # months with full name as key
     public static function months()
     {
         return [
@@ -29,14 +29,14 @@ class Dropdowns extends MyDropdowns
     {
         $stop_day = 31;
 
-        // get the current year
+        # get the current year
         $start_day = 1;
 
-        // initialize the years array
+        # initialize the years array
         $days = [];
 
-        // starting with the current year, 
-        // loop through the years until we reach the stop date
+        # starting with the current year, 
+        # loop through the years until we reach the stop date
         for ($i = $start_day; $i <= $stop_day; $i++) {
             $days[$i] = $i;
         }
@@ -44,30 +44,30 @@ class Dropdowns extends MyDropdowns
         return $days;
     }
 
-    # displays every year starting from 1950, good for registration forms
+    # displays every year starting from 1930, good for registration forms
     public static function years()
     {
         $stop_date = date('Y');
 
-        // get the current year
-        $start_date = 1950;
+        # get the current year
+        $start_date = 1930;
 
-        // initialize the years array
+        # initialize the years array
         $years = [];
 
-        // starting with the current year, 
-        // loop through the years until we reach the stop date
+        # starting with the current year, 
+        # loop through the years until we reach the stop date
         for ($i = $start_date; $i <= $stop_date; $i++) {
             $years[$i] = $i;
         }
 
-        // reverse the array so we have 1900 at the bottom of the menu
+        # reverse the array so we have 1930 at the bottom of the menu
         $return = array_reverse($years, true);
 
         return $return;
     }
 
-    // displays months of the year
+    # displays months of the year with a numeric key
     public static function months_alpha()
     {
         return [
@@ -86,7 +86,7 @@ class Dropdowns extends MyDropdowns
         ];
     }
 
-    // months - good for credit cards
+    # another months - good for credit cards
     public static function cc_months()
     {
         return [
@@ -106,19 +106,19 @@ class Dropdowns extends MyDropdowns
     }
 
 
-    // years - for credit cards
+    # years - for credit cards
     public static function cc_years()
     {
         $stop_date = 2025;
 
-        // get the current year
+        # get the current year
         $current_year = date('Y');
 
-        // initialize the years array
+        # initialize the years array
         $years = [];
 
-        // starting with the current year, 
-        // loop through the years until we reach the stop date
+        # starting with the current year, 
+        # loop through the years until we reach the stop date
         for ($i = $current_year; $i <= $stop_date; $i++) {
             $years[$i] = $i;
         }
@@ -160,23 +160,23 @@ class Dropdowns extends MyDropdowns
     }
 
 
-    // makes sure a person is of a certain age - in this cas: 18
+    # makes sure a person is of a certain age - in this case: 18
     public static function years_old()
     {
         $stop_date = date('Y', strtotime('-18 year'));
 
-        $start_date = 1950;
+        $start_date = 1930;
 
-        // initialize the years array
+        # initialize the years array
         $years = [];
 
-        // starting with the current year, 
-        // loop through the years until we reach the stop date
+        # starting with the current year, 
+        # loop through the years until we reach the stop date
         for ($i = $start_date; $i <= $stop_date; $i++) {
             $years[$i] = $i;
         }
 
-        // reverse the array so we have the start date at the bottom of the menu
+        # reverse the array so we have the start date at the bottom of the menu
         $return = array_reverse($years, true);
 
         return $return;
@@ -199,7 +199,7 @@ class Dropdowns extends MyDropdowns
     }
 
 
-    // US states
+    # u.s. states
     public static function states()
     {
         return [
@@ -258,14 +258,14 @@ class Dropdowns extends MyDropdowns
         ];
     }
 
-    // alias of states()
+    # alias of states()
     public static function state()
     {
         return static::states();
     }
 
 
-    // Canadian provinces and territories
+    # canadian provinces and territories
     public static function provinces()
     {
         return [
@@ -286,7 +286,7 @@ class Dropdowns extends MyDropdowns
         ];
     }
 
-
+    # u.s. states and canadian provinces
     public static function states_provinces()
     {
         return [
@@ -363,7 +363,7 @@ class Dropdowns extends MyDropdowns
     }
 
 
-    // Countries
+    # countries
     public static function countries()
     {
         return [
@@ -611,7 +611,7 @@ class Dropdowns extends MyDropdowns
         ];
     }
 
-    // alias of countries()
+    # alias of countries()
     public static function country()
     {
         return static::countries();

@@ -1,6 +1,6 @@
 <?php
 
-class Wrapper extends Formr
+class Wrapper extends Formr\Formr
 {
     public $container;
 
