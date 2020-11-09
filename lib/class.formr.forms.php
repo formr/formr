@@ -78,8 +78,8 @@ class Forms extends Formr\Formr
             # here we'll build the form array for the fastform() function
             return [
                 'text1' => 'email,Email:,,email',
-                'password2' => 'password,Password:,,password,placeholder="password"',
-                'password3' => 'confirm,Confirm password:,,confirm,placeholder="confirm password"'
+                'password2' => 'password,Password:,,password',
+                'password3' => 'confirm,Confirm password:,,confirm'
             ];
         } else {
             # now we'll build the corresponding key and human readable text and validation rules for the fastpost() function

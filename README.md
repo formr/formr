@@ -64,7 +64,7 @@ Simply enter your form labels as a comma delimited string and Formr will build t
 
 ```php
 $form = new Formr\Formr('bootstrap');
-echo $form->create_form('Name, Email, Comments|textarea');
+$form->create_form('Name, Email, Comments|textarea');
 ```
 
 ### Produces the following HTML
@@ -107,10 +107,10 @@ Using the `create()` method tells Formr you want control over adding the form ta
 
 ```php
 $form = new Formr\Formr('bootstrap');
-echo $form->form_open();
-echo $form->create('First name, Last name, Email address, Age|number, Comments|textarea');
-echo $form->submit_button();
-echo $form->form_close();
+$form->form_open();
+$form->create('First name, Last name, Email address, Age|number, Comments|textarea');
+$form->submit_button();
+$form->form_close();
 ```
 
 #### Produces the following HTML
@@ -160,7 +160,7 @@ Formr has several common forms already baked in, and it's really easy to [create
 
 ```php
 $form = new Formr\Formr();
-echo $form->fastform('contact');
+$form->fastform('contact');
 ```
 
 #### Produces the following HTML
@@ -203,7 +203,7 @@ $data = [
 ];
 
 $form = new Formr\Formr('bootstrap');
-echo $form->fastform($data);
+$form->fastform($data);
 ```
 
 #### Produces the following HTML
@@ -245,15 +245,15 @@ You have full control over how you build your forms...
 
 ```html
 <div class="my-wrapper-class">
-    <?php echo $form->text('name', 'Name'); ?>
+    <?php $form->text('name', 'Name'); ?>
 </div>
 
 <div class="my-wrapper-class">
-    <?php echo $form->email('email', 'Email address', 'john@example.com', 'emailID', 'placeholder="email@domain.com"'); ?>
+    <?php $form->email('email', 'Email address', 'john@example.com', 'emailID', 'placeholder="email@domain.com"'); ?>
 </div>
 
 <div class="my-wrapper-class">
-    <input type="text" name="address" value="<?php echo $form->value('address') ?>">
+    <input type="text" name="address" value="<?php $form->value('address') ?>">
 </div>
 ```
 
@@ -378,10 +378,10 @@ if($form->submitted())
     <div class="container">
         <?php
             // print messages, formatted using Bootstrap alerts
-            echo $form->messages();
+            $form->messages();
 
             // create the form
-            echo $form->create_form('First name, Last name, Email address, Message|textarea');
+            $form->create_form('First name, Last name, Email address, Message|textarea');
         ?>
     </div>
 </body>

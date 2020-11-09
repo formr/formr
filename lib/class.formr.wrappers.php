@@ -72,14 +72,12 @@ class Wrapper extends Formr\Formr
             $return .= $this->_nl(1);
         }
 
-         # add the list tag if using fastForm
-        if (!empty($data['fastform'])) {
-            if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
-                $return .= '<li>';
-            }
-            if ($wrapper['type'] == 'dl') {
-                $return .= '<dt>';
-            }
+         # add the list tag if required
+        if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
+            $return .= '<li>' . $this->_nl(1);
+        }
+        if ($wrapper['type'] == 'dl') {
+            $return .= '<dt>' . $this->_nl(1);
         }
 
          # checkboxes and radios
@@ -105,14 +103,12 @@ class Wrapper extends Formr\Formr
         # add a new line
         $return .= $this->_nl(1);
 
-         # close the list tag if using fastForm
-        if (!empty($data['fastform'])) {
-            if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
-                $return .= '</li>';
-            }
-            if ($wrapper['type'] == 'dl') {
-                $return .= '</dt>';
-            }
+         # close the list tag if required
+        if ($wrapper['type'] == 'ul' || $wrapper['type'] == 'ol') {
+            $return .= '</li>';
+        }
+        if ($wrapper['type'] == 'dl') {
+            $return .= '</dt>';
         }
 
         # close the wrapper
