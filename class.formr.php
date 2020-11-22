@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.2.1)
+ * Formr (1.2.2)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -76,6 +76,7 @@ class Formr
     public $success_message = null;
     public $warning_message = null;
     public $info_message = null;
+    public $error_message = null;
 
     # inline validation CSS class: displays error icon next to form fields
     public $inline_errors_class = 'error_inline';
@@ -126,6 +127,9 @@ class Formr
     # put default class names into an array
     public $controls = array();
 
+    # show valid status (green outline) on fields if using a framework
+    public $show_valid = false;
+
     # default wrapper types which Formr supports
     public $default_wrapper_types = array('div', 'p', 'ul', 'ol', 'dl', 'li');
 
@@ -138,7 +142,10 @@ class Formr
 
     # we don't want to create form attributes from these keywords if they're in the $data array
     private $no_keys = array('string', 'checked', 'selected', 'required', 'inline', 'label', 'fastform', 'options', 'group', 'multiple');
-
+    
+    # exclude these input types from certain operations, namely classes and wrappers
+    protected $excluded_types = array('submit', 'button', 'reset', 'checkbox', 'radio');
+    
     # use Formr's default wrapper
     private $use_default_wrapper = true;
 
@@ -151,26 +158,18 @@ class Formr
         }
 
         if (!$wrapper) {
-            # no wrapper, default divs and css
+            # no wrapper specified, use Formr's default
             $this->wrapper = '';
         } else {
             # user-defined wrapper
             $this->wrapper = strtolower($wrapper);
 
-            # default bootstrap to version 4
-            if ($wrapper == 'bootstrap') {
-                $this->wrapper = 'bootstrap4';
-            }
             $wrapper_css = $this->wrapper . '_css';
         }
 
         if (!$this->wrapper || in_array($this->wrapper, $this->default_wrapper_types)) {
-            # use default css
-            if (!$this->use_default_wrapper) {
-                $this->controls = \MyWrappers::css_defaults();
-            } else {
-                $this->controls = \Wrapper::css_defaults();
-            }
+            # use default wrapper css
+            $this->controls = \Wrapper::default_css();
         } else {
             # custom wrapper/control types
             try {
@@ -187,14 +186,10 @@ class Formr
                     }
                 }
             } catch (\ReflectionException $e) {
-                #	method does not exist, spit out error and set default controls
-                $this->_echo_error_message('<h4>' . $e->getMessage() . '</h4>If you are using Custom Wrappers, please make sure the Custom Wrapper file is located at "<strong>my_classes/my.wrappers.php</strong>", and that you spelled your Wrapper name correctly.</p><p>If you are NOT using Custom Wrappers, please make sure a file does not exist at <strong>"my_classes/my.wrappers.php"</strong>'); die;
+                # method does not exist, spit out error and set default controls
+                $this->_error_message('<h4>' . $e->getMessage() . '</h4>If you are using Custom Wrappers, please make sure the Custom Wrapper file is located at "<strong>my_classes/my.wrappers.php</strong>", and that you spelled your Wrapper name correctly.</p><p>If you are NOT using Custom Wrappers, please make sure a file does not exist at <strong>"my_classes/my.wrappers.php"</strong>'); die;
 
-                if (!$this->use_default_wrapper) {
-                    $this->controls = \MyWrappers::css_defaults();
-                } else {
-                    $this->controls = \Wrapper::css_defaults();
-                }
+                $this->controls = \Wrapper::default_css();
             }
         }
 
@@ -212,11 +207,12 @@ class Formr
     {
         # aids in debugging by not making you have to type all of
         # this nonsense out each time you want to print_r() something
-        if ($data === 'post') {
+        
+        if ($data === 'POST') {
             echo '<tt><pre>';
             print_r($_POST);
             echo '</pre></tt>';
-        } elseif ($data === 'get') {
+        } elseif ($data === 'GET') {
             echo '<tt><pre>';
             print_r($_GET);
             echo '</pre></tt>';
@@ -227,9 +223,9 @@ class Formr
         }
     }
 
-    # alias of printr() for Laravel users
     function dd($data)
     {
+        # alias of printr()
         return $this->printr($data);
     }
 
@@ -300,8 +296,9 @@ class Formr
         echo '<h3>Form Settings</h3><tt>' . $return . '</tt><br><br><br>';
     }
 
-    # alias of form_info()
-    public function info() {
+    public function info()
+    {
+        # alias of form_info()
         return $this->form_info();
     }
 
@@ -314,7 +311,7 @@ class Formr
             if (isset($_POST['csrf_token']))
             {
                 if(!isset($_SESSION)) {
-                    echo $this->_echo_error_message('CSRF requires <code>session_start()</code> at the top of the script.');
+                    echo $this->_error_message('CSRF requires <code>session_start()</code> at the top of the script.');
                 } else {
                     # check if token in SESSION equals token in POST array
                     if (hash_equals($_SESSION['formr']['token'], $_POST['csrf_token'])) {
@@ -410,8 +407,9 @@ class Formr
         return false;
     }
 
-    # alias of submit()
-    public function submitted() {
+    public function submitted()
+    {
+        # alias of submit()
         return $this->submit();
     }
 
@@ -541,17 +539,19 @@ class Formr
             return $return;
         
         } else {
-
+            
+            # default to a <div>, which will be built in the wrapper class
+            if($this->wrapper == 'div' || $this->wrapper == '') {
+                return $return;
+            }
+            
             # use a pre-defined wrapper
             if(! in_array($this->wrapper, ['ul', 'ol', 'dl', 'p', 'div'])) {
                 # set the wrapper's name
                 $return['type'] = $this->wrapper;
-                
                 $return['open'] = $return['close'] = null;
-                
                 return $return;
             }
-
             # if tags were entered, strip the brackets
             $str = strtolower(trim($this->wrapper, '<>'));
 
@@ -575,17 +575,11 @@ class Formr
                 return $return;
             }
 
-            # wrapper is inline
+            # wrapper is a <p>
             if ($str == 'p') {
                 $return['type'] = 'p';
                 $return['open'] = '<p>';
                 $return['close'] = '</p>';
-                return $return;
-            }
-            if ($str == 'div') {
-                $return['type'] = 'div';
-                $return['open'] = '<div class="' . $this->controls['div'] . '">';
-                $return['close'] = '</div>';
                 return $return;
             }
         }
@@ -671,23 +665,11 @@ class Formr
             }
         }
 
-        # add a default class for input types
-        // if ((in_array($data['type'], $this->_input_types('text'))) || ($data['type'] == 'select')) {
-        //    # don't add the class if it's empty
-        //     if ($this->controls['input']) {
-        //         if (!empty($data['class'])) {
-        //             $string .= 'class="' . $this->controls['input'] . ' ' . $data['class'] . ' ';
-        //         } else {
-        //             $string .= ' class="' . $this->controls['input'] . ' ';
-        //         }
-        //     }
-        // }
-
         # check if field is required
         if ($this->_check_required($data['name'], $data)) {
 
             # add the errors class
-            if ($this->in_errors($data['name']) && $this->wrapper != 'bootstrap') {
+            if ($this->in_errors($data['name']) && !$this->_wrapper_is('framework')) {
                 $classes .= $this->controls['text-error'] . ' ';
             }
 
@@ -725,25 +707,41 @@ class Formr
 
         $return = null;
 
-        $excluded_types = array('submit', 'button', 'reset', 'checkbox', 'radio');
-
         if ((strpos($element, 'class=') === false) || (isset($data['string']) && strpos($data['string'], 'class=') === false))
         {
             if (!empty($this->controls['input']))
             {
-                if (!in_array($data['type'], $excluded_types))
+                if (!in_array($data['type'], $this->excluded_types))
                 {
                     if($data['type'] == 'file') {
                         # file input gets its own class
                         $return .= ' class="' . $this->controls['file'];
                     } else {
-                        $return .= ' class="' . $this->controls['input'];
+                        if ($this->wrapper == 'bulma') {
+                            if($data['type'] == 'textarea') {
+                                $return .= ' class="' . $this->controls['textarea'];
+                            }
+                            elseif($data['type'] == 'file') {
+                                $return .= ' class="' . $this->controls['file'];
+                            }
+                            else {
+                                $return .= ' class="' . $this->controls['input'];
+                            }
+                        } else {
+                            $return .= ' class="' . $this->controls['input'];
+                        }
                     }
 
                     if ($this->in_errors($data['name'])) {
-                        # add bootstrap 4 error class on element
-                        if ($this->wrapper == 'bootstrap4') {
+                        # add 'danger' error class on element
+                        if ($this->_wrapper_is('framework')) {
                             $return .= ' '.$this->controls['is-invalid'];
+                        }
+                    }
+                    elseif ($this->submitted() && $this->show_valid) {
+                        # add 'danger' error class on element
+                        if ($this->_wrapper_is('framework')) {
+                            $return .= ' '.$this->controls['is-valid'];
                         }
                     }
 
@@ -753,13 +751,13 @@ class Formr
 
                 # bootstrap 4 inline checkboxes & radios
                 if(isset($data['checkbox-inline']) || ($this->type_is_checkbox($data) && !isset($data['checkbox-inline']))) {
-                    if (strpos($this->wrapper, 'bootstrap') !== false) {
+                    if ($this->_wrapper_is('bootstrap')) {
                         $return .= ' class="' . $this->controls['form-check-input'] . '"';
                     }
                 }
 
                 if ($data['type'] == 'submit' || $data['type'] == 'button') {
-                    if (strpos($this->wrapper, 'bootstrap') !== false) {
+                    if ($this->_wrapper_is('bootstrap')) {
                         if(!$data['string']) {
                             $return .= ' class="' . $this->controls['button-primary'] . '"';
                         } else {
@@ -1077,7 +1075,7 @@ class Formr
                     $data['group'] = true;
 
                     # if using bootstrap, wrap the elements in a bootstrap class
-                    if ($this->wrapper == 'bootstrap') {
+                    if ($this->_wrapper_is('bootstrap')) {
                         $return .= $this->_t(1) . '<div class="' . $this->controls[$data['type']] . '">';
                     }
 
@@ -1087,7 +1085,7 @@ class Formr
                     $return .= $this->label_close($data);
 
                     # close the bootstrap class
-                    if ($this->wrapper == 'bootstrap') {
+                    if ($this->_wrapper_is('bootstrap')) {
                         $return .= $this->_nl(1) . $this->_t(1) . '</div>' . $this->_nl(1);
                     }
                 }
@@ -1102,10 +1100,22 @@ class Formr
     protected function _comment($string)
     {
         # creates an HTML comment
+        
         if ($this->minify || !$this->comments) {
             return false;
         } else {
             return '<!-- ' . $string . ' -->';
+        }
+    }
+    
+    protected function _print_field_comment($data)
+    {
+        # returns the HTML field comment for display in the wrapper
+        
+        if (in_array($data['type'], $this->_input_types('checkbox'))) {
+            return $this->_comment($data['id']);
+        } else {
+            return $this->_comment($data['name']);
         }
     }
 
@@ -1597,29 +1607,56 @@ class Formr
     {
         # this function prints client-side validation messages to the browser
 
-        if($this->success_message || $this->warning_message || $this->info_message)
+        # print a message fi the following properties are set
+        if($this->success_message || $this->warning_message || $this->info_message || $this->error_message)
         {
             if($this->success_message) {
-                $alert_control = $this->controls['alert-s'];
-                $message = $this->success_message;
+                $alert_control = 'alert-s';
+                $heading = 'Success';
+                $parts = explode('|', $this->success_message);
+                if(count($parts) > 1) {
+                    $heading = $parts[1];
+                }
+                $message = $parts[0];
             }
 
             if($this->warning_message) {
-                $alert_control = $this->controls['alert-w'];
-                $message = $this->warning_message;
+                $alert_control = 'alert-w';
+                $heading = 'Warning';
+                $parts = explode('|', $this->warning_message);
+                if (count($parts) > 1) {
+                    $heading = $parts[1];
+                }
+                $message = $parts[0];
             }
             
             if($this->info_message) {
-                $alert_control = $this->controls['alert-i'];
-                $message = $this->info_message;
+                $alert_control = 'alert-i';
+                $heading = 'Info';
+                $parts = explode('|', $this->info_message);
+                if (count($parts) > 1) {
+                    $heading = $parts[1];
+                }
+                $message = $parts[0];
             }
             
-            $return  = '<div class="' . $alert_control . '" role="alert">';
-            if (strstr($this->wrapper, 'bootstrap') !== false) {
-                $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+            if($this->error_message) {
+                $alert_control = 'alert-e';
+                $heading = 'Error';
+                $parts = explode('|', $this->error_message);
+                if (count($parts) > 1) {
+                    $heading = $parts[1];
+                }
+                $message = $parts[0];
             }
-            $return .= $message;
-            $return .= '</div>';
+
+            if ($this->_wrapper_is('bootstrap')) {
+                $return = $this->_bootstrap_alert($alert_control, $message, $heading);
+            } elseif ($this->_wrapper_is('bulma')) {
+                $return = $this->_bulma_alert($alert_control, $message, $heading);
+            } else {
+                $return = $this->_formr_alert($alert_control, $message, $heading);
+            }
 
             echo $return;
         }
@@ -1654,13 +1691,12 @@ class Formr
             echo $this->message;
         }
 
-        # returns form errors
+        # prints form errors
         if ($this->inline_errors == false) {
 
-            # if custom HTML tags are not provided, let's set a default
             if (empty($open_tag) && empty($close_tag)) {
-                $open_tag  = '<div class="' . $this->controls['alert-e'] . '">';
-                $close_tag = '</div>';
+                $open_tag  = null;
+                $close_tag = null;
             }
 
             if ($this->errors()) {
@@ -1669,6 +1705,7 @@ class Formr
 
                     $return .= $open_tag;
 
+                    $i=0;
                     foreach ($this->errors as $key => $value) {
                         if ($this->link_errors == true) {
                             # user wants to link to the form fields upon error
@@ -1682,84 +1719,107 @@ class Formr
                                 $return .= $value.'<br>';
                             }
                         }
+                        $i++;
                     }
 
                     $return .= $close_tag . $this->_nl(1);
+                
                 } else {
+                    
+                    $i=0;
                     foreach ($this->error_messages as $key => $value) {
                         if ($this->in_errors($key)) {
                             # print the message
-                            $return .= $open_tag . $value . $close_tag . $this->_nl(1);
+                            $return .= $value . $this->_nl(1);
                         }
+                        $i++;
                     }
                 }
 
-                echo $return;
+                # determine the heading message based on how many errors there are
+                if($i > 1) {
+                    $heading = 'Please Correct the Following Errors';
+                } else {
+                    $heading = 'Please Correct the Following Error';
+                }
+
+                # display the appropriate error dialogue
+                if ($this->_wrapper_is('bootstrap')) {
+                    echo $this->_bootstrap_alert('alert-e', $return, $heading);
+                } elseif ($this->_wrapper_is('bulma')) {
+                    echo $this->_bulma_alert('alert-e', $return, $heading);
+                } else {
+                    echo $this->_formr_alert('alert-e', $return, $heading);
+                }
             }
         }
     }
 
-    public function warning_message($message, $flash = false)
+    public function warning_message($message, $heading = null, $flash = false)
     {
         if ($flash == true) {
             return $_SESSION['formr']['flash']['warning'] = $message;
         }
 
-        $return  = '<div class="' . $this->controls['alert-w'] . '" role="alert">';
-        if (strstr($this->wrapper, 'bootstrap') !== false) {
-            $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        if($this->_wrapper_is('bootstrap')) {
+            $return = $this->_bootstrap_alert('alert-w', $message, $heading);
+        } elseif($this->_wrapper_is('bulma')) {
+            $return = $this->_bulma_alert('alert-w', $message, $heading);
+        } else {
+            $return = $this->_formr_alert('alert-w', $message, $heading);
         }
-        $return .= $message;
-        $return .= '</div>';
 
         echo $return;
     }
-    public function success_message($message, $flash = false)
+    public function success_message($message, $heading = null, $flash = false)
     {
         if ($flash == true) {
             return $_SESSION['formr']['flash']['success'] = $message;
         }
 
-        $return  = '<div class="' . $this->controls['alert-s'] . '" role="alert">';
-        if(strstr($this->wrapper, 'bootstrap') !== false) {
-            $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        if ($this->_wrapper_is('bootstrap')) {
+            $return = $this->_bootstrap_alert('alert-s', $message, $heading);
+        } elseif ($this->_wrapper_is('bulma')) {
+            $return = $this->_bulma_alert('alert-s', $message, $heading);
+        } else {
+            $return = $this->_formr_alert('alert-s', $message, $heading);
         }
-        $return .= $message;
-        $return .= '</div>';
 
         echo $return;
     }
-    public function error_message($message, $flash = false)
+    public function error_message($message, $heading = null, $flash = false)
     {
         if ($flash == true) {
             return $_SESSION['formr']['flash']['error'] = $message;
         }
 
-        $return  = '<div class="' . $this->controls['alert-e'] . '" role="alert">';
-        if (strstr($this->wrapper, 'bootstrap') !== false) {
-            $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        if ($this->_wrapper_is('bootstrap')) {
+            $return = $this->_bootstrap_alert('alert-e', $message, $heading);
+        } elseif ($this->_wrapper_is('bulma')) {
+            $return = $this->_bulma_alert('alert-e', $message, $heading);
+        } else {
+            $return = $this->_formr_alert('alert-e', $message, $heading);
         }
-        $return .= $message;
-        $return .= '</div>';
 
         echo $return;
     }
-    public function info_message($message, $flash = false)
+    public function info_message($message, $heading = null, $flash = false)
     {
         if ($flash == true) {
             return $_SESSION['formr']['flash']['info'] = $message;
         }
 
-        $return  = '<div class="' . $this->controls['alert-i'] . '" role="alert">';
-        if (strstr($this->wrapper, 'bootstrap') !== false) {
-            $return .= '    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+        if ($this->_wrapper_is('bootstrap')) {
+            $return = $this->_bootstrap_alert('alert-i', $message, $heading);
+        } elseif ($this->_wrapper_is('bulma')) {
+            $return = $this->_bulma_alert('alert-i', $message, $heading);
+        } else {
+            $return = $this->_formr_alert('alert-i', $message, $heading);
         }
-        $return .= $message;
-        $return .= '</div>';
 
         echo $return;
     }
-    private function _echo_success_message($str)
+    private function _success_message($str)
     {
         $return  = '<div style="margin: 20px 20px 40px 20px; padding:15px; background: #53A451; color: white; border-radius: 5px; text-align: center">';
         $return .=      $str;
@@ -1767,13 +1827,67 @@ class Formr
         
         echo $return;
     }
-    private function _echo_error_message($str)
+    private function _error_message($str)
     {
         $return  = '<div style="margin: 20px 20px 40px 20px; padding:15px; background: #CB444A; color: white; border-radius: 5px; text-align: center">';
         $return .=      $str;
         $return .= '</div>';
         
         echo $return;
+    }
+
+    private function _get_alert_heading($type, $heading = null)
+    {
+        if (!$heading) {
+            if ($type == 'alert-w') {
+                $heading = 'Warning';
+            } elseif ($type == 'alert-s'
+            ) {
+                $heading = 'Success';
+            } elseif ($type == 'alert-e') {
+                $heading = 'Error';
+            } else {
+                $heading = 'Info';
+            }
+        }
+
+        return $heading;
+    }
+
+    private function _bulma_alert($type, $message, $heading = '')
+    {
+        $return  = "<article class=\"message {$this->controls[$type]}\">\r\n";
+        $return .= "  <div class=\"message-header\">\r\n";
+        $return .= "    <p>{$this->_get_alert_heading($type,$heading)}</p>\r\n";
+        $return .= "  </div>\r\n";
+        $return .= "  <div class=\"message-body\">\r\n";
+        $return .= "    {$message}\r\n";
+        $return .= "  </div>\r\n";
+        $return .= "</article>\r\n";
+
+        return $return;
+    }
+
+    private function _bootstrap_alert($type, $message, $heading = null)
+    {
+        $return  = "<div class=\"{$this->controls[$type]}\" role=\"alert\">\r\n";
+        $return .= "<button type=\"button\" class=\"close\" data-dismiss=\"alert\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\r\n";
+        if ($heading) {
+            $return .= "<h4 class=\"alert-heading\">{$this->_get_alert_heading($type,$heading)}</h4>\r\n";
+        }
+        $return .= "<p>{$message}</p>\r\n";
+        $return .= "</div>\r\n";
+
+        return $return;
+    }
+
+    private function _formr_alert($type, $message, $heading = null)
+    {
+        if($type == 'alert-s') {
+            return $this->_success_message($message);
+        }
+
+        return $this->_error_message($message);
     }
 
 
@@ -1850,11 +1964,11 @@ class Formr
         if ($this->uploads && !empty($_FILES[$name]['tmp_name'])) {
 
             if (!$this->upload_dir) {
-                $this->_echo_error_message('Please specify an upload directory with $form->upload_dir.');
+                $this->_error_message('Please specify an upload directory with $form->upload_dir.');
                 return false;
             }
             if (!$this->upload_accepted_types && !$this->upload_accepted_mimes) {
-                $this->_echo_error_message('Please specify the accepted file types with $upload_accepted_mimes or $upload_accepted_types.');
+                $this->_error_message('Please specify the accepted file types with $upload_accepted_mimes or $upload_accepted_types.');
                 return false;
             }
             if ($return = $this->_upload_files($name)) {
@@ -1915,7 +2029,7 @@ class Formr
             $parts = explode($this->delimiter[1], $label);
 
             # we'll put the human readable label into the $label property
-            $label  = $parts[0];
+            $label = $parts[0];
 
             # we'll put the custom error message string into the $string property
             $string = $parts[1];
@@ -1973,7 +2087,7 @@ class Formr
                     }
                 } else {
                     # process single field
-                    $return  = $this->_process_post($data);
+                    $return = $this->_process_post($data);
                 }
             }
             return $return;
@@ -2129,24 +2243,24 @@ class Formr
             }
 
             # alpha
-            if ($rule == 'alpha' && !ctype_alpha($post))
+            if ($rule == 'alpha' && !ctype_alpha(str_replace(' ', '', $post)))
             {
                 if($this->_suppress_validation_errors($data)) {
                     $this->errors[$name] = $data['string'];
                 } else {
-                    $this->errors[$name] = $label . ' must only contain letters';
+                    $this->errors[$name] = $label . ' may only contain letters';
                 }
 
                 return false;
             }
 
             # alphanumeric
-            if ($rule == 'alpha_numeric' && !ctype_alnum($post))
+            if ($rule == 'alpha_numeric' && !ctype_alnum(str_replace(' ', '', $post)))
             {
                 if($this->_suppress_validation_errors($data)) {
                     $this->errors[$name] = $data['string'];
                 } else {
-                    $this->errors[$name] = $label . ' must only contain letters and numbers';
+                    $this->errors[$name] = $label . ' may only contain letters and numbers';
                 }
                 
                 return false;
@@ -2395,7 +2509,7 @@ class Formr
             } elseif (!empty($data['id'])) {
                 $return .= ' id="' . $data['id'] . '"';
             } else {
-                $return .= ' id="' . $data['name'] . '"';
+                $return .= ' id="formr"';
             }
         }
 
@@ -2582,6 +2696,10 @@ class Formr
             $data['type'] = 'submit';
         }
 
+        if ($this->_wrapper_is('framework') && !$string) {
+            $data['string'] = 'class="' . $this->controls['button-primary'] . '"';
+        }
+
         echo $this->_create_input($data);
     }
 
@@ -2636,6 +2754,10 @@ class Formr
             $data['type'] = 'submit';
         }
 
+        if ($this->_wrapper_is('framework') && !$string) {
+            $data['string'] = 'class="' . $this->controls['button-primary'] . '"';
+        }
+
         echo $this->_button($data);
     }
 
@@ -2650,8 +2772,8 @@ class Formr
             'string' => 'class="button"'
         );
 
-        if (strpos($this->wrapper, 'bootstrap') !== false) {
-            $data['string'] = 'class="btn btn-primary"';
+        if ($this->_wrapper_is('framework')) {
+            $data['string'] = 'class="' . $this->controls['button-primary'] . '"';
         }
 
         echo $this->_button($data);
@@ -2668,8 +2790,8 @@ class Formr
             'string' => 'class="button"'
         );
 
-        if(strpos($this->wrapper, 'bootstrap') !== false) {
-            $data['string'] = 'class="btn btn-secondary"';
+        if ($this->_wrapper_is('framework')) {
+            $data['string'] = 'class="' . $this->controls['button-danger'] . '"';
         }
 
         echo $this->_button($data);
@@ -2689,7 +2811,7 @@ class Formr
 
         # echo an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
-            $this->_echo_error_message('You must provide a name for the <strong>' . $data['type'] . '</strong> element.');
+            $this->_error_message('You must provide a name for the <strong>' . $data['type'] . '</strong> element.');
             return false;
         }
 
@@ -2710,16 +2832,14 @@ class Formr
         if (!in_array($data['type'], $this->_input_types('checkbox'))) {
 
             # an ID wasn't specified, let's create one using the name
-            if (empty($data['id'])) {
-                $data['id'] = trim($data['name'], '[]');
-            }
+            $data['id'] = $this->make_id($data);
             
             # assign the value
             if (isset($_POST[$data['name']]) && !empty($_POST[$data['name']]) && $data['type'] != 'password') {
                 if ($this->session_values && $this->session) {
                     if($data['type'] != 'submit' && $data['type'] != 'button') {
                         if(empty($data['value'])) {
-                            $this->_echo_error_message('Please define $'.$data['name'].' = $form->post(\''.$data['name'].'\')');
+                            $this->_error_message('Please define $'.$data['name'].' = $form->post(\''.$data['name'].'\')');
                         } else {
                             $data['value'] = $_SESSION[$this->session][$data['name']];
                         }
@@ -2775,7 +2895,7 @@ class Formr
 
             # print an error message alerting the user this field needs a value
             if (!$this->is_not_empty($data['value'])) {
-                $this->_echo_error_message('Please enter a value for the ' . $data['type'] . ': <strong>' . $data['name'] . '</strong>');
+                $this->_error_message('Please enter a value for the ' . $data['type'] . ': <strong>' . $data['name'] . '</strong>');
             }
 
             # check the element on initial form load
@@ -3341,7 +3461,7 @@ class Formr
         # create inputs directly from arrays
 
         if(!array_key_exists('type', $data)) {
-            return $this->_echo_error_message('You must assign a field type to the <code>'.$data['name'].'</code> array');
+            return $this->_error_message('You must assign a field type to the <code>'.$data['name'].'</code> array');
         }
         
         if ($data['type'] == 'select') {
@@ -3907,7 +4027,7 @@ class Formr
         $return .= '<label for="' . $data['id'] . '"';
 
         # add an bootstrap error class if required
-        if ($this->in_errors($data['name']) && $this->wrapper == 'bootstrap') {
+        if ($this->in_errors($data['name']) && $this->_wrapper_is('bootstrap')) {
             $return .= ' class="' . $this->controls['text-error'] . '"';
         }
 
@@ -4384,6 +4504,30 @@ class Formr
 
         return false;
     }
+
+    private function _wrapper_is($string)
+    {
+        # determines if the wrapper is a supported framework or default
+        
+        if ($string == 'framework') {
+            if (strpos($this->wrapper, 'bootstrap') !== false) {
+                return true;
+            }
+
+            if (strpos($this->wrapper, 'bulma') !== false) {
+                return true;
+            }
+
+            return false;
+        }
+
+
+        if (strstr($this->wrapper, $string) !== false) {
+            return true;
+        }
+
+        return false;
+    }
     
     public function heading($key, $string)
     {
@@ -4524,18 +4668,20 @@ class Formr
         # create an ID from the element's name attribute (if an ID was not specified)
         
         if($this->is_not_empty($data['id'])) {
-            return $data['id'];
+            return trim($data['id'], '[]');
         }
 
-        return $data['name'];
+        return trim($data['name'], '[]');
     }
 
     public function insert_required_indicator($data)
     {
         # insert the required_field indicator if applicable
         
-        if($this->_check_required($data['name']) && $this->is_not_empty($data['label'])) {
-            return $this->required_indicator;
+        if(!in_array($data['type'], $this->excluded_types)) {
+            if($this->_check_required($data['name']) && $this->is_not_empty($data['label'])) {
+                return $this->required_indicator;
+            }
         }
     }
     
@@ -4609,9 +4755,18 @@ class Formr
             unset($_SESSION[$this->session]);
         }
 
-        echo $this->_echo_success_message("SESSION[$this->session] has been unset");
+        echo $this->_success_message("SESSION[$this->session] has been unset");
 
         $this->session = null;
         $this->session_values = null;
+    }
+
+    public function ok()
+    {
+        if (empty($this->errors)) {
+            return true;
+        }
+
+        return false;
     }
 }

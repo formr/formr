@@ -9,12 +9,11 @@ If you find Formr useful, please consider starring the project and/or making a [
 ## Features
 
 - Create complex forms with server-side processing and validation in only seconds
-- Bootstrap ready; automatically wrap all of your form elements and messages in Bootstrap classes
+- Supports the Bootstrap and Bulma frameworks
 - Instantly make one field required, all fields required, or all but one field required
 - Built-in `POST` validation rules, including validating email, comparisons, slugging and hashing
 - Automatically build and format `label` tags, saving lots of time
 - Create and validate radio groups and checkbox arrays in seconds
-- Automatically wrap field elements in `p`, `div`, `ul`, `ol`, `dl`, Bootstrap's `.form-control` or roll your own
 - Extensible: easily create and save your own field element wrappers
 - Extensible: easily create and save your own dropdown menus
 - Extensible: easily create and save your own form & validation sets
@@ -50,12 +49,16 @@ require_once 'Formr/class.formr.php';
 $form = new Formr\Formr();
 ```
 
-## Bootstrap Ready
+## Bootstrap & Bulma Ready
 
-Bootstrap form classes are ready to go! Just tell Formr you want to use Bootstrap when creating a new form and Formr will take care of the rest.
+Bootstrap and Bulma form classes are ready to go! Just tell Formr you want to use Bootstrap or Bulma when creating a new form and Formr will take care of the rest.
 
 ```php
 $form = new Formr\Formr('bootstrap');
+```
+
+```php
+$form = new Formr\Formr('bulma');
 ```
 
 ## Basic Example
