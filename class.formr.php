@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.2.2)
+ * Formr (1.2.3)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -525,11 +525,6 @@ class Formr
     {
         # determines what our field element wrapper will be
 
-        # set the default to none (no wrapper)
-        $return['type'] = 'none';
-        $return['open'] = '';
-        $return['close'] = '';
-
         if (is_array($this->wrapper)) {
 
             # the user entered a custom wrapper
@@ -540,11 +535,6 @@ class Formr
         
         } else {
             
-            # default to a <div>, which will be built in the wrapper class
-            if($this->wrapper == 'div' || $this->wrapper == '') {
-                return $return;
-            }
-            
             # use a pre-defined wrapper
             if(! in_array($this->wrapper, ['ul', 'ol', 'dl', 'p', 'div'])) {
                 # set the wrapper's name
@@ -552,9 +542,10 @@ class Formr
                 $return['open'] = $return['close'] = null;
                 return $return;
             }
+            
             # if tags were entered, strip the brackets
             $str = strtolower(trim($this->wrapper, '<>'));
-
+            
             # wrapper is a list
             if ($str == 'ul') {
                 $return['type'] = 'ul';
@@ -574,12 +565,20 @@ class Formr
                 $return['close'] = '</dl>';
                 return $return;
             }
-
+            
             # wrapper is a <p>
             if ($str == 'p') {
                 $return['type'] = 'p';
                 $return['open'] = '<p>';
                 $return['close'] = '</p>';
+                return $return;
+            }
+            
+            # wrapper is a <div>
+            if ($str == 'div') {
+                $return['type'] = 'div';
+                $return['open'] = '<div>';
+                $return['close'] = '</div>';
                 return $return;
             }
         }
@@ -653,9 +652,10 @@ class Formr
         $string = $classes = null;
 
         # remove autocorrect, etc from certain field types
-        if ($data['type'] == 'email' || $data['type'] == 'password' || $data['type'] == 'search' || $data['type'] == 'url') {
-            $string .= ' autocorrect="off" autocapitalize="off" ';
-        }
+        # TODO figure out a better way of doing this? Or just omit it?
+        // if ($data['type'] == 'email' || $data['type'] == 'password' || $data['type'] == 'search' || $data['type'] == 'url') {
+        //     $string .= ' autocorrect="off" autocapitalize="off" ';
+        // }
 
         # add the button class
         if (in_array($data['type'], $this->_input_types('button'))) {
@@ -1249,7 +1249,7 @@ class Formr
             }
 
             # explode the accepted file types into an array
-            $types = explode(',', $this->upload_accepted_types);
+            $types = explode(',', str_replace('.', '', $this->upload_accepted_types));
             return $types;
         } else {
             return false;
@@ -1474,7 +1474,6 @@ class Formr
         # calculate resized image's size
         $new_width  = $thumb_width;
         $new_height = floor($original_file_height * ($new_width / $original_file_width));
-
 
         # if upload's width or height is larger than specified width or heigh, perform resize
         if ($original_file_width > $new_width || $original_file_height > $new_height) {
@@ -2803,12 +2802,6 @@ class Formr
     # INPUTS
     protected function _create_input($data)
     {
-        if (!isset($_POST)) {
-            if (empty($data['value'])) {
-                return false;
-            }
-        }
-
         # echo an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
             $this->_error_message('You must provide a name for the <strong>' . $data['type'] . '</strong> element.');
@@ -3043,7 +3036,7 @@ class Formr
             $return .= '<input type="hidden" name="' . $data['name'] . '" id="' . $data['name'] . '" value="' . $data['value'] . '">'; 
         }
 
-        return $return;
+        echo $return;
     }
 
     public function input_upload($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
@@ -3687,7 +3680,7 @@ class Formr
                     $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
                 }
                 # print selected option on form load
-                elseif (!isset($_POST[$data['name']]) && $data['selected'] === $key || (is_array($data['selected']) && in_array($key, $data['selected']))) {
+                elseif (!isset($_POST[$data['name']]) && $data['selected'] == $key || (is_array($data['selected']) && in_array($key, $data['selected']))) {
                     # populate the field's value (on page load) with the session value
                     if ($this->session_values && $this->session && !empty($_SESSION[$this->session][$data['name']])) {
                         if ($_SESSION[$this->session][$data['name']] == $key) {
@@ -4061,7 +4054,7 @@ class Formr
             $return .= '</label> ';
         }
 
-        return $return;
+        echo $return;
     }
 
     public function label($data, $label = '', $id = '', $string = '')

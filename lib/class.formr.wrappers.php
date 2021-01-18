@@ -71,8 +71,10 @@ class Wrapper extends Formr\Formr
                 $return .= $wrapper['open'] . $this->nl;
             }
         } else {
-            # 'div' was entered, or wrapper was left empty
-            $return .= '<div class="'.static::$css('div').'" id="_' . $this->formr->make_id($data) . '">' . $this->nl;
+            # 'div' was entered
+            if($wrapper['type'] != '') {
+                $return .= '<div class="'.static::$css('div').'" id="_' . $this->formr->make_id($data) . '">' . $this->nl;
+            }
         }
 
         # add the list item tag if wrapping in a list
@@ -99,7 +101,7 @@ class Wrapper extends Formr\Formr
         } else {
             # everything else
             if (!empty($data['label'])) {
-                $return .= $this->label($data['name'], $data['label'], $data['id']) . $this->nl;
+                $return .= $this->label($data) . $this->nl;
             }
             # add the field element
             $return .= $element . $this->nl;
@@ -120,8 +122,10 @@ class Wrapper extends Formr\Formr
                 $return .= $wrapper['close'];
             }
         } else {
-            # close the default div
-            $return .= '</div>';
+            # close the div
+            if($wrapper['type'] != '') {
+                $return .= '</div>';
+            }
         }
 
         return $return . $this->nl;

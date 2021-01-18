@@ -75,6 +75,10 @@ trait Bootstrap
                     $return .= static::bootstrap_css('checkbox');
                 }
             }
+            
+            # close the div
+            $return .= '">';
+        
         } else {
             # open the wrapping <div> tag
             $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="' . static::bootstrap_css('div') . '">';
