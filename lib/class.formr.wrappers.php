@@ -58,8 +58,8 @@ class Wrapper extends Formr\Formr
         # the type of lists Formr will accept as a wrapper
         $list_tags = ['ul', 'ol', 'dl'];
         
-        # define our $return variable with a new line
-        $return = $this->nl;
+        # define our $return variable
+        $return = null;
 
         # add a comment if $form->comments is enabled
         $return .= $this->formr->_print_field_comment($data) . $this->nl;
@@ -89,7 +89,7 @@ class Wrapper extends Formr\Formr
         if (in_array($data['type'], $this->_input_types('checkbox'))) {
             # wrap checkboxes and radios in a label
             if (!empty($data['label'])) {
-                $return .= $this->label_open($data['value'], $data['label'], $data['id']) . $this->nl;
+                $return .= $this->label_open($data['value'], $data['label'], $data['id']);
             }
             
             # add the field element
@@ -101,7 +101,7 @@ class Wrapper extends Formr\Formr
         } else {
             # everything else
             if (!empty($data['label'])) {
-                $return .= $this->label($data) . $this->nl;
+                $return .= $this->label($data);
             }
             # add the field element
             $return .= $element . $this->nl;

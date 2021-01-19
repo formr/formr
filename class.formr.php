@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.2.3)
+ * Formr (1.2.4)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -310,22 +310,23 @@ class Formr
             # check if we're using csrf
             if (isset($_POST['csrf_token']))
             {
-                if(!isset($_SESSION)) {
-                    echo $this->_error_message('CSRF requires <code>session_start()</code> at the top of the script.');
-                } else {
-                    # check if token in SESSION equals token in POST array
-                    if (hash_equals($_SESSION['formr']['token'], $_POST['csrf_token'])) {
-                        # compare current time to time of token expiration
-                        if (time() >= $_SESSION['formr']['token-expires']) {
-                            $this->add_to_errors('Session has timed out. Please refresh the page.');
-
-                            return false;
-                        }
-                    } else {
-                        $this->add_to_errors('Token mismatch. Please refresh the page.');
-
-                        return false;
+                # grab the token and expiration time from the hidden element
+                $parts = explode('|', $_POST['csrf_token']);
+                
+                # check if token in SESSION equals posted token value
+                if (hash_equals($_SESSION['formr']['token'], $parts[0])) {
+                    # compare current time to time of token expiration
+                    if (time() >= $parts[1]) {
+                        $this->_error_message('Your session has timed out. Please refresh the page.');
+                        
+                        # reset the token
+                        $_SESSION['formr']['token'] = null;
                     }
+                } else {
+                    $this->_error_message('Token mismatch. Please refresh the page.');
+                    
+                    # reset the token
+                    $_SESSION['formr']['token'] = null;
                 }
             }
 
@@ -2540,7 +2541,7 @@ class Formr
             $return .= '<'.$this->wrapper.'>';
         }
 
-        return $return . $this->_nl(1);
+        return $return;
     }
 
     public function form_open($name = '', $id = '', $action = '', $method = '', $string = '', $hidden = '')
@@ -4715,20 +4716,24 @@ class Formr
     {
         # add csrf protection
         # remember to put session_start() at the top of your script!
-
-        if (function_exists('mcrypt_create_iv')) {
-            $token = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
-        } else {
-            $token = bin2hex(openssl_random_pseudo_bytes(32));
+        
+        if (session_status() == PHP_SESSION_NONE) {
+            $this->_error_message('CSRF requires <code>session_start()</code> at the top of the script.');
         }
 
         # put the token into a session
-        $_SESSION['formr']['token'] = $token;
+        if(empty($_SESSION['formr']['token'])) {
+            if (function_exists('mcrypt_create_iv')) {
+                $_SESSION['formr']['token'] = bin2hex(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+            } else {
+                $_SESSION['formr']['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+            }
+        }
+        
+        # we're putting the token and expiration time into the hidden element
+        $string = $_SESSION['formr']['token'] . '|' . (time()+$timeout);
 
-        # token expires in given number of seconds (default 1 hour)
-        $_SESSION['formr']['token-expires'] = time() + $timeout;
-
-        echo '<input type="hidden" name="csrf_token" value="'.$token.'">';
+        echo "<input type=\"hidden\" name=\"csrf_token\" value=\"{$string}\">\r\n\r\n";
     }
 
     public function redirect($url)
