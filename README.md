@@ -2,22 +2,21 @@
 
 Formr is a PHP micro-framework which installs easily and helps you build, layout and validate forms quickly, painlessly, and without all the complicated, messy overhead.
 
-Find docs and screencasts here: [http://formr.github.io](http://formr.github.io)
+Find docs here: [http://formr.github.io](http://formr.github.io)
 
 If you find Formr useful, please consider starring the project and/or making a [donation](https://paypal.me/timgavin). Thank you!
 
 ## Features
 
-- Create complex forms with server-side processing and validation in only seconds
-- Supports the Bootstrap and Bulma frameworks
-- Instantly make one field required, all fields required, or all but one field required
+- Create complex forms with server-side processing and validation in seconds
+- Built-in support for Bootstrap and Bulma
 - Built-in `POST` validation rules, including validating email, comparisons, slugging and hashing
-- Automatically build and format `label` tags, saving lots of time
+- Instantly make one field required, all fields required, or all but one field required
 - Create and validate radio groups and checkbox arrays in seconds
+- Upload images: resize, rename, and create thumbnails
 - Extensible: easily create and save your own field element wrappers
 - Extensible: easily create and save your own dropdown menus
 - Extensible: easily create and save your own form & validation sets
-- Upload images: resize, rename, and create thumbnails
 - Send plain text and HTML emails
 - Generate CSRF tokens and set the expiration time
 - Object-oriented; supports multiple forms per page

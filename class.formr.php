@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.2.4)
+ * Formr (1.2.5)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -149,7 +149,7 @@ class Formr
     # use Formr's default wrapper
     private $use_default_wrapper = true;
 
-    function __construct($wrapper = '', $session = null)
+    function __construct($wrapper = '', $echo = true)
     {
         # determine our field wrapper and CSS classes
 
@@ -200,6 +200,9 @@ class Formr
 
         # for checkbox array values
         $this->checkbox_values = [];
+        
+        # determines if echoing elements & messages should be suppressed
+        $this->echo = $echo;
     }
 
     # HELPERS & UTILITY
@@ -227,6 +230,17 @@ class Formr
     {
         # alias of printr()
         return $this->printr($data);
+    }
+    
+    protected function _echo($data)
+    {
+        # echo everything unless 'hush' was passed during init
+        
+        if($this->echo === 'hush') {
+            return $data;
+        } else {
+            echo $data;
+        }
     }
 
     public function form_info()
@@ -293,7 +307,7 @@ class Formr
         $return = str_replace('TRUE', '<span style="color:green">TRUE</span>', $return);
         $return = str_replace('FALSE', '<span style="color:red">FALSE</span>', $return);
 
-        echo '<h3>Form Settings</h3><tt>' . $return . '</tt><br><br><br>';
+        return $this->_echo('<h3>Form Settings</h3><tt>' . $return . '</tt><br><br><br>');
     }
 
     public function info()
@@ -439,7 +453,7 @@ class Formr
     {
         # if the key is in the errors array, return a user-defined string
         if ($this->in_errors($key)) {
-            echo $string;
+            return $this->_echo($string);
         }
     }
 
@@ -447,9 +461,9 @@ class Formr
     {
         # return a different user-defined string depending on if the field is in the errors array
         if (!$this->in_errors($key)) {
-            echo $default_string;
+            return $this->_echo($default_string);
         } else {
-            echo $error_string;
+            return $this->_echo($error_string);
         }
     }
 
@@ -479,9 +493,9 @@ class Formr
 
         # return POSTed field value
         if (isset($_POST[$name])) {
-            echo $this->_clean_value($_POST[$name]);
+            return $this->_echo($this->_clean_value($_POST[$name]));
         } elseif ($value) {
-            echo $value;
+            return $this->_echo($value);
         }
 
         return false;
@@ -607,12 +621,12 @@ class Formr
             # $method = the method's name in the Wrapper class
             $method = $wrapper_context['type'];
             
-            echo $wrapper->$method($element, $data);
+            return $this->_echo($wrapper->$method($element, $data));
         
         } else {
 
           # enclose the element in the default wrapper          
-          echo $wrapper->default_wrapper($wrapper_context, $element, $data);
+          return $this->_echo($wrapper->default_wrapper($wrapper_context, $element, $data));
         }
     }
 
@@ -1607,7 +1621,7 @@ class Formr
     {
         # this function prints client-side validation messages to the browser
 
-        # print a message fi the following properties are set
+        # print a message if the following properties are set
         if($this->success_message || $this->warning_message || $this->info_message || $this->error_message)
         {
             if($this->success_message) {
@@ -1658,7 +1672,7 @@ class Formr
                 $return = $this->_formr_alert($alert_control, $message, $heading);
             }
 
-            echo $return;
+            return $this->_echo($return);
         }
 
         $return = null;
@@ -1688,7 +1702,7 @@ class Formr
 
         # returns a user-defined message
         if (isset($this->message)) {
-            echo $this->message;
+            return $this->_echo($this->message);
         }
 
         # prints form errors
@@ -1745,11 +1759,11 @@ class Formr
 
                 # display the appropriate error dialogue
                 if ($this->_wrapper_is('bootstrap')) {
-                    echo $this->_bootstrap_alert('alert-e', $return, $heading);
+                    return $this->_echo($this->_bootstrap_alert('alert-e', $return, $heading));
                 } elseif ($this->_wrapper_is('bulma')) {
-                    echo $this->_bulma_alert('alert-e', $return, $heading);
+                    return $this->_echo($this->_bulma_alert('alert-e', $return, $heading));
                 } else {
-                    echo $this->_formr_alert('alert-e', $return, $heading);
+                    return $this->_echo($this->_formr_alert('alert-e', $return, $heading));
                 }
             }
         }
@@ -1769,7 +1783,7 @@ class Formr
             $return = $this->_formr_alert('alert-w', $message, $heading);
         }
 
-        echo $return;
+        return $this->_echo($return);
     }
     public function success_message($message, $heading = null, $flash = false)
     {
@@ -1785,7 +1799,7 @@ class Formr
             $return = $this->_formr_alert('alert-s', $message, $heading);
         }
 
-        echo $return;
+        return $this->_echo($return);
     }
     public function error_message($message, $heading = null, $flash = false)
     {
@@ -1801,7 +1815,7 @@ class Formr
             $return = $this->_formr_alert('alert-e', $message, $heading);
         }
 
-        echo $return;
+        return $this->_echo($return);
     }
     public function info_message($message, $heading = null, $flash = false)
     {
@@ -1817,7 +1831,7 @@ class Formr
             $return = $this->_formr_alert('alert-i', $message, $heading);
         }
 
-        echo $return;
+        return $this->_echo($return);
     }
     private function _success_message($str)
     {
@@ -1825,7 +1839,7 @@ class Formr
         $return .=      $str;
         $return .= '</div>';
         
-        echo $return;
+        return $this->_echo($return);
     }
     private function _error_message($str)
     {
@@ -1833,7 +1847,7 @@ class Formr
         $return .=      $str;
         $return .= '</div>';
         
-        echo $return;
+        return $this->_echo($return);
     }
 
     private function _get_alert_heading($type, $heading = null)
@@ -2532,7 +2546,7 @@ class Formr
         # print hidden input fields if present
         if (!empty($data['hidden'])) {
             foreach ($data['hidden'] as $key => $value) {
-                $return .= $this->_nl(1) . $this->input_hidden($key, $value);
+                $return .= '<input type="hidden" name="'.$key.'" id="'.$key.'" value="'.$value.'">'.$this->_nl(1);
             }
             $return .= $this->_nl(1);
         }
@@ -2563,7 +2577,7 @@ class Formr
             'hidden' => $hidden
         );
 
-        echo $this->_form($data);
+        return $this->_echo($this->_form($data));
     }
 
     public function form_open_multipart($name = '', $id = '', $action = '', $method = '', $string = '', $hidden = '')
@@ -2578,7 +2592,7 @@ class Formr
             'hidden' => $hidden
         );
 
-        echo $this->_form($data);
+        return $this->_echo($this->_form($data));
     }
 
     public function form_close()
@@ -2599,7 +2613,7 @@ class Formr
         
         $return .= $this->_nl(1) . '</form>' . $this->_nl(1);
 
-        echo $return;
+        return $this->_echo($return);
     }
 
     public function open($name = '', $id = '', $action = '', $method = '', $string = '', $hidden = '')
@@ -2700,7 +2714,7 @@ class Formr
             $data['string'] = 'class="' . $this->controls['button-primary'] . '"';
         }
 
-        echo $this->_create_input($data);
+        return $this->_echo($this->_create_input($data));
     }
 
     public function input_reset($data = '', $label = '', $value = '', $id = '', $string = '')
@@ -2718,7 +2732,7 @@ class Formr
             $data['type'] = 'reset';
         }
 
-        echo $this->_create_input($data);
+        return $this->_echo($this->_create_input($data));
     }
 
     public function input_button($data = '', $label = '', $value = '', $id = '', $string = '')
@@ -2736,7 +2750,7 @@ class Formr
             $data['type'] = 'button';
         }
 
-        echo $this->_button($data);
+        return $this->_echo($this->_button($data));
     }
     
     public function input_button_submit($data = '', $label = '', $value = '', $id = '', $string = '')
@@ -2758,7 +2772,7 @@ class Formr
             $data['string'] = 'class="' . $this->controls['button-primary'] . '"';
         }
 
-        echo $this->_button($data);
+        return $this->_echo($this->_button($data));
     }
 
     public function submit_button($value = 'Submit')
@@ -2776,7 +2790,7 @@ class Formr
             $data['string'] = 'class="' . $this->controls['button-primary'] . '"';
         }
 
-        echo $this->_button($data);
+        return $this->_echo($this->_button($data));
     }
 
     public function reset_button($value = 'Reset')
@@ -2794,7 +2808,7 @@ class Formr
             $data['string'] = 'class="' . $this->controls['button-danger'] . '"';
         }
 
-        echo $this->_button($data);
+        return $this->_echo($this->_button($data));
     }
 
 
@@ -2803,7 +2817,7 @@ class Formr
     # INPUTS
     protected function _create_input($data)
     {
-        # echo an error if the field name hasn't been supplied
+        # show an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
             $this->_error_message('You must provide a name for the <strong>' . $data['type'] . '</strong> element.');
             return false;
@@ -3037,7 +3051,7 @@ class Formr
             $return .= '<input type="hidden" name="' . $data['name'] . '" id="' . $data['name'] . '" value="' . $data['value'] . '">'; 
         }
 
-        echo $return;
+        return $this->_echo($return);
     }
 
     public function input_upload($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
@@ -3503,9 +3517,9 @@ class Formr
     # TEXTAREA
     protected function _create_textarea($data)
     {
-        # echo an error if the field name hasn't been supplied
+        # show an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
-            echo '<p style="color:red">You must provide a name for the <strong>' . $data['type'] . '</strong> element.</p>';
+            $this->_error_message('You must provide a name for the <strong>' . $data['type'] . '</strong> element.');
             return false;
         }
 
@@ -3595,9 +3609,9 @@ class Formr
     # SELECT MENU
     protected function _create_select($data)
     {
-        # echo an error if the field name hasn't been supplied
+        # show an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
-            echo '<p style="color:red">You must provide a name for the <strong>' . $data['type'] . '</strong> element.</p>';
+            $this->_error_message('You must provide a name for the <strong>' . $data['type'] . '</strong> element.');
             return false;
         }
 
@@ -3986,7 +4000,7 @@ class Formr
             $return .= '<legend>' . $legend . '</legend>';
         }
 
-        echo $return . $this->_nl(1);
+        return $this->_echo($return . $this->_nl(1));
     }
 
     public function fieldset_close($string = '')
@@ -3997,7 +4011,7 @@ class Formr
             $return .= $string;
         }
 
-        echo $return . $this->_nl(1);
+        return $this->_echo($return . $this->_nl(1));
     }
 
 
@@ -4055,7 +4069,7 @@ class Formr
             $return .= '</label> ';
         }
 
-        echo $return;
+        return $this->_echo($return);
     }
 
     public function label($data, $label = '', $id = '', $string = '')
@@ -4529,9 +4543,9 @@ class Formr
         # useful in questionnaires and the like.
         
         if (array_key_exists($key, $this->errors)) {
-            echo '<h2><span class="error">' . $string . '</span></h2>';
+            return $this->_echo('<h2><span class="error">' . $string . '</span></h2>');
         } else {
-            echo '<h2>' . $string . '</h2>';
+            return $this->_echo('<h2>' . $string . '</h2>');
         }
     }
 
@@ -4733,7 +4747,7 @@ class Formr
         # we're putting the token and expiration time into the hidden element
         $string = $_SESSION['formr']['token'] . '|' . (time()+$timeout);
 
-        echo "<input type=\"hidden\" name=\"csrf_token\" value=\"{$string}\">\r\n\r\n";
+        return $this->_echo("<input type=\"hidden\" name=\"csrf_token\" value=\"{$string}\">\r\n\r\n");
     }
 
     public function redirect($url)
