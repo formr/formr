@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.2.5)
+ * Formr (1.2.6)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -132,6 +132,9 @@ class Formr
 
     # default wrapper types which Formr supports
     public $default_wrapper_types = array('div', 'p', 'ul', 'ol', 'dl', 'li');
+    
+    # we can turn off automatic echoing of elements in the constructor
+    public $echo;
 
     # default string delimiters
     # $delimiter[0] is for separating field values in fastform()
@@ -1049,7 +1052,7 @@ class Formr
 
     protected function _build_input_groups($data)
     {
-        # we're builing a checkbox or radio group based on multiple field names inside $data['value']
+        # we're building a checkbox or radio group based on multiple field names inside $data['value']
         # check if $data['value'] starts with a left bracket
         # if so, we know we have multiple values
 
@@ -1563,7 +1566,7 @@ class Formr
         }
     }
 
-    protected function _nl($count)
+    protected function _nl($count = 1)
     {
         # adds as many new lines as we need for formatting our html
 
@@ -4338,10 +4341,12 @@ class Formr
 
                     # wrap the element
                     $return .= $this->_wrapper($item, $data);
+                
                 } else {
 
                     # build each element individually and wrap it in a label
-                    $item  = $this->label_open($data);
+                    
+                    $item = "<label for=\"{$data['id']}\">\r\n";
 
                     if ($data['type'] == 'radio') {
                         $item .= $this->input_radio($data);
@@ -4349,9 +4354,9 @@ class Formr
                         $item .= $this->input_checkbox($data);
                     }
 
-                    $item .= $this->label_close($data);
+                    $item .= " {$data['label']}\r\n</label>\r\n";
 
-                    # prepare the item for the wrapper function
+                    # empty the label value so the wrapper function won't build it again
                     $data['label'] = '';
 
                     # wrap it

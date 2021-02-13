@@ -101,7 +101,7 @@ trait Bootstrap
         }
         
         # see if we're in a checkbox array...
-        if ($this->formr->is_array($data['name'])) {
+        if ($this->formr->is_array($data['name']) && $this->formr->type_is_checkbox($data)) {
             # we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
             # we'll add the label text later...
             $return .= '<label for="' . $this->formr->make_id($data) . '">' . $this->nl;
