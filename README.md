@@ -10,7 +10,7 @@ If you find Formr useful, please consider starring the project and/or making a [
 
 - Create complex forms with server-side processing and validation in seconds
 - Built-in support for Bootstrap and Bulma
-- Built-in `POST` validation rules, including validating email, comparisons, slugging and hashing
+- Built-in `POST` validation rules, including validating email, regex, comparisons, slugging, and hashing
 - Instantly make one field required, all fields required, or all but one field required
 - Create and validate radio groups and checkbox arrays in seconds
 - Upload images: resize, rename, and create thumbnails
@@ -18,7 +18,7 @@ If you find Formr useful, please consider starring the project and/or making a [
 - Extensible: easily create and save your own dropdown menus
 - Extensible: easily create and save your own form & validation sets
 - Send plain text and HTML emails
-- Generate CSRF tokens and set the expiration time
+- Generate CSRF tokens and honeypots
 - Object-oriented; supports multiple forms per page
 - Little helpers to assist in building, layout, testing and debugging
 - And a ton of other cool stuff!
@@ -354,14 +354,14 @@ $form->required = '*';
 if($form->submitted())
 {
     // make sure our Message field has at least 10 characters
-    $form->validate('Message(min_length[10])');
+    $form->validate('Message(min[10])');
 
     // let's email the form
-    $to = 'me@domain.com';
+    $to = 'me@email.com';
     $from = 'donotreply@domain.com';
     $subject = 'Contact Form Submission';
 
-    // this processes our form, cleans the input, and formats it into an HTML email
+    // this processes our form, cleans the input, and sends it as an HTML email
     if($form->send_email($to, $subject, 'POST', $from, 'HTML'))
     {
         // email sent; print a thank you message

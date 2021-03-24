@@ -3,13 +3,13 @@
 namespace Formr;
 
 /**
- * Formr (1.2.6)
+ * Formr (1.3)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
  * https://formr.github.io
  *
- * copyright(c) 2013-2020 Tim Gavin
+ * copyright(c) 2013-2021 Tim Gavin
  * https://github.com/timgavin
  *
  * requires php >= 5.6 and gd2 (for uploads)
@@ -40,101 +40,114 @@ class Formr
     # each of these public properties acts as a 'preference' for Formr,
     # and can be defined at instantiation. see documentation for more info.
 
-    # form fields are not required by default
-    public $required = false;
-
-    # form's ID
-    public $id = null;
-
-    # form's name
-    public $name = null;
-
     # default form action (useful with fastform())
     public $action = null;
-
-    # default form method (useful with fastform())
-    public $method = 'post';
-
-    # default submit button value
-    public $submit = 'Submit';
-
+    
     # default character set
     public $charset = 'utf-8';
-
+    
+    # comment each form field for easier debugging
+    public $comments = false;
+    
+    # suppress Formr's validation error messages and only display your own
+    public $custom_validation_messages = false;
+    
     # default doctype
     public $doctype = 'html';
-
-    # visually lets the user know a field is required inside the field's label tag
-    public $required_indicator = '';
-
-    # link from error messages to related fields by setting anchor tags
-    public $link_errors = false;
-
+    
+    # add an error message to messages()
+    public $error_message = null;
+    
+    # create an empty errors array for form validation
+    public $errors = array();
+    
+    # format dates for validation rules
+    public $format_rule_dates = 'M d, Y';
+    
+    # add a honeypot field
+    public $honeypot = null;
+    
+    # sanitize input with HTMLPurifier
+    public $html_purifier = null;
+    
+    # form's ID
+    public $id = null;
+    
+    # add an info message to messages()
+    public $info_message = null;
+    
     # inline validation is off by default
     public $inline_errors = false;
-
-    public $success_message = null;
-    public $warning_message = null;
-    public $info_message = null;
-    public $error_message = null;
-
+    
     # inline validation CSS class: displays error icon next to form fields
     public $inline_errors_class = 'error_inline';
-
+    
+    # link from error messages to related fields by setting anchor tags
+    public $link_errors = false;
+    
+    # default form method (useful with fastform())
+    public $method = 'post';
+    
     # removes all line breaks and minifies code
     public $minify = false;
-
+    
+    # form's name
+    public $name = null;
+    
+    # form fields are not required by default
+    public $required = false;
+    
+    # visually lets the user know a field is required inside the field's label tag
+    public $required_indicator = '';
+    
+    # use a salt when hashing
+    public $salt = null;
+    
+    # sanitize html $_POST values with FILTER_SANITIZE_SPECIAL_CHARS
+    public $sanitize_html = false;
+    
     # define a session
     public $session = null;
 
     # use session values in form fields on page load
     public $session_values = null;
-
-    # comment each form field for easier debugging
-    public $comments = false;
-
+    
+    # show valid status (green outline) on fields if using a framework
+    public $show_valid = false;
+    
+    # default submit button value
+    public $submit = 'Submit';
+    
+    # add a success message to messages()
+    public $success_message = null;
+    
     # accepted file types/mime types for uploading files
-    public $upload_accepted_types = null;
     public $upload_accepted_mimes = null;
-
-    # max file size for uploaded files (2MB)
-    public $upload_max_filesize = 2097152;
-
+    public $upload_accepted_types = null;
+    
     # the full path to the directory in which we're uploading files
     public $upload_dir = null;
-
+    
+    # max file size for uploaded files (2MB)
+    public $upload_max_filesize = 2097152;
+    
     # rename a file after upload
     public $upload_rename = null;
 
     # resize images after upload
     public $upload_resize = null;
-
+    
     # init the $uploads property
     public $uploads = true;
-
-    # sanitize input with HTMLPurifier
-    public $html_purifier = null;
-
-    # sanitize html $_POST values with FILTER_SANITIZE_SPECIAL_CHARS
-    public $sanitize_html = false;
-
-    # suppress Formr's validation error messages and only display your own
-    public $custom_validation_messages = false;
-
-    # create an empty errors array for form validation
-    public $errors = array();
-
-    # put default class names into an array
-    public $controls = array();
-
-    # show valid status (green outline) on fields if using a framework
-    public $show_valid = false;
-
-    # default wrapper types which Formr supports
-    public $default_wrapper_types = array('div', 'p', 'ul', 'ol', 'dl', 'li');
     
-    # we can turn off automatic echoing of elements in the constructor
-    public $echo;
+    # add a warning message to messages()
+    public $warning_message = null;
+    
+    # put default class names into an array
+    private $controls = array();
+    
+    # default wrapper types which Formr supports
+    private $default_wrapper_types = array('div', 'p', 'ul', 'ol', 'dl', 'li');
 
     # default string delimiters
     # $delimiter[0] is for separating field values in fastform()
@@ -142,12 +155,15 @@ class Formr
     # example : input_text('Name $delimiter[0] Label $delimiter[0] Value[Value1 $delimiter[1] Value2 $delimiter[1] Value3 ]');
     # example : form->post('email','Email','valid_email $delimiter[1] min[3] $delimiter[1] max[60]')
     private $delimiter = array(',', '|');
+    
+    # we can turn off automatic echoing of elements in the constructor
+    private $echo;
 
+    # exclude these input types from certain operations, namely classes and wrappers
+    private $excluded_types = array('submit', 'button', 'reset', 'checkbox', 'radio');
+    
     # we don't want to create form attributes from these keywords if they're in the $data array
     private $no_keys = array('string', 'checked', 'selected', 'required', 'inline', 'label', 'fastform', 'options', 'group', 'multiple');
-    
-    # exclude these input types from certain operations, namely classes and wrappers
-    protected $excluded_types = array('submit', 'button', 'reset', 'checkbox', 'radio');
     
     # use Formr's default wrapper
     private $use_default_wrapper = true;
@@ -196,7 +212,7 @@ class Formr
             }
         }
 
-        # create the formr session
+        # create the Formr session
         if (!isset($_SESSION['formr'])) {
             $_SESSION['formr'] = [];
         }
@@ -229,9 +245,19 @@ class Formr
         }
     }
 
-    function dd($data)
+    public function dd($data)
+    {
+        # same as printr() but kills the script
+        
+        $this->printr($data);
+        
+        die;
+    }
+    
+    public function dump($data)
     {
         # alias of printr()
+        
         return $this->printr($data);
     }
     
@@ -1846,7 +1872,11 @@ class Formr
     }
     private function _error_message($str)
     {
-        $return  = '<div style="margin: 20px 20px 40px 20px; padding:15px; background: #CB444A; color: white; border-radius: 5px; text-align: center">';
+        $return = "\r\n<style>";
+        $return .= '.formr-error {margin: 20px; padding:15px; background: #CB444A; color: white; border-radius: 5px; text-align: center;}';
+        $return .= 'code {color: yellow;}';
+        $return .= "</style>\r\n";
+        $return .= '<div class="formr-error">';
         $return .=      $str;
         $return .= '</div>';
         
@@ -1892,7 +1922,7 @@ class Formr
         if ($heading) {
             $return .= "<h4 class=\"alert-heading\">{$this->_get_alert_heading($type,$heading)}</h4>\r\n";
         }
-        $return .= "<p>{$message}</p>\r\n";
+        $return .= "{$message}\r\n";
         $return .= "</div>\r\n";
 
         return $return;
@@ -1927,14 +1957,16 @@ class Formr
         
         if ($name === 'POST')
         {
-            $keys = '';
+            $keys = array();
+            
             foreach ($_POST as $key => $value) {
-                if ($key != $this->submit && $key != 'submit') {
+                if ($key != $this->submit && $key != 'submit' && $key != 'button') {
                     # automatically validate based on field name, ie; email = valid_email
                     # if a field name matches, and rules are assigned in the fastpost_rules() method, they'll be applied
                     $keys[$key] = $this->post($key, $key, $this->_fp_rules($key));
                 }
             }
+            
             return $keys;
         
         } else {
@@ -1973,6 +2005,13 @@ class Formr
     protected function _post($name, $label = '', $rules = '')
     {
         # this method processes the $_POST/$_GET values and performs validation (if required)
+        
+        # die if the honeypot caught a bear
+        if($this->honeypot && $_SERVER['REQUEST_METHOD'] == 'POST') {
+            if($_POST[$this->honeypot] != '') {
+                die;
+            }
+        }
 
         # set the variable in which we'll store our $_POST/$_GET data
         $post = null;
@@ -2081,7 +2120,7 @@ class Formr
         # get busy validating!
         $return = null;
 
-        # get the $data array ready for the _process_post() method
+        # get the $data array ready...
         $data['post'] = $post;
         $data['label'] = $label;
         $data['name'] = $name;
@@ -2089,324 +2128,477 @@ class Formr
         # process validation rules
         # if we're posting an array, don't run it through the validation rules because
         # each individual value could break the validation for the entire group
-        if (!is_array($data['post'])) {
-            foreach ($rules as $rule) {
-
-                # insert the rule into the $data array
-                $data['rule'] = $rule;
-
-                # loop through any arrays
-                if (is_array($post)) {
-                    foreach ($post as $p) {
-                        # add the $post value to the $data array
-                        $data['post'] = $p;
-                        $return .= $this->_process_post($data);
-                    }
-                } else {
-                    # process single field
-                    $return = $this->_process_post($data);
-                }
+        if (!is_array($data['post']))
+        {
+            foreach ($rules as $rule) {                
+                # process boolean validation rules
+                $return = $this->_validate_bool_rules($rule, $data);
             }
-            return $return;
+            
+            foreach ($rules as $rule) {
+                # allow HTML?
+                $allow_html = ($rule == 'allow_html') ? true : null;
+                                
+                # process string validation rules
+                $return = $this->_validate_string_rules($rule, $return);
+            }
+            
+            # run it through the cleaning method as a final step
+            return $this->_clean_value($return, $allow_html);
         } else {
             # return the array without validation
             return $post;
         }
     }
-
-    protected function _process_post($data)
+    
+    protected function _validation_message($data, $message)
     {
-        $name = $data['name'];
-        $post = $data['post'];
-        $label = $data['label'];
-        $rule = $data['rule'];
-
-        # allow HTML
-        if ($rule == 'allow_html') {
-            $allow_html = true;
+        # determines which message to display during validation
+        
+        if($this->_suppress_formr_validation_errors($data)) {
+            # always display the user-defined validation message
+            $this->errors[$data['name']] = $data['string'];
         } else {
-            $allow_html = false;
+            if(!empty($data['string'])) {
+               # display the user-defined validation message
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                if(!empty($data['label'])) {
+                   # show the user-defined field name
+                   $this->errors[$data['name']] = $data['label'].' '.$message;  
+                } else {
+                    # fallback to the field name
+                    $this->errors[$data['name']] = $data['name'].' '.$message; 
+                }
+            }
+        }
+    }
+    
+    protected function _get_matches($rule)
+    {
+        preg_match_all("/\[(.*?)\]/", $rule, $matches);
+        
+        if(! isset($matches[1][0])) {
+            $this->_error_message('Oops! The <strong>'.$rule.'</strong> validation rule is missing a required parameter.<br>Read the <a href="https://formr.github.io/validation/#validation-rules" style="color:white; text-decoration:underline" target="_blank">Validation Rule docs</a> for more information on using this rule.');
+            return false;
+        } else {
+            return $matches[1][0];
+        }
+    }
+    
+    protected function _validate_bool_rules($rule, $data)
+    {
+        # the following rules evaluate the posted string
+        
+        # this rule must match a user-defined regex
+        if (mb_substr($rule, 0, 5) == 'regex')
+        {
+            $rule = ltrim($rule, 'regex[');
+            $rule = rtrim($rule, ']');
+            
+            if (preg_match($rule, $data['post']))
+            {
+                $this->_validation_message($data, 'does not match the required parameters');
+            }
+            
+            return $data['post'];
+        }
+        
+        # this rule must *not* match a user-defined regex
+        elseif (mb_substr($rule, 0, 9) == 'not_regex')
+        {
+            $rule = ltrim($rule, 'not_regex[');
+            $rule = rtrim($rule, ']');
+            
+            if (!preg_match($rule, $data['post']))
+            {
+                $this->_validation_message($data, 'can not be an exact match');
+            }
+            
+            return $data['post'];
+        }
+        
+        # match one field's contents to another
+        elseif (mb_substr($rule, 0, 7) == 'matches')
+        {
+            preg_match_all("/\[(.*?)\]/", $rule, $matches);
+            $match_field = $matches[1][0];
+
+            if ($data['post'] != $_POST[$match_field])
+            {
+                if($this->_suppress_formr_validation_errors($data)) {
+                    $this->errors[$data['name']] = $data['string'];
+                } else {
+                    $this->_validation_message($data, ' does not match '.$match_field);
+                }
+            }
+            
+            return $data['post'];
         }
 
-        if ($post != null) {
-            # match one field's contents to another
-            if (mb_substr($rule, 0, 7) == 'matches') {
-
-                preg_match_all("/\[(.*?)\]/", $rule, $matches);
-                $match_field = $matches[1][0];
-
-                if ($post != $_POST[$match_field])
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = 'The ' . $label . ' field does not match the ' . $match_field . ' field';
-                    }
-
-                    return false;
-                }
+        # min length
+        elseif (mb_substr($rule, 0, 10) == 'min_length' || mb_substr($rule, 0, 3) == 'min')
+        {
+            if(! $match = $this->_get_matches($rule)) {
+                return $data['post'];
             }
 
-            # min length
-            if (mb_substr($rule, 0, 10) == 'min_length' || mb_substr($rule, 0, 3) == 'min') {
-
-                preg_match_all("/\[(.*?)\]/", $rule, $matches);
-                $match = $matches[1][0];
-
-                if (strlen($post) < $match)
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = $label . ' must be at least ' . $match . ' characters';
-                    }
-
-                    return false;
-                }
-            }
-
-            # max length
-            if (mb_substr($rule, 0, 10) == 'max_length' || mb_substr($rule, 0, 3) == 'max') {
-
-                preg_match_all("/\[(.*?)\]/", $rule, $matches);
-                $match = $matches[1][0];
-
-                if (strlen($post) > $match)
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = $label . ' must be less than ' . $match . ' characters';
-                    }
-
-                    return false;
-                }
-            }
-
-            # exact length
-            if (mb_substr($rule, 0, 12) == 'exact_length' || mb_substr($rule, 0, 5) == 'exact') {
-
-                preg_match_all("/\[(.*?)\]/", $rule, $matches);
-                $match = $matches[1][0];
-
-                if (strlen($post) != $match)
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = $label . ' must be exactly ' . $match . ' characters';
-                    }
-
-                    return false;
-                }
-            }
-
-            # less than (integer)
-            if (mb_substr($rule, 0, 9) == 'less_than') {
-
-                preg_match_all("/\[(.*?)\]/", $rule, $matches);
-                $match = $matches[1][0];
-
-                if (!is_numeric($post))
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = $label . ' must be a number';
-                    }
-
-                    return false;
-                }
-
-                if ((int)$post >= (int)$match)
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = $label . ' must be less than ' . $match;
-                    }
-
-                    return false;
-                }
-            }
-
-            # greater than
-            if (mb_substr($rule, 0, 12) == 'greater_than') {
-
-                preg_match_all("/\[(.*?)\]/", $rule, $matches);
-                $match = $matches[1][0];
-
-                if (!is_numeric($post))
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = $label . ' must be a number';
-                    }
-
-                    return false;
-                }
-
-                if ((int)$post <= (int)$match)
-                {
-                    if($this->_suppress_validation_errors($data)) {
-                        $this->errors[$name] = $data['string'];
-                    } else {
-                        $this->errors[$name] = $label . ' must be greater than ' . $match;
-                    }
-
-                    return false;
-                }
-            }
-
-            # alpha
-            if ($rule == 'alpha' && !ctype_alpha(str_replace(' ', '', $post)))
+            if (strlen($data['post']) < $match)
             {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
-                } else {
-                    $this->errors[$name] = $label . ' may only contain letters';
-                }
+                $this->_validation_message($data, 'must be at least '.$match.' characters');
+            }
+            
+            return $data['post'];
+        }
 
-                return false;
+        # max length
+        elseif (mb_substr($rule, 0, 10) == 'max_length' || mb_substr($rule, 0, 3) == 'max' || mb_substr($rule, 0, 2) == 'ml')
+        {
+            if(! $match = $this->_get_matches($rule)) {
+                return $data['post'];
             }
 
-            # alphanumeric
-            if ($rule == 'alpha_numeric' && !ctype_alnum(str_replace(' ', '', $post)))
+            if (strlen($data['post']) > $match)
             {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
+                if($this->_suppress_formr_validation_errors($data)) {
+                    $this->errors[$data['name']] = $data['string'];
                 } else {
-                    $this->errors[$name] = $label . ' may only contain letters and numbers';
+                    if ($match == 1 && strlen($data['post']) > 1) {
+                        $this->_validation_message($data, 'must be 1 character');
+                    } else {
+                        $this->_validation_message($data, 'can not be more than '.$match.' characters');
+                    }
+                }
+            }
+            
+            return $data['post'];
+        }
+
+        # exact length
+        elseif (mb_substr($rule, 0, 12) == 'exact_length' || mb_substr($rule, 0, 5) == 'exact' || mb_substr($rule, 0, 2) == 'el')
+        {
+            if(! $match = $this->_get_matches($rule)) {
+                return $data['post'];
+            }
+
+            if (strlen($data['post']) != $match)
+            {
+                if($this->_suppress_formr_validation_errors($data)) {
+                    $this->errors[$data['name']] = $data['string'];
+                } else {
+                    $this->_validation_message($data, 'must be exactly '.$match.' characters');
+                }
+            }
+            
+            return $data['post'];
+        }
+
+        # less than or equal to (number)
+        elseif (mb_substr($rule, 0, 18) == 'less_than_or_equal' || mb_substr($rule, 0, 3) == 'lte')
+        {
+            if (!is_numeric($data['post']))
+            {
+                if(!empty($data['label'])) {
+                    $this->errors[$data['name']] = $data['label'] . ' must be a number';
+                } else {
+                    $this->errors[$data['name']] = $data['name'] . ' must be a number';
                 }
                 
-                return false;
+                return $data['post'];
+            }
+            
+            if(! $match = $this->_get_matches($rule)) {
+                return $data['post'];
             }
 
-            # alpha_dash
-            if ($rule == 'alpha_dash' && preg_match('/[^A-Za-z0-9_-]/', $post))
+            if ((int)$data['post'] > (int)$match)
             {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
+                if($this->_suppress_formr_validation_errors($data)) {
+                    $this->errors[$data['name']] = $data['string'];
                 } else {
-                    $this->errors[$name] = $label . ' may only contain letters, numbers, hyphens and underscores';
+                    $this->_validation_message($data, 'must be less than, or equal to '.$match);
                 }
             }
-
-            # numeric
-            if ($rule == 'numeric' && !is_numeric($post))
+            
+            return $data['post'];
+        }
+        
+        # less than (number)
+        elseif (mb_substr($rule, 0, 9) == 'less_than' || mb_substr($rule, 0, 2) == 'lt')
+        {
+            if (!is_numeric($data['post']))
             {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
+                if(!empty($data['label'])) {
+                    $this->errors[$data['name']] = $data['label'] . ' must be a number';
                 } else {
-                    $this->errors[$name] = $label . ' must be numeric';
+                    $this->errors[$data['name']] = $data['name'] . ' must be a number';
                 }
-
-                return false;
+                
+                return $data['post'];
+            }
+            
+            if(! $match = $this->_get_matches($rule)) {
+                return $data['post'];
             }
 
-            # integer
-            if ($rule == 'int' && !filter_var($post, FILTER_VALIDATE_INT))
+            if ((int)$data['post'] >= (int)$match)
             {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
+                if($this->_suppress_formr_validation_errors($data)) {
+                    $this->errors[$data['name']] = $data['string'];
                 } else {
-                    $this->errors[$name] = $label . ' must be a number';
+                    $this->_validation_message($data, 'must be less than '.$match);
                 }
-
-                return false;
             }
-
-            # valid email
-            if ($rule == 'valid_email' && !filter_var($post, FILTER_VALIDATE_EMAIL))
-            {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
-                } else {
-                    $this->errors[$name] = 'Please enter a valid email address';
-                }
-
-                return false;
-            }
-
-            # valid IP
-            if ($rule == 'valid_ip' && !filter_var($post, FILTER_VALIDATE_IP))
-            {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
-                } else {
-                    $this->errors[$name] = $label . ' must be a valid IP address';
-                }
-
-                return false;
-            }
-
-            # valid URL
-            if ($rule == 'valid_url' && !filter_var($post, FILTER_VALIDATE_URL))
-            {
-                if($this->_suppress_validation_errors($data)) {
-                    $this->errors[$name] = $data['string'];
-                } else {
-                    $this->errors[$name] = $label . ' must be a valid IP address';
-                }
-
-                return false;
-            }
-
-            # sanitize string
-            if ($rule == 'sanitize_string') {
-                $post = filter_var($post, FILTER_SANITIZE_STRING);
-            }
-
-            # sanitize URL
-            if ($rule == 'sanitize_url') {
-                $post = filter_var($post, FILTER_SANITIZE_URL);
-            }
-
-            # sanitize email
-            if ($rule == 'sanitize_email') {
-                $post = filter_var($post, FILTER_SANITIZE_EMAIL);
-            }
-
-            # sanitize integer
-            if ($rule == 'sanitize_int') {
-                $post = filter_var($post, FILTER_SANITIZE_NUMBER_INT);
-            }
-
-            # md5
-            if ($rule == 'md5') {
-                $post = md5($post . $this->salt);
-            }
-
-            # sha1
-            if ($rule == 'sha1') {
-                $post = sha1($post . $this->salt);
-            }
-
-            # php's password_hash() function
-            if ($rule == 'hash') {
-                $post = password_hash($post, PASSWORD_DEFAULT);
-            }
-
-            # strip everything but numbers
-            if ($rule == 'strip_numeric') {
-                $post = preg_replace("/[^0-9]/", '', $post);
-            }
-
-            # create twitter-style username
-            if ($rule == 'slug') {
-                $post = $this->slug($post);
-            }
+            
+            return $data['post'];
         }
 
-        # run it through the cleaning method as a final step
-        return $this->_clean_value($post, $allow_html);
+        # greater than or equal to (number)
+        elseif (mb_substr($rule, 0, 21) == 'greater_than_or_equal' || mb_substr($rule, 0, 3) == 'gte')
+        {
+            if (!is_numeric($data['post']))
+            {
+                if(!empty($data['label'])) {
+                    $this->errors[$data['name']] = $data['label'] . ' must be a number';
+                } else {
+                    $this->errors[$data['name']] = $data['name'] . ' must be a number';
+                }
+                
+                return $data['post'];
+            }
+            
+            if(! $match = $this->_get_matches($rule)) {
+                return $data['post'];
+            }
+
+            if ((int)$data['post'] < (int)$match)
+            {
+                if($this->_suppress_formr_validation_errors($data)) {
+                    $this->errors[$data['name']] = $data['string'];
+                } else {
+                    $this->_validation_message($data, 'must be greater than, or equal to '.$match);
+                }
+            }
+            
+            return $data['post'];
+        }
+        
+        # greater than (number)
+        elseif (mb_substr($rule, 0, 12) == 'greater_than' || mb_substr($rule, 0, 2) == 'gt')
+        {
+            if (!is_numeric($data['post']))
+            {
+                if(!empty($data['label'])) {
+                    $this->errors[$data['name']] = $data['label'] . ' must be a number';
+                } else {
+                    $this->errors[$data['name']] = $data['name'] . ' must be a number';
+                }
+                
+                return $data['post'];
+            }
+            
+            if(! $match = $this->_get_matches($rule)) {
+                return $data['post'];
+            }
+
+            if ((int)$data['post'] <= (int)$match)
+            {
+                if($this->_suppress_formr_validation_errors($data)) {
+                    $this->errors[$data['name']] = $data['string'];
+                } else {
+                    $this->_validation_message($data, 'must be greater than '.$match);
+                }
+            }
+            
+            return $data['post'];
+        }
+
+        # alpha
+        elseif ($rule == 'alpha' && !ctype_alpha(str_replace(' ', '', $data['post'])))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'may only contain letters');
+            }
+            
+            return $data['post'];
+        }
+        
+        # before (the current date)
+        elseif ($rule == 'before' && strtotime($data['post']) > strtotime('now'))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'must be before '.date($this->format_rule_dates, strtotime('now')));
+            }
+            
+            return $data['post'];
+        }
+        
+        # after (the current date)
+        elseif ($rule == 'after' && strtotime($data['post']) < strtotime('now'))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'must be after '.date($this->format_rule_dates, strtotime('now')));
+            }
+            
+            return $data['post'];
+        }
+
+        # alphanumeric
+        elseif ($rule == 'alpha_numeric' && !ctype_alnum(str_replace(' ', '', $data['post'])) || $rule == 'an' && !ctype_alnum(str_replace(' ', '', $data['post'])))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'may only contain letters and numbers');
+            }
+            
+            return $data['post'];
+        }
+
+        # alpha_dash
+        elseif ($rule == 'alpha_dash' && preg_match('/[^A-Za-z0-9_-]/', $data['post']) || $rule == 'ad' && preg_match('/[^A-Za-z0-9_-]/', $data['post']))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'may only contain letters, numbers, hyphens and underscores');
+            }
+            
+            return $data['post'];
+        }
+
+        # numeric
+        elseif ($rule == 'numeric' && !is_numeric($data['post']))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'must be a number or a numeric string');
+            }
+            
+            return $data['post'];
+        }
+
+        # integer
+        elseif (($rule == 'int' || $rule == 'integer') && !filter_var($data['post'], FILTER_VALIDATE_INT))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'must be a number');
+            }
+            
+            return $data['post'];
+        }
+
+        # valid email
+        elseif ($rule == 'valid_email' && !filter_var($data['post'], FILTER_VALIDATE_EMAIL) || $rule == 'email' && !filter_var($data['post'], FILTER_VALIDATE_EMAIL))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'must be an email address');
+            }
+            
+            return $data['post'];
+        }
+
+        # valid IP
+        elseif ($rule == 'valid_ip' && !filter_var($data['post'], FILTER_VALIDATE_IP) || $rule == 'ip' && !filter_var($data['post'], FILTER_VALIDATE_IP))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'must be a properly formatted IP address');
+            }
+            
+            return $data['post'];
+        }
+
+        # valid URL
+        elseif ($rule == 'valid_url' && !filter_var($data['post'], FILTER_VALIDATE_URL) || $rule == 'url' && !filter_var($data['post'], FILTER_VALIDATE_URL))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'must be a properly formatted URL');
+            }
+            
+            return $data['post'];
+        }
+        
+        elseif($rule == 'allow_html') {
+            return $data['post'];
+        } else {
+            return $data['post'];
+        }
+    }
+
+    protected function _validate_string_rules($rule, $string)
+    {
+        # the following rules manipulate the posted string
+        
+        # sanitize string
+        if ($rule == 'sanitize_string') {
+            return filter_var($string, FILTER_SANITIZE_STRING);
+        }
+
+        # sanitize URL
+        elseif ($rule == 'sanitize_url') {
+            return filter_var($string, FILTER_SANITIZE_URL);
+        }
+
+        # sanitize email
+        elseif ($rule == 'sanitize_email') {
+            return filter_var($string, FILTER_SANITIZE_EMAIL);
+        }
+
+        # sanitize integer
+        elseif ($rule == 'sanitize_int') {
+            return filter_var($string, FILTER_SANITIZE_NUMBER_INT);
+        }
+
+        # md5
+        elseif ($rule == 'md5') {
+            return md5($string . $this->salt);
+        }
+
+        # sha1
+        elseif ($rule == 'sha1') {
+            return sha1($string . $this->salt);
+        }
+
+        # php's password_hash() function
+        elseif ($rule == 'hash') {
+            return password_hash($string, PASSWORD_DEFAULT);
+        }
+
+        # strip everything but numbers
+        elseif ($rule == 'strip_numeric') {
+            return preg_replace("/[^0-9]/", '', $string);
+        }
+
+        # create twitter-style username
+        elseif ($rule == 'slug') {
+            return $this->slug($string);
+        }
+        
+        else {
+            return $string;
+        }
     }
 
     protected function _fp_rules($key)
     {
         # used during fastpost()
         # if a field name matches, why not do some automatic validation?
+        
         $rules = $this->fastpost_rules();
 
         if (array_key_exists($key, $rules)) {
@@ -2420,7 +2612,7 @@ class Formr
     {
         # validation rules for the fastpost() method
 
-        # basically, we're using common field names, and if a posted field name
+        # basically we're using common field names, and if a posted field name
         # matches one of these field names (keys), the validation rule will be applied
 
         # 'field name' => 'validation rule'
@@ -2507,7 +2699,7 @@ class Formr
             $data['method'] = 'post';
         }
 
-        # open the tag
+        # open the form tag
         $return = $this->_nl(1) . '<form action="' . $action . '"';
 
         # add the name
@@ -2543,7 +2735,7 @@ class Formr
             $return .= ' enctype="multipart/form-data"';
         }
 
-        # close the tag
+        # close the form tag
         $return .= '>' . $this->_nl(1);
 
         # print hidden input fields if present
@@ -2552,6 +2744,11 @@ class Formr
                 $return .= '<input type="hidden" name="'.$key.'" id="'.$key.'" value="'.$value.'">'.$this->_nl(1);
             }
             $return .= $this->_nl(1);
+        }
+        
+        # add the honeypot
+        if($this->honeypot) {
+            $return .= '<input type="text" name="'.$this->honeypot.'" style="display:none">';
         }
 
         if($this->wrapper == 'ul' || $this->wrapper == 'ol' || $this->wrapper == 'dl') {
@@ -3041,17 +3238,15 @@ class Formr
     public function input_hidden($data, $value = '')
     {
         $return = '';
-
-        if (!is_array($data)) {
-
-            # build the element
-            $return = '<input type="hidden" name="' . $data . '" id="' . $data . '" value="' . $value . '"';
-
-            # insert the closing bracket
-            $return .= '>';
+                
+        if (is_array($data)) {
+            # build the elements
+            foreach($data as $key => $value) {
+                $return .= '<input type="hidden" name="' . $key . '" id="' . $key . '" value="' . $value . '">'.$this->_nl();
+            }
         } else {
             # build the element
-            $return .= '<input type="hidden" name="' . $data['name'] . '" id="' . $data['name'] . '" value="' . $data['value'] . '">'; 
+            $return = '<input type="hidden" name="' . $data . '" id="' . $data . '" value="' . $value . '">'.$this->_nl();
         }
 
         return $this->_echo($return);
@@ -4030,9 +4225,8 @@ class Formr
             $return = '<a name="' . $data['name'] . '"></a>';
         }
 
-        if ($this->is_not_empty($data['id']) && !$this->_input_types('checkbox')) {
-            $data['id'] = $data['name'];
-        }
+        # create an ID if one wasn't supplied
+        $data['id'] = $this->make_id($data);
 
         # open the element
         $return .= '<label for="' . $data['id'] . '"';
@@ -4136,7 +4330,7 @@ class Formr
 
         $return .= $this->_nl(1) . '</label>';
 
-        return $return;
+        return $this->_echo($return);
     }
 
 
@@ -4507,7 +4701,7 @@ class Formr
         return trim($str, '[]');
     }
 
-    private function _suppress_validation_errors($data)
+    private function _suppress_formr_validation_errors($data)
     {
         # suppress Formr's default validation error messages and only show user-defined messages
 
@@ -4591,7 +4785,7 @@ class Formr
                 if ($key != 'submit' && $key != 'button') {
 
                     # make sure it's a valid email address
-                    if ((strpos(strtolower($key), 'email') !== false) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    if (!empty($value) && (strpos(strtolower($key), 'email') !== false) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                         $this->errors[$key] = 'Please enter a valid email address';
                     }
 

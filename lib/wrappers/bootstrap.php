@@ -74,10 +74,10 @@ trait Bootstrap
                 } else {
                     $return .= static::bootstrap_css('checkbox');
                 }
+                
+                # close the <div>
+                $return .= '">';
             }
-            
-            # close the div
-            $return .= '">';
         
         } else {
             # open the wrapping <div> tag
@@ -126,7 +126,7 @@ trait Bootstrap
         
         # close the <label> if NOT a checkbox or radio
         if (!$this->formr->type_is_checkbox($data)) {
-            $return .= '</label>' . $this->nl;
+            $return .= "</label>\r\n";
         }
         
         # add the field element here if NOT a checkbox or radio
@@ -141,11 +141,11 @@ trait Bootstrap
             if ($this->formr->is_in_brackets($data['inline'])) {
                 if ($this->formr->in_errors($data['name'])) {
                     # trim the brackets and show on error
-                    $return .= $this->nl . '<p class="' . static::bootstrap_css('help') . '">' . trim($data['inline'], '[]') . '</p>';
+                    $return .= $this->nl . '<p class="'.static::bootstrap_css('help').' '.static::bootstrap_css('text-error').'">' . trim($data['inline'], '[]') . '</p>';
                 }
             } else {
                 # show this text on page load
-                $return .= $this->nl . '<p class="' . static::bootstrap_css('help') . '">' . $data['inline'] . '</p>';
+                $return .= $this->nl . '<p class="'.static::bootstrap_css('help').'">' . $data['inline'] . '</p>';
             }
         }
         
@@ -160,11 +160,14 @@ trait Bootstrap
             }
             
             # close the <label> tag
-            $return .= $this->nl . '</label>' . $this->nl;
+            $return .= "</label>\r\n";
         }
         
-        # close the wrapping <div>
-        $return .= '</div>' . $this->nl;
+        if (! $this->formr->is_array($data['value'])) {
+            # close the wrapping <div>
+            
+            $return .= "</div>\r\n";
+        }
         
         return $return;
     }
