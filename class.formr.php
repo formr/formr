@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.3)
+ * Formr (1.3.1)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -347,6 +347,8 @@ class Formr
 
     public function submit()
     {
+        $this->_check_for_honeypot();
+        
         # checks if submit button was clicked
         if ($_SERVER['REQUEST_METHOD'] == 'POST')
         {
@@ -357,7 +359,7 @@ class Formr
                 $parts = explode('|', $_POST['csrf_token']);
                 
                 # check if token in SESSION equals posted token value
-                if (hash_equals($_SESSION['formr']['token'], $parts[0])) {
+                if (hash_equals((string) $_SESSION['formr']['token'], strval($parts[0]))) {
                     # compare current time to time of token expiration
                     if (time() >= $parts[1]) {
                         $this->_error_message('Your session has timed out. Please refresh the page.');
@@ -366,7 +368,9 @@ class Formr
                         $_SESSION['formr']['token'] = null;
                     }
                 } else {
-                    $this->_error_message('Token mismatch. Please refresh the page.');
+                    if($_SESSION['formr']['token']) {
+                        $this->_error_message('Token mismatch. Please refresh the page.');
+                    }
                     
                     # reset the token
                     $_SESSION['formr']['token'] = null;
@@ -862,14 +866,14 @@ class Formr
                 require_once($this->html_purifier);
 
                 # set it up using default settings (feel free to alter these if needed)
-                $p_config = HTMLPurifier_Config::createDefault();
-                $purifier = new HTMLPurifier($p_config);
+                $p_config = \HTMLPurifier_Config::createDefault();
+                $purifier = new \HTMLPurifier($p_config);
                 return $purifier->purify($str);
             } else {
-                $config = HTMLPurifier_Config::createDefault();
+                $config = \HTMLPurifier_Config::createDefault();
                 $config->set('Core', 'Encoding', $this->charset);
                 $config->set('HTML', 'Doctype', $this->doctype);
-                $purifier = new HTMLPurifier($config);
+                $purifier = new \HTMLPurifier($config);
             }
         } else {
 
@@ -2006,12 +2010,7 @@ class Formr
     {
         # this method processes the $_POST/$_GET values and performs validation (if required)
         
-        # die if the honeypot caught a bear
-        if($this->honeypot && $_SERVER['REQUEST_METHOD'] == 'POST') {
-            if($_POST[$this->honeypot] != '') {
-                die;
-            }
-        }
+        $this->_check_for_honeypot();
 
         # set the variable in which we'll store our $_POST/$_GET data
         $post = null;
@@ -4979,5 +4978,15 @@ class Formr
         }
 
         return false;
+    }
+    
+    private function _check_for_honeypot()
+    {
+        # die if the honeypot caught a bear
+        if($this->honeypot && $_SERVER['REQUEST_METHOD'] == 'POST') {
+            if($_POST[$this->honeypot] != '') {
+                die;
+            }
+        }
     }
 }
