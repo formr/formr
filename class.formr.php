@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.3.1)
+ * Formr (1.3.2)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -51,6 +51,14 @@ class Formr
     
     # suppress Formr's validation error messages and only display your own
     public $custom_validation_messages = false;
+    
+    # default string delimiters
+    # $delimiter[0] is for separating field values in fastform()
+    # $delimiter[1] is for parsing values within fastform() strings and the post() validation rules
+    # example : input_text('Name $delimiter[0] Label $delimiter[0] Value[Value1 $delimiter[1] Value2 $delimiter[1] Value3 ]');
+    # example : form->post('email','Email','valid_email $delimiter[1] min[3] $delimiter[1] max[60]')
+    # property was made public so you can modify it as you see fit
+    public $delimiter = array(',', '|');
     
     # default doctype
     public $doctype = 'html';
@@ -148,13 +156,6 @@ class Formr
     
     # default wrapper types which Formr supports
     private $default_wrapper_types = array('div', 'p', 'ul', 'ol', 'dl', 'li');
-
-    # default string delimiters
-    # $delimiter[0] is for separating field values in fastform()
-    # $delimiter[1] is for parsing values within fastform() strings and the post() validation rules
-    # example : input_text('Name $delimiter[0] Label $delimiter[0] Value[Value1 $delimiter[1] Value2 $delimiter[1] Value3 ]');
-    # example : form->post('email','Email','valid_email $delimiter[1] min[3] $delimiter[1] max[60]')
-    private $delimiter = array(',', '|');
     
     # we can turn off automatic echoing of elements in the constructor
     private $echo;
@@ -781,15 +782,23 @@ class Formr
                     }
 
                     if ($this->in_errors($data['name'])) {
-                        # add 'danger' error class on element
+                        # add 'error' class on element
                         if ($this->_wrapper_is('framework')) {
-                            $return .= ' '.$this->controls['is-invalid'];
+                            foreach($_POST as $key => $value) {
+                                if($key == $data['name']) {
+                                    $return .= ' '.$this->controls['is-invalid'];
+                                }
+                            }
                         }
                     }
                     elseif ($this->submitted() && $this->show_valid) {
-                        # add 'danger' error class on element
+                        # add 'success' class on element
                         if ($this->_wrapper_is('framework')) {
-                            $return .= ' '.$this->controls['is-valid'];
+                            foreach($_POST as $key => $value) {
+                                if($key == $data['name']) {
+                                    $return .= ' '.$this->controls['is-valid'];
+                                }
+                            }
                         }
                     }
 

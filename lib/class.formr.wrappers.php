@@ -86,22 +86,22 @@ class Wrapper extends Formr\Formr
         }
 
         # checkboxes and radios
-        if (in_array($data['type'], $this->_input_types('checkbox'))) {
+        if (in_array($data['type'], $this->formr->_input_types('checkbox'))) {
             # wrap checkboxes and radios in a label
             if (!empty($data['label'])) {
-                $return .= $this->label_open($data['value'], $data['label'], $data['id']);
+                $return .= $this->formr->label_open($data['value'], $data['label'], $data['id']);
             }
             
             # add the field element
             $return .= $element;
             
             if (!empty($data['label'])) {
-                $return .= ' ' . $this->label_close($data) . $this->nl;
+                $return .= ' ' . $this->formr->label_close($data) . $this->nl;
             }
         } else {
             # everything else
             if (!empty($data['label'])) {
-                $return .= $this->label($data);
+                $return .= $this->formr->label($data);
             }
             # add the field element
             $return .= $element . $this->nl;
