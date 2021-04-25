@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.3.2)
+ * Formr (1.3.3)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -101,6 +101,12 @@ class Formr
     
     # form's name
     public $name = null;
+    
+    # Google ReCaptcha v3
+    # get keys here: https://www.google.com/recaptcha/admin/create
+    public $recaptcha_score = 0.5;
+    public $recaptcha_secret_key = null;
+    public $recaptcha_site_key = null;
     
     # form fields are not required by default
     public $required = false;
@@ -346,120 +352,35 @@ class Formr
         return $this->form_info();
     }
 
-    public function submit()
+    public function submit($form_id = null)
     {
         $this->_check_for_honeypot();
         
         # checks if submit button was clicked
         if ($_SERVER['REQUEST_METHOD'] == 'POST')
         {
-            # check if we're using csrf
-            if (isset($_POST['csrf_token']))
-            {
-                # grab the token and expiration time from the hidden element
-                $parts = explode('|', $_POST['csrf_token']);
-                
-                # check if token in SESSION equals posted token value
-                if (hash_equals((string) $_SESSION['formr']['token'], strval($parts[0]))) {
-                    # compare current time to time of token expiration
-                    if (time() >= $parts[1]) {
-                        $this->_error_message('Your session has timed out. Please refresh the page.');
-                        
-                        # reset the token
-                        $_SESSION['formr']['token'] = null;
+            $this->_check_for_csrf();
+            $this->_handle_session_checkbox_arrays();
+            
+            # checks for a form id to see which form was submitted
+            if($form_id) {
+                foreach($_POST as $key => $value) {
+                    if($key == 'FormrID' && $value == $form_id) {
+                        return true;
                     }
-                } else {
-                    if($_SESSION['formr']['token']) {
-                        $this->_error_message('Token mismatch. Please refresh the page.');
-                    }
-                    
-                    # reset the token
-                    $_SESSION['formr']['token'] = null;
                 }
+            } else {
+                return true;
             }
-
-            if($this->session && $this->session_values && isset($_SESSION[$this->session])) {
-                
-                # Here is where we are handling checkbox arrays in our session.
-                # We have created a hidden element inside the _create_input() method which contains the array's values.
-                # example: <input type="hidden" name="colors" value="red,green,blue">
-                # We're going to go through those values and match them against what was posted...
-                
-                # here's where we'll store the checkbox array values we get from the hidden element(s)
-                $created_checkbox_values = [];
-                
-                # here's where we'll store the values of the checkboxes that were ticked upon submit
-                $posted_checkbox_values = [];
-
-                foreach ($_POST as $key => $value) {
-                    # check if the post value is an array
-                    if (is_array($value)) {
-                        foreach($value as $k => $v) {
-                            # put the posted checkbox value into the posted array
-                            $posted_checkbox_values[$key][] = $v;
-                        }
-                    }
-
-                    # the checkbox array's hidden element value is a string, so let's explode it and put it into our array
-                    if (strpos($key, '_values') !== false) {
-                        $created_checkbox_values[str_replace('_values', '', $key)] = explode(',', $_POST[$key]);
-                    }
-                }
-
-                # we're now going to compare the form's checkbox values to the values that were actually posted
-                if(!empty($posted_checkbox_values)) {
-                    foreach($created_checkbox_values as $key => $array) {
-                        # if a checkbox value is *not* posted in an array group, remove it from the session
-                        if(!empty($posted_checkbox_values[$key]) && isset($_SESSION[$this->session][$key])) {
-                            $clean1 = array_diff($posted_checkbox_values[$key], $array);
-                            $clean2 = array_diff($array, $posted_checkbox_values[$key]);
-                            $output = array_merge($clean1, $clean2);
-                            foreach ($output as $value) {
-                                foreach ($_SESSION[$this->session][$key] as $skey => $svalue) {
-                                    if ($svalue == $value) {
-                                        unset($_SESSION[$this->session][$key][$skey]);
-                                    }
-                                }
-                            }
-                        } else {
-                            # no checkbox values were posted in an array group, so remove the checkbox value from the session's array group
-                            foreach ($array as $array_key => $array_value) {
-                                if (isset($_SESSION[$this->session][$key])) {
-                                    # if the array is empty, just remove it
-                                    if (empty($_SESSION[$this->session][$key])) {
-                                        unset($_SESSION[$this->session][$key]);
-                                    } else {
-                                        # remove each un-posted checkbox value from the session
-                                        foreach ($_SESSION[$this->session][$key] as $skey => $svalue) {
-                                            if ($svalue == $array_value) {
-                                                unset($_SESSION[$this->session][$key][$skey]);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    # no checkbox arrays were posted at all, so remove the checkbox array(s) from the session
-                    foreach ($created_checkbox_values as $key => $value) {
-                        if(isset($_SESSION[$this->session][$key])) {
-                            unset($_SESSION[$this->session][$key]);
-                        }
-                    }
-                }
-            }
-
-            return true;
         }
 
         return false;
     }
 
-    public function submitted()
+    public function submitted($form_id = null)
     {
         # alias of submit()
-        return $this->submit();
+        return $this->submit($form_id);
     }
 
     public function in_errors($key)
@@ -1105,10 +1026,10 @@ class Formr
             # output the label text for the group
             if ($this->wrapper == 'bootstrap') {
                 # bootstrap control-label
-                $return .= '<label class="' . $this->controls['label'] . '">' . $data['label'] . '</label>' . $this->_nl(1);
+                $return .= '<label class="'.$this->controls['label'].'">'.$data['label'].'</label>'.$this->_nl(1);
             } else {
                 # 'regular' label
-                $return .= $this->label($data) . $this->_nl(1);
+                $return .= '<label>'.$data['label'].'</label>'.$this->_nl(1);
             }
 
             # make sure we're dealing with an array, just to be safe
@@ -1137,9 +1058,9 @@ class Formr
                     }
 
                     # return the element wrapped in a label
-                    $return .= $this->_nl(1) . $this->_t(1) . $this->label_open($data);
+                    $return .= '<label for="'.$this->make_id($data).'">';
                     $return .= $this->_create_input($data);
-                    $return .= $this->label_close($data);
+                    $return .= $data['label'].'</label>';
 
                     # close the bootstrap class
                     if ($this->_wrapper_is('bootstrap')) {
@@ -2015,7 +1936,7 @@ class Formr
         }
     }
 
-    protected function _post($name, $label = '', $rules = '')
+    protected function _post($name, $label = '', $rules = [])
     {
         # this method processes the $_POST/$_GET values and performs validation (if required)
         
@@ -2101,9 +2022,9 @@ class Formr
             $data['string'] = $string;
         }
 
-        # check if this is required
-        # we can't check if isset($_POST[$name]) because checkboxes and radios don't
-        # post if they're not ticked so we have to check everything
+        # check if this field is required
+        # we can't check if isset($_POST[$name]) because checkboxes and radios 
+        # don't post if they're not ticked so we have to check everything
         if ($this->_check_required($name) && $post == null) {
             if (!empty($label)) {
                 if (!isset($string)) {
@@ -2116,8 +2037,10 @@ class Formr
             }
         }
 
-        # separate the rules
-        $rules = explode($this->delimiter[1], $rules);
+        # validation rules are a string; let's put them into an array
+        if(! is_array($rules)) {
+            $rules = explode($this->delimiter[1], $rules);
+        }
 
         # push 'allow_html' to the back so it processes last
         if (($key = array_search('allow_html', $rules)) !== false) {
@@ -2247,6 +2170,10 @@ class Formr
         # min length
         elseif (mb_substr($rule, 0, 10) == 'min_length' || mb_substr($rule, 0, 3) == 'min')
         {
+            if(empty($data['post']) && ! $this->_check_required($data['name'])) {
+                return;
+            }
+            
             if(! $match = $this->_get_matches($rule)) {
                 return $data['post'];
             }
@@ -2541,7 +2468,19 @@ class Formr
             return $data['post'];
         }
         
-        elseif($rule == 'allow_html') {
+        # required
+        elseif ($rule == 'required' && empty($data['post']))
+        {
+            if($this->_suppress_formr_validation_errors($data)) {
+                $this->errors[$data['name']] = $data['string'];
+            } else {
+                $this->_validation_message($data, 'is required');
+            }
+            
+            return $data['post'];
+        }
+        
+        elseif($rule == 'allow_html' || $rule == 'html') {
             return $data['post'];
         } else {
             return $data['post'];
@@ -2745,6 +2684,18 @@ class Formr
 
         # close the form tag
         $return .= '>' . $this->_nl(1);
+        
+        # add a hidden input with the form's ID so we can check if it's been submitted
+        if(isset($this->id)) {
+            $return .= '<input type="hidden" name="FormrID" value="'.$this->id.'">';
+        }
+        elseif(! empty($data['id'])) {
+            $return .= '<input type="hidden" name="FormrID" value="'.$data['id'].'">';
+        }
+        
+        if($this->recaptcha_secret_key && $this->recaptcha_site_key) {
+            $return .= '<input type="hidden" name="formrToken" id="formrToken" value="formrToken">';
+        }
 
         # print hidden input fields if present
         if (!empty($data['hidden'])) {
@@ -4997,5 +4948,182 @@ class Formr
                 die;
             }
         }
+    }
+    
+    private function _check_for_csrf()
+    {
+        # check if we're using csrf
+        if (isset($_POST['csrf_token'])) {
+            # grab the token and expiration time from the hidden element
+            $parts = explode('|', $_POST['csrf_token']);
+            
+            # check if token in SESSION equals posted token value
+            if (hash_equals((string) $_SESSION['formr']['token'], strval($parts[0]))) {
+                # compare current time to time of token expiration
+                if (time() >= $parts[1]) {
+                    $this->_error_message('Your session has timed out. Please refresh the page.');
+                    
+                    # reset the token
+                    $_SESSION['formr']['token'] = null;
+                }
+            } else {
+                if($_SESSION['formr']['token']) {
+                    $this->_error_message('Token mismatch. Please refresh the page.');
+                }
+                
+                # reset the token
+                $_SESSION['formr']['token'] = null;
+            }
+        }
+    }
+    
+    private function _handle_session_checkbox_arrays()
+    {
+        if($this->session && $this->session_values && isset($_SESSION[$this->session])) {
+            
+            # Here is where we are handling checkbox arrays in our session.
+            # We have created a hidden element inside the _create_input() method which contains the array's values.
+            # example: <input type="hidden" name="colors" value="red,green,blue">
+            # We're going to go through those values and match them against what was posted...
+            
+            # here's where we'll store the checkbox array values we get from the hidden element(s)
+            $created_checkbox_values = [];
+            
+            # here's where we'll store the values of the checkboxes that were ticked upon submit
+            $posted_checkbox_values = [];
+
+            foreach ($_POST as $key => $value) {
+                # check if the post value is an array
+                if (is_array($value)) {
+                    foreach($value as $k => $v) {
+                        # put the posted checkbox value into the posted array
+                        $posted_checkbox_values[$key][] = $v;
+                    }
+                }
+
+                # the checkbox array's hidden element value is a string, so let's explode it and put it into our array
+                if (strpos($key, '_values') !== false) {
+                    $created_checkbox_values[str_replace('_values', '', $key)] = explode(',', $_POST[$key]);
+                }
+            }
+
+            # we're now going to compare the form's checkbox values to the values that were actually posted
+            if(!empty($posted_checkbox_values)) {
+                foreach($created_checkbox_values as $key => $array) {
+                    # if a checkbox value is *not* posted in an array group, remove it from the session
+                    if(!empty($posted_checkbox_values[$key]) && isset($_SESSION[$this->session][$key])) {
+                        $clean1 = array_diff($posted_checkbox_values[$key], $array);
+                        $clean2 = array_diff($array, $posted_checkbox_values[$key]);
+                        $output = array_merge($clean1, $clean2);
+                        foreach ($output as $value) {
+                            foreach ($_SESSION[$this->session][$key] as $skey => $svalue) {
+                                if ($svalue == $value) {
+                                    unset($_SESSION[$this->session][$key][$skey]);
+                                }
+                            }
+                        }
+                    } else {
+                        # no checkbox values were posted in an array group, so remove the checkbox value from the session's array group
+                        foreach ($array as $array_key => $array_value) {
+                            if (isset($_SESSION[$this->session][$key])) {
+                                # if the array is empty, just remove it
+                                if (empty($_SESSION[$this->session][$key])) {
+                                    unset($_SESSION[$this->session][$key]);
+                                } else {
+                                    # remove each un-posted checkbox value from the session
+                                    foreach ($_SESSION[$this->session][$key] as $skey => $svalue) {
+                                        if ($svalue == $array_value) {
+                                            unset($_SESSION[$this->session][$key][$skey]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                # no checkbox arrays were posted at all, so remove the checkbox array(s) from the session
+                foreach ($created_checkbox_values as $key => $value) {
+                    if(isset($_SESSION[$this->session][$key])) {
+                        unset($_SESSION[$this->session][$key]);
+                    }
+                }
+            }
+        }
+    }
+    
+    public function recaptcha_passed()
+    {
+        # google recaptcha v3
+        # here's where we bring it all together and validate with google's servers on the back-end
+        # from Gatsby's answer on stackoverflow: https://stackoverflow.com/a/60036326
+        
+        if(($_SERVER['REQUEST_METHOD'] == 'POST') && ($this->recaptcha_secret_key && $this->recaptcha_site_key))
+        {
+            $data = [
+                'secret' => $this->recaptcha_secret_key,
+                'response' => $_POST['formrToken'],
+                'remoteip' => $_SERVER['REMOTE_ADDR']
+            ];
+            
+            $options = array(
+                'http' => array(
+                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method'  => 'POST',
+                    'content' => http_build_query($data)
+                )
+            );
+            
+            # creates and returns stream context with options supplied in options preset 
+            $context = stream_context_create($options);
+            
+            # file_get_contents() is the preferred way to read the contents of a file into a string
+            $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+            
+            # convert the json encoded string to a php variable
+            $result = json_decode($response, true);
+            
+            if ($result['success'] == true && $result['score'] >= $this->recaptcha_score) {
+                return true;
+            }
+                        
+            return false;
+        }
+    }
+    
+    public function recaptcha_head()
+    {
+        # google recaptcha v3
+        # prints script src for client-side validation
+        # from Gatsby's answer on stackoverflow: https://stackoverflow.com/a/60036326
+        
+        $this->_echo("<script src=\"https://www.google.com/recaptcha/api.js?render={$this->recaptcha_site_key}\"></script>\r\n");
+    }
+    
+    public function recaptcha_body()
+    {
+        # google recaptcha v3
+        # prints front-end javascript for client-side token retrieval
+        # from Gatsby's answer on stackoverflow: https://stackoverflow.com/a/60036326
+        
+        $return  = "<script>\r\n";
+        $return .= "   grecaptcha.ready(function() {\r\n";
+        $return .= "      grecaptcha.execute('{$this->recaptcha_site_key}', {\r\n";
+        $return .= "         action:'formr'\r\n";
+        $return .= "      }).then(function(formrToken) {\r\n";
+        $return .= "         document.getElementById('formrToken').value = formrToken;\r\n";
+        $return .= "      });\r\n";
+        $return .= "      // refresh token every minute to prevent expiration\r\n";
+        $return .= "      setInterval(function(){\r\n";
+        $return .= "         grecaptcha.execute('{$this->recaptcha_site_key}', {\r\n";
+        $return .= "            action: 'formr'\r\n";
+        $return .= "         }).then(function(formrToken) {\r\n";
+        $return .= "            document.getElementById('formrToken').value = formrToken;\r\n";
+        $return .= "         });\r\n";
+        $return .= "      }, 60000);\r\n";
+        $return .= "   });\r\n";
+        $return .= "</script>\r\n";
+        
+        $this->_echo($return);
     }
 }
