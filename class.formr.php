@@ -4473,7 +4473,7 @@ class Formr
             {
                 # we're putting the hidden fields into an array and
                 # printing them at the end of the form
-                array_push($hidden, $this->input_hidden($data));
+                array_push($hidden, $this->input_hidden($data['name'], $data['value']));
             }
             elseif ($data['type'] == 'label')
             {
