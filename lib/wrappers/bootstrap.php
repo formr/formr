@@ -7,7 +7,7 @@ trait Bootstrap
     
     public static function bootstrap_css($key = '')
     {
-        # bootstrap 4 css classes
+        # bootstrap 5 css classes
         
         $array = [
             'alert-e' => 'alert alert-danger',
@@ -23,13 +23,13 @@ trait Bootstrap
             'checkbox-inline' => 'form-check form-check-inline',
             'div' => 'form-group',
             'error' => 'invalid-feedback',
-            'file' => 'form-control-file',
+            'file' => 'form-control',
             'form-check-input' => 'form-check-input',
             'help' => 'form-text',
             'input' => 'form-control',
             'is-invalid' => 'is-invalid',
             'is-valid' => 'is-valid',
-            'label' => 'control-label',
+            'label' => 'form-label',
             'link' => 'alert-link',
             'list-dl' => 'list-unstyled',
             'list-ol' => 'list-unstyled',
@@ -49,7 +49,7 @@ trait Bootstrap
 
     public function bootstrap($element = '', $data = '')
     {
-        # bootstrap 4 field wrapper
+        # bootstrap 5 field wrapper
         
         if (empty($data)) {
             return false;
@@ -146,6 +146,173 @@ trait Bootstrap
             } else {
                 # show this text on page load
                 $return .= $this->nl . '<p class="'.static::bootstrap_css('help').'">' . $data['inline'] . '</p>';
+            }
+        }
+        
+        # checkbox/radio: add the label text and close the label tag
+        if ($this->formr->is_not_empty($data['label']) && $this->formr->type_is_checkbox($data)) {
+            # add label text
+            $return .= ' ' . $data['label'];
+            
+            # add a required field indicator (*)
+            if ($this->formr->_check_required($data['name']) && $this->formr->is_not_empty($data['label'])) {
+                $return .= $this->formr->required_indicator;
+            }
+            
+            # close the <label> tag
+            $return .= "</label>\r\n";
+        }
+        
+        if (! $this->formr->is_array($data['value'])) {
+            # close the wrapping <div>
+            
+            $return .= "</div>\r\n";
+        }
+        
+        return $return;
+    }
+    
+    public static function bootstrap4_css($key = '')
+    {
+        # bootstrap 4 css classes
+        
+        $array = [
+            'alert-e' => 'alert alert-danger',
+            'alert-i' => 'alert alert-info',
+            'alert-s' => 'alert alert-success',
+            'alert-w' => 'alert alert-warning',
+            'button' => 'btn',
+            'button-danger' => 'btn btn-danger',
+            'button-primary' => 'btn btn-primary',
+            'button-secondary' => 'btn btn-secondary',
+            'checkbox' => 'form-check',
+            'checkbox-label' => 'form-check-label',
+            'checkbox-inline' => 'form-check form-check-inline',
+            'div' => 'form-group',
+            'error' => 'invalid-feedback',
+            'file' => 'form-control-file',
+            'form-check-input' => 'form-check-input',
+            'help' => 'form-text',
+            'input' => 'form-control',
+            'is-invalid' => 'is-invalid',
+            'is-valid' => 'is-valid',
+            'label' => 'control-label',
+            'link' => 'alert-link',
+            'list-dl' => 'list-unstyled',
+            'list-ol' => 'list-unstyled',
+            'list-ul' => 'list-unstyled',
+            'radio' => 'form-check',
+            'success' => 'has-success',
+            'text-error' => 'text-danger',
+            'warning' => 'has-warning',
+        ];
+        
+        if ($key) {
+            return $array[$key];
+        } else {
+            return $array;
+        }
+    }
+
+    public function bootstrap4($element = '', $data = '')
+    {
+        # bootstrap 4 field wrapper
+        
+        if (empty($data)) {
+            return false;
+        }
+        
+        # create our $return variable
+        $return = $this->nl;
+        
+        # optional: add a comment for easier debugging in the html
+        $return .= $this->formr->_print_field_comment($data);
+        
+        if ($this->formr->type_is_checkbox($data)) {
+            # input is a checkbox or radio
+            # don't print the <label> if we're printing an array
+            if (!$this->formr->is_array($data['value'])) {
+                # add an ID to the wrapping <div> so that we can access it via javascript
+                $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="';
+                
+                if (!empty($data['checkbox-inline'])) {
+                    # this is an inline checkbox
+                    $return .= static::bootstrap4_css('checkbox-inline');
+                } else {
+                    $return .= static::bootstrap4_css('checkbox');
+                }
+                
+                # close the <div>
+                $return .= '">';
+            }
+        
+        } else {
+            # open the wrapping <div> tag
+            $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="' . static::bootstrap4_css('div') . '">';
+        }
+        
+        # add the checkbox/radio element here (before the <label>)
+        if ($this->formr->type_is_checkbox($data)) {
+            $return .= $this->nl . $element;
+        }
+        
+        # if the <label> is empty add .sr-only
+        if ($this->formr->is_not_empty($data['label'])) {
+            if ($this->formr->type_is_checkbox($data)) {
+                $label_class = static::bootstrap4_css('checkbox-label');
+            } else {
+                $label_class = static::bootstrap4_css('label');
+            }
+        } else {
+            $label_class = 'sr-only';
+        }
+        
+        # see if we're in a checkbox array...
+        if ($this->formr->is_array($data['name']) && $this->formr->type_is_checkbox($data)) {
+            # we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
+            # we'll add the label text later...
+            $return .= '<label for="' . $this->formr->make_id($data) . '">' . $this->nl;
+        } else {
+            # we are not in a checkbox array
+            if ($this->formr->type_is_checkbox($data)) {
+                # no default class on a checkbox or radio
+                if ($this->formr->is_not_empty($data['label'])) {
+                    # open the <label>, but don't insert the label text here; we're doing it elsewhere
+                    $return .= $this->nl . '<label class="' . $label_class . '" for="' . $this->formr->make_id($data) . '">';
+                }
+            } else {
+                # open the <label> and insert the label text
+                $return .= $this->nl . '<label class="' . $label_class . '" for="' . $data['name'] . '">' . $data['label'];
+            }
+        }
+        
+        # add a required field indicator if applicable
+        if (!$this->formr->type_is_checkbox($data)) {
+            $return .= $this->formr->insert_required_indicator($data);
+        }
+        
+        # close the <label> if NOT a checkbox or radio
+        if (!$this->formr->type_is_checkbox($data)) {
+            $return .= "</label>\r\n";
+        }
+        
+        # add the field element here if NOT a checkbox or radio
+        if (!$this->formr->type_is_checkbox($data)) {
+            $return .= $element . $this->nl;
+        }
+        
+        # inline help text
+        if (!empty($data['inline'])) {
+            # help-block text
+            # if the text is surrounded by square brackets, show only on form error
+            if ($this->formr->is_in_brackets($data['inline'])) {
+                if ($this->formr->in_errors($data['name'])) {
+                    # trim the brackets and show on error
+                    $return .= $this->nl . '<p class="'.static::bootstrap4_css('help').' '.static::bootstrap4_css('text-error').'">' . trim($data['inline'], '[]') . '</p>';
+                }
+            } else {
+                # show this text on page load
+                $return .= $this->nl . '<p class="'.static::bootstrap4_css('help').'">' . $data['inline'] . '</p>';
             }
         }
         
