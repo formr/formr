@@ -697,6 +697,12 @@ class Formr
                             else {
                                 $return .= ' class="' . $this->controls['input'];
                             }
+                        } elseif ($this->wrapper == 'bootstrap') {
+                            if ($data['type'] == 'select') {
+                                $return .= ' class="' . $this->controls['select'];
+                            } else {
+                                $return .= ' class="' . $this->controls['input'];
+                            }
                         } else {
                             $return .= ' class="' . $this->controls['input'];
                         }
