@@ -10,7 +10,7 @@ trait Bootstrap
         # bootstrap 5 css classes
         
         $array = [
-            'alert-e' => 'alert alert-danger',
+            'alert-e' => 'alert alert-danger alert-dismissible',
             'alert-i' => 'alert alert-info',
             'alert-s' => 'alert alert-success',
             'alert-w' => 'alert alert-warning',
