@@ -1858,7 +1858,13 @@ class Formr
     private function _bootstrap_alert($type, $message, $heading = null)
     {
         $return  = "<div class=\"{$this->controls[$type]}\" role=\"alert\">\r\n";
-        $return .= "<button type=\"button\" class=\"close\" data-dismiss=\"alert\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\r\n";
+        # If bootstrap 5
+        if ($this->wrapper == 'bootstrap') {
+            $return .= "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>\r\n";
+        } else {
+            # older bootstrap
+            $return .= "<button type=\"button\" class=\"close\" data-dismiss=\"alert\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\r\n";
+        }
         if ($heading) {
             $return .= "<h4 class=\"alert-heading\">{$this->_get_alert_heading($type,$heading)}</h4>\r\n";
         }
