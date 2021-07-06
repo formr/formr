@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.3.3)
+ * Formr (1.3.4)
  *
  * a php micro-framework which helps you build and validate web forms quickly and painlessly
  *
@@ -41,7 +41,7 @@ class Formr
     # and can be defined at instantiation. see documentation for more info.
 
     # default form action (useful with fastform())
-    public $action = null;
+    public $action;
     
     # default character set
     public $charset = 'utf-8';
@@ -64,7 +64,7 @@ class Formr
     public $doctype = 'html';
     
     # add an error message to messages()
-    public $error_message = null;
+    public $error_message;
     
     # create an empty errors array for form validation
     public $errors = array();
@@ -73,16 +73,16 @@ class Formr
     public $format_rule_dates = 'M d, Y';
     
     # add a honeypot field
-    public $honeypot = null;
+    public $honeypot;
     
     # sanitize input with HTMLPurifier
-    public $html_purifier = null;
+    public $html_purifier;
     
     # form's ID
-    public $id = null;
+    public $id;
     
     # add an info message to messages()
-    public $info_message = null;
+    public $info_message;
     
     # inline validation is off by default
     public $inline_errors = false;
@@ -100,13 +100,14 @@ class Formr
     public $minify = false;
     
     # form's name
-    public $name = null;
+    public $name;
     
     # Google ReCaptcha v3
     # get keys here: https://www.google.com/recaptcha/admin/create
+    public $recaptcha_action_name;
     public $recaptcha_score = 0.5;
-    public $recaptcha_secret_key = null;
-    public $recaptcha_site_key = null;
+    public $recaptcha_secret_key;
+    public $recaptcha_site_key;
     
     # form fields are not required by default
     public $required = false;
@@ -115,16 +116,16 @@ class Formr
     public $required_indicator = '';
     
     # use a salt when hashing
-    public $salt = null;
+    public $salt;
     
     # sanitize html $_POST values with FILTER_SANITIZE_SPECIAL_CHARS
     public $sanitize_html = false;
     
     # define a session
-    public $session = null;
+    public $session;
 
     # use session values in form fields on page load
-    public $session_values = null;
+    public $session_values;
     
     # show valid status (green outline) on fields if using a framework
     public $show_valid = false;
@@ -133,29 +134,29 @@ class Formr
     public $submit = 'Submit';
     
     # add a success message to messages()
-    public $success_message = null;
+    public $success_message;
     
     # accepted file types/mime types for uploading files
-    public $upload_accepted_mimes = null;
-    public $upload_accepted_types = null;
+    public $upload_accepted_mimes;
+    public $upload_accepted_types;
     
     # the full path to the directory in which we're uploading files
-    public $upload_dir = null;
+    public $upload_dir;
     
     # max file size for uploaded files (2MB)
     public $upload_max_filesize = 2097152;
     
     # rename a file after upload
-    public $upload_rename = null;
+    public $upload_rename;
 
     # resize images after upload
-    public $upload_resize = null;
+    public $upload_resize;
     
     # init the $uploads property
     public $uploads = true;
     
     # add a warning message to messages()
-    public $warning_message = null;
+    public $warning_message;
     
     # put default class names into an array
     private $controls = array();
@@ -4318,7 +4319,7 @@ class Formr
 
         if($form) {
             if(!$this->id) {
-                $this->id = 'myForm';
+                $this->id = 'myFormr';
             }
             if($form === 'multipart') {
                 $return .= $this->form_open_multipart();
@@ -4459,7 +4460,7 @@ class Formr
         }
 
         # add a fieldset
-        $return .= $this->fieldset_open();
+        // $return .= $this->fieldset_open();
 
         # lets see if we need to wrap this in a list...
         $return .= $this->_open_list_wrapper();
@@ -4483,9 +4484,12 @@ class Formr
             
             if ($data['type'] == 'hidden')
             {
-                # we're putting the hidden fields into an array and
-                # printing them at the end of the form
-                array_push($hidden, $this->input_hidden($data));
+                # we're putting the hidden fields into an array and printing them at the end of the form
+                if(isset($data['value'])) {
+                    array_push($hidden, $this->input_hidden($data['name'], $data['value']));
+                } else {
+                    array_push($hidden, $this->input_hidden($data['name'], $data['label']));
+                }
             }
             elseif ($data['type'] == 'label')
             {
@@ -4630,7 +4634,7 @@ class Formr
         }
 
         # close the fieldset
-        $return .= $this->fieldset_close();
+        // $return .= $this->fieldset_close();
 
         # close the <form>
         $return .= $this->form_close();
@@ -4955,8 +4959,9 @@ class Formr
     private function _check_for_honeypot()
     {
         # die if the honeypot caught a bear
+        
         if($this->honeypot && $_SERVER['REQUEST_METHOD'] == 'POST') {
-            if($_POST[$this->honeypot] != '') {
+            if(!empty($_POST[$this->honeypot])) {
                 die;
             }
         }
@@ -5121,14 +5126,22 @@ class Formr
         $return  = "<script>\r\n";
         $return .= "   grecaptcha.ready(function() {\r\n";
         $return .= "      grecaptcha.execute('{$this->recaptcha_site_key}', {\r\n";
-        $return .= "         action:'formr'\r\n";
+        if($this->recaptcha_action_name) {
+            $return .= "         action:'".$this->recaptcha_action_name."'\r\n";
+        } else {
+            $return .= "         action:'Formr'\r\n";
+        }
         $return .= "      }).then(function(formrToken) {\r\n";
         $return .= "         document.getElementById('formrToken').value = formrToken;\r\n";
         $return .= "      });\r\n";
         $return .= "      // refresh token every minute to prevent expiration\r\n";
         $return .= "      setInterval(function(){\r\n";
         $return .= "         grecaptcha.execute('{$this->recaptcha_site_key}', {\r\n";
-        $return .= "            action: 'formr'\r\n";
+        if($this->recaptcha_action_name) {
+            $return .= "         action:'".$this->recaptcha_action_name."'\r\n";
+        } else {
+            $return .= "         action:'Formr'\r\n";
+        }
         $return .= "         }).then(function(formrToken) {\r\n";
         $return .= "            document.getElementById('formrToken').value = formrToken;\r\n";
         $return .= "         });\r\n";
@@ -5137,5 +5150,12 @@ class Formr
         $return .= "</script>\r\n";
         
         $this->_echo($return);
+    }
+    
+    public function clear()
+    {
+        # will show empty form fields after form is submitted
+        
+        $_POST = array();
     }
 }
