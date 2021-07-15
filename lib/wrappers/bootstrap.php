@@ -21,7 +21,7 @@ trait Bootstrap
             'checkbox' => 'form-check',
             'checkbox-label' => 'form-check-label',
             'checkbox-inline' => 'form-check form-check-inline',
-            'div' => 'form-group',
+            'div' => '',
             'error' => 'invalid-feedback',
             'file' => 'form-control',
             'form-check-input' => 'form-check-input',
