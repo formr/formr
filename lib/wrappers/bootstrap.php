@@ -35,6 +35,7 @@ trait Bootstrap
             'list-ol' => 'list-unstyled',
             'list-ul' => 'list-unstyled',
             'radio' => 'form-check',
+            'select' => 'form-select',
             'success' => 'has-success',
             'text-error' => 'text-danger',
             'warning' => 'has-warning',
