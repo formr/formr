@@ -3,9 +3,9 @@
 namespace Formr;
 
 /**
- * Formr (1.3.4)
+ * Formr (1.3.5)
  *
- * a php micro-framework which helps you build and validate web forms quickly and painlessly
+ * a php micro-framework to help you quickly build and validate web forms.
  *
  * https://formr.github.io
  *
@@ -847,168 +847,6 @@ class Formr
                 return $value;
             }
         }
-    }
-
-    protected function _parse_fastform_values($key, $data)
-    {
-        if (!is_array($data)) {
-            # the fastform() values are in a string
-            # explode them and get each value
-            $explode = explode($this->delimiter[0], $data);
-
-            # $data is currently a string, convert it to an array
-            $data = array();
-
-            # determind the field's type
-            $data = $this->_fastform_define_field_type($key, $data);
-
-            # start populating the $data array
-            if (!empty($explode[0])) {
-                $data['name'] = trim($explode[0]);
-            } else {
-                die('error: please provide a name for the <strong>' . $key . '</strong> field');
-            }
-
-            if (!empty($explode[1])) {
-                $data['label'] = trim($explode[1]);
-            } else {
-                $data['label'] = '';
-            }
-
-            if (!empty($explode[2])) {
-                $data['value'] = trim($explode[2]);
-            } else {
-                $data['value'] = '';
-            }
-
-            if (!empty($explode[3])) {
-                $data['id'] = trim($explode[3]);
-            } else {
-                $data['id'] = '';
-            }
-
-            if (!empty($explode[4])) {
-                $data['string'] = trim($explode[4]);
-            } else {
-                $data['string'] = '';
-            }
-
-            if (!empty($explode[5])) {
-                $data['inline'] = trim($explode[5]);
-            } else {
-                $data['inline'] = '';
-            }
-
-            if (!empty($explode[6])) {
-                $data['selected'] = trim($explode[6]);
-            } else {
-                $data['selected'] = '';
-            }
-
-            if (!empty($explode[7])) {
-                $data['options'] = trim($explode[7]);
-            } else {
-                $data['options'] = '';
-            }
-
-            # hidden types don't really require an id, so we'll insert the id into the value
-            if ($data['type'] == 'hidden') {
-                $data['value'] = $data['id'];
-            }
-        } else {
-
-            # determine the field's type
-            $data = $this->_fastform_define_field_type($key, $data);
-
-            if (empty($data['id'])) {
-                $data['id'] = '';
-            }
-            if (empty($data['value'])) {
-                $data['value'] = '';
-            }
-            if (empty($data['string'])) {
-                $data['string'] = '';
-            }
-            if (empty($data['label'])) {
-                $data['label'] = '';
-            }
-            if (empty($data['inline'])) {
-                $data['inline'] = '';
-            }
-            if (empty($data['selected'])) {
-                $data['selected'] = '';
-            }
-            if (empty($data['options'])) {
-                $data['options'] = '';
-            }
-        }
-
-        return $data;
-    }
-
-    protected function _fastform_define_field_type($key, $data)
-    {
-        # this method assigns a field type based on the $key's value
-        if (!is_array($data)) {
-            $data = array();
-        }
-
-        # determines if the field name is in the array's key or value
-        if ($this->_starts_with($key, 'select') || $this->_starts_with($key, 'dropdown') || $this->_starts_with($key, 'state') || $this->_starts_with($key, 'states') || $this->_starts_with($key, 'country')) {
-            $data['type'] = 'select';
-        } elseif ($this->_starts_with($key, 'submit')) {
-            $data['type'] = 'submit';
-        } elseif ($this->_starts_with($key, 'reset')) {
-            $data['type'] = 'reset';
-        } elseif ($this->_starts_with($key, 'button')) {
-            $data['type'] = 'button';
-        } elseif ($this->_starts_with($key, 'hidden')) {
-            $data['type'] = 'hidden';
-        } elseif ($this->_starts_with($key, 'password')) {
-            $data['type'] = 'password';
-        } elseif ($this->_starts_with($key, 'file')) {
-            $data['type'] = 'file';
-        } elseif ($this->_starts_with($key, 'image')) {
-            $data['type'] = 'image';
-        } elseif ($this->_starts_with($key, 'checkbox')) {
-            $data['type'] = 'checkbox';
-        } elseif ($this->_starts_with($key, 'radio')) {
-            $data['type'] = 'radio';
-        } elseif ($this->_starts_with($key, 'textarea')) {
-            $data['type'] = 'textarea';
-        } elseif ($this->_starts_with($key, 'color')) {
-            $data['type'] = 'color';
-        } elseif ($this->_starts_with($key, 'email')) {
-            $data['type'] = 'email';
-        } elseif ($this->_starts_with($key, 'date')) {
-            $data['type'] = 'date';
-        } elseif ($this->_starts_with($key, 'datetime')) {
-            $data['type'] = 'datetime';
-        } elseif ($this->_starts_with($key, 'datetime_local')) {
-            $data['type'] = 'datetime_local';
-        } elseif ($this->_starts_with($key, 'month')) {
-            $data['type'] = 'month';
-        } elseif ($this->_starts_with($key, 'number')) {
-            $data['type'] = 'number';
-        } elseif ($this->_starts_with($key, 'range')) {
-            $data['type'] = 'range';
-        } elseif ($this->_starts_with($key, 'search')) {
-            $data['type'] = 'search';
-        } elseif ($this->_starts_with($key, 'tel')) {
-            $data['type'] = 'tel';
-        } elseif ($this->_starts_with($key, 'time')) {
-            $data['type'] = 'time';
-        } elseif ($this->_starts_with($key, 'url')) {
-            $data['type'] = 'url';
-        } elseif ($this->_starts_with($key, 'week')) {
-            $data['type'] = 'week';
-        } elseif ($this->_starts_with($key, 'label')) {
-            $data['type'] = 'label';
-        } else {
-            $data['type'] = 'text';
-        }
-
-        return $data;
     }
 
     protected function _build_input_groups($data)
@@ -4402,7 +4240,128 @@ class Formr
 
 
     # FAST FORM
-    protected function _faster_form($form_name, $csrf, $multipart)
+    public function fastform($input, $csrf = false, $multipart = false)
+    {
+        # method for automatically building and laying out a form with multiple elements
+
+        if (is_string($input)) {
+            # user entered a string and wants to use a pre-built form in the Forms class
+            return $this->_faster_form($input, $csrf, $multipart);
+        }
+
+        # build the <form> tag
+        if ($multipart) {
+            $return = $this->form_open_multipart();
+        } else {
+            $return = $this->form_open();
+        }
+
+        if ($csrf) {
+            $return .= $this->csrf();
+        }
+
+        # lets see if we need to wrap this in a list...
+        $return .= $this->_open_list_wrapper();
+
+        # create an empty array outside of looping to store hidden inputs
+        $hidden = array();
+
+        # loop through the array and print/process each field value
+        foreach ($input as $key => $value)
+        {
+            # check if we're creating a fieldset
+            if(strstr($key, 'fieldset') !== false)
+            {
+                # open the fieldset and add the legend text
+                $return .= $this->fieldset_open($value['legend']);
+                
+                # loop through the fieldset array and get each form field
+                foreach($value['fields'] as $fieldKey => $fieldValue) {
+                    
+                    # check if the field is required
+                    $this->_check_required($fieldValue);
+                    
+                    # determine the type of form element we'll need
+                    $data = $this->_parse_fastform_values($fieldKey, $fieldValue);
+                    
+                    # tell other methods we're using FastForm
+                    $data['fastform'] = true;
+                    
+                    # print the form element
+                    $return .= $this->_fastform_fields($data);
+                }
+                
+                $return .= $this->fieldset_close();
+           
+            } else {
+                
+                # check if the field is required
+                $this->_check_required($value);
+                
+                # determine the type of form element we'll need
+                $data = $this->_parse_fastform_values($key, $value);
+    
+                # tell other methods we're using FastForm
+                $data['fastform'] = true;
+    
+                # we're putting any hidden elements into an array and printing them at the end of the form
+                if ($data['type'] == 'hidden') {
+                    if(isset($data['value'])) {
+                        array_push($hidden, $this->input_hidden($data['name'], $data['value']));
+                    } else {
+                        array_push($hidden, $this->input_hidden($data['name'], $data['label']));
+                    }
+                } else {
+                    # print the form element
+                    $return .= $this->_fastform_fields($data);
+                }
+            }
+        }
+        
+        # see if a submit button was added while building the form
+        if ($data['type'] == 'button' || $data['type'] == 'submit') {
+            $item = $this->input_button_submit($data);
+            $return .= $this->_wrapper($item, $data);
+        } else {
+            # create a default submit with no options
+            $data['type'] = 'submit';
+            $data['name'] = 'submit';
+            $data['label'] = '';
+            $data['value'] = $this->submit;
+            $data['id'] = 'submit';
+            $data['string'] = '';
+            $data['inline'] = '';
+            $data['selected'] = '';
+            $data['options'] = '';
+            
+            $item = $this->input_submit($data);
+            $return .= $this->_wrapper($item, $data);
+        }
+
+        # close the list tag
+        $return .= $this->_close_list_wrapper();
+
+        # if hidden fields are set, print them now
+        if (!empty($hidden)) {
+            foreach ($hidden as $hidval) {
+                $return .= $hidval."\r\n";
+            }
+        }
+
+        # close the </form>
+        $return .= $this->form_close();
+
+        return $return;
+    }
+
+    public function fastform_multipart($data, $csrf = false)
+    {
+        # for file uploads...
+        
+        return $this->fastform($data, $csrf, 'multipart');
+    }
+    
+    private function _faster_form($form_name, $csrf, $multipart)
     {
         # this method enables the Forms class to be used as a plugin so that we can store
         # arrays of frequently used forms and pass them through the fastform() function
@@ -4426,217 +4385,283 @@ class Formr
             return $this->fastform($data, $csrf);
         }
     }
-
-    public function fastform($input, $csrf = false, $multipart = false)
+    
+    private function _parse_fastform_values($key, $data)
     {
-        # method for automatically building and laying out a form with multiple elements
+        if (!is_array($data)) {
+            # the fastform() values are in a string
+            # explode them and get each value
+            $explode = explode($this->delimiter[0], $data);
 
-        if (is_string($input)) {
-            # user entered a string and wants to use a pre-built form in the Forms class
-            return $this->_faster_form($input, $csrf, $multipart);
-        }
+            # $data is currently a string, convert it to an array
+            $data = array();
 
-        # build the <form> tag
-        if ($multipart) {
-            $return = $this->form_open_multipart();
-        } else {
-            $return = $this->form_open();
-        }
+            # determine the field's type
+            $data = $this->_fastform_define_field_type($key, $data);
 
-        if ($csrf) {
-            $return .= $this->csrf();
-        }
-
-        # add a fieldset
-        // $return .= $this->fieldset_open();
-
-        # lets see if we need to wrap this in a list...
-        $return .= $this->_open_list_wrapper();
-
-        # create an empty array outside of looping to store hidden inputs
-        $hidden = array();
-
-        # loop through the array and print/process each field value
-        foreach ($input as $key => $data) {
-
-            # check if it's required
-            $required = $this->_check_required($data);
-
-            # see if the entered values are in a string or an array
-            $data = $this->_parse_fastform_values($key, $data);
-
-            # tell other methods we're using fastform()
-            $data['fastform'] = true;
-
-            # print out the form fields
-            
-            if ($data['type'] == 'hidden')
-            {
-                # we're putting the hidden fields into an array and printing them at the end of the form
-                if(isset($data['value'])) {
-                    array_push($hidden, $this->input_hidden($data['name'], $data['value']));
-                } else {
-                    array_push($hidden, $this->input_hidden($data['name'], $data['label']));
-                }
-            }
-            elseif ($data['type'] == 'label')
-            {
-                $return .= $this->label($data);
-            }
-            elseif ($data['type'] == 'radio' || $data['type'] == 'checkbox')
-            {
-                if ($this->is_in_brackets($data['value'])) {
-
-                    # we have a radio/checkbox array
-                    # loop through the value in the array, create elements and put them all into one wrapper with one label
-
-                    # put each element value into an array and return them
-                    $item = $this->_build_input_groups($data);
-
-                    # strip out the label for the element
-                    $data['label'] = '';
-
-                    # wrap the element
-                    $return .= $this->_wrapper($item, $data);
-                
-                } else {
-
-                    # build each element individually and wrap it in a label
-                    
-                    $item = "<label for=\"{$data['id']}\">\r\n";
-
-                    if ($data['type'] == 'radio') {
-                        $item .= $this->input_radio($data);
-                    } else {
-                        $item .= $this->input_checkbox($data);
-                    }
-
-                    $item .= " {$data['label']}\r\n</label>\r\n";
-
-                    # empty the label value so the wrapper function won't build it again
-                    $data['label'] = '';
-
-                    # wrap it
-                    $return .= $this->_wrapper($item, $data);
-                }
-            } elseif ($data['type'] == 'select') {
-                $item    = $this->input_select($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'text') {
-                $item    = $this->input_text($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'password') {
-                $item    = $this->input_password($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'textarea') {
-                $item    = $this->input_textarea($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'file') {
-                $item    = $this->input_upload($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'color') {
-                $item    = $this->input_color($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'email') {
-                $item    = $this->input_email($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'date') {
-                $item    = $this->input_date($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'datetime') {
-                $item    = $this->input_datetime_local($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'datetime-local') {
-                $item    = $this->input_datetime_local($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'month') {
-                $item    = $this->input_month($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'number') {
-                $item    = $this->input_number($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'range') {
-                $item    = $this->input_range($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'search') {
-                $item    = $this->input_search($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'tel') {
-                $item    = $this->input_tel($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'time') {
-                $item    = $this->input_time($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'url') {
-                $item    = $this->input_url($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'week') {
-                $item    = $this->input_week($data);
-                $return .= $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'button') {
-                $item    = $this->input_button($data);
-                $submit  = $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'submit') {
-                # instead of using $item, we set the $submit variable.
-                # if $submit isn't set, we'll create a submit button automatically later on...
-                $item   = $this->input_submit($data);
-                $submit = $this->_wrapper($item, $data);
-            } elseif ($data['type'] == 'reset') {
-                $item    = $this->input_reset($data);
-                $return .= $this->_wrapper($item, $data);
+            # start populating the $data array
+            if (!empty($explode[0])) {
+                $data['name'] = trim($explode[0]);
             } else {
-                # default to text
-                $item    = $this->input_text($data);
-                $return .= $this->_wrapper($item, $data);
+                die('error: please provide a name for the <strong>' . $key . '</strong> field');
+            }
+
+            if (!empty($explode[1])) {
+                $data['label'] = trim($explode[1]);
+            } else {
+                $data['label'] = '';
+            }
+
+            if (!empty($explode[2])) {
+                $data['value'] = trim($explode[2]);
+            } else {
+                $data['value'] = '';
+            }
+
+            if (!empty($explode[3])) {
+                $data['id'] = trim($explode[3]);
+            } else {
+                $data['id'] = '';
+            }
+
+            if (!empty($explode[4])) {
+                $data['string'] = trim($explode[4]);
+            } else {
+                $data['string'] = '';
+            }
+
+            if (!empty($explode[5])) {
+                $data['inline'] = trim($explode[5]);
+            } else {
+                $data['inline'] = '';
+            }
+
+            if (!empty($explode[6])) {
+                $data['selected'] = trim($explode[6]);
+            } else {
+                $data['selected'] = '';
+            }
+
+            if (!empty($explode[7])) {
+                $data['options'] = trim($explode[7]);
+            } else {
+                $data['options'] = '';
+            }
+
+            # hidden types don't really require an id, so we'll insert the id into the value
+            if ($data['type'] == 'hidden') {
+                $data['value'] = $data['id'];
+            }
+        } else {
+
+            # determine the field's type
+            $data = $this->_fastform_define_field_type($key, $data);
+
+            if (empty($data['id'])) {
+                $data['id'] = '';
+            }
+            if (empty($data['value'])) {
+                $data['value'] = '';
+            }
+            if (empty($data['string'])) {
+                $data['string'] = '';
+            }
+            if (empty($data['label'])) {
+                $data['label'] = '';
+            }
+            if (empty($data['inline'])) {
+                $data['inline'] = '';
+            }
+            if (empty($data['selected'])) {
+                $data['selected'] = '';
+            }
+            if (empty($data['options'])) {
+                $data['options'] = '';
             }
         }
 
-        # see if a submit button was entered while building the form
-        if ($data['type'] == 'submit') {
-            $return .= $submit;
-        } else {
-            # create a default submit with no options
+        return $data;
+    }
+
+    private function _fastform_define_field_type($key, $data)
+    {
+        # this method assigns a field type based on the $key's value
+        if (!is_array($data)) {
+            $data = array();
+        }
+
+        # determines if the field name is in the array's key or value
+        if ($this->_starts_with($key, 'select') || $this->_starts_with($key, 'dropdown') || $this->_starts_with($key, 'state') || $this->_starts_with($key, 'states') || $this->_starts_with($key, 'country')) {
+            $data['type'] = 'select';
+        } elseif ($this->_starts_with($key, 'fieldset')) {
+            $data['type'] = 'fieldset';
+        } elseif ($this->_starts_with($key, 'submit')) {
             $data['type'] = 'submit';
-            $data['name'] = 'submit';
-            $data['label'] = '';
-            $data['value'] = $this->submit;
-            $data['id'] = 'submit';
-            $data['string'] = '';
-            $data['inline'] = '';
-            $data['selected'] = '';
-            $data['options'] = '';
+        } elseif ($this->_starts_with($key, 'reset')) {
+            $data['type'] = 'reset';
+        } elseif ($this->_starts_with($key, 'button')) {
+            $data['type'] = 'button';
+        } elseif ($this->_starts_with($key, 'hidden')) {
+            $data['type'] = 'hidden';
+        } elseif ($this->_starts_with($key, 'password')) {
+            $data['type'] = 'password';
+        } elseif ($this->_starts_with($key, 'file')) {
+            $data['type'] = 'file';
+        } elseif ($this->_starts_with($key, 'image')) {
+            $data['type'] = 'image';
+        } elseif ($this->_starts_with($key, 'checkbox')) {
+            $data['type'] = 'checkbox';
+        } elseif ($this->_starts_with($key, 'radio')) {
+            $data['type'] = 'radio';
+        } elseif ($this->_starts_with($key, 'textarea')) {
+            $data['type'] = 'textarea';
+        } elseif ($this->_starts_with($key, 'color')) {
+            $data['type'] = 'color';
+        } elseif ($this->_starts_with($key, 'email')) {
+            $data['type'] = 'email';
+        } elseif ($this->_starts_with($key, 'date')) {
+            $data['type'] = 'date';
+        } elseif ($this->_starts_with($key, 'datetime')) {
+            $data['type'] = 'datetime';
+        } elseif ($this->_starts_with($key, 'datetime_local')) {
+            $data['type'] = 'datetime_local';
+        } elseif ($this->_starts_with($key, 'month')) {
+            $data['type'] = 'month';
+        } elseif ($this->_starts_with($key, 'number')) {
+            $data['type'] = 'number';
+        } elseif ($this->_starts_with($key, 'range')) {
+            $data['type'] = 'range';
+        } elseif ($this->_starts_with($key, 'search')) {
+            $data['type'] = 'search';
+        } elseif ($this->_starts_with($key, 'tel')) {
+            $data['type'] = 'tel';
+        } elseif ($this->_starts_with($key, 'time')) {
+            $data['type'] = 'time';
+        } elseif ($this->_starts_with($key, 'url')) {
+            $data['type'] = 'url';
+        } elseif ($this->_starts_with($key, 'week')) {
+            $data['type'] = 'week';
+        } elseif ($this->_starts_with($key, 'label')) {
+            $data['type'] = 'label';
+        } else {
+            $data['type'] = 'text';
+        }
+
+        return $data;
+    }
+    
+    private function _fastform_fields($data)
+    {
+        # determines what kind of form field element we need
+        
+        $return = null;
+        
+        if($data['type'] == 'hidden' || $data['type'] == 'submit' || $data['type'] == 'button' || $data['type'] == 'reset') {
+           return; 
+        }
+        
+        if ($data['type'] == 'label')
+        {
+            $return .= $this->label($data);
+        }
+        elseif ($data['type'] == 'radio' || $data['type'] == 'checkbox')
+        {
+            if ($this->is_in_brackets($data['value'])) {
+
+                # we have a radio/checkbox array
+                # loop through the value in the array, create elements and put them all into one wrapper with one label
+
+                # put each element value into an array and return them
+                $item = $this->_build_input_groups($data);
+
+                # strip out the label for the element
+                $data['label'] = '';
+
+                # wrap the element
+                $return .= $this->_wrapper($item, $data);
             
-            $item = $this->input_submit($data);
-            
+            } else {
+
+                # build each element individually and wrap it in a label
+                $item = "<label for=\"{$data['id']}\">\r\n";
+
+                if ($data['type'] == 'radio') {
+                    $item .= $this->input_radio($data);
+                } else {
+                    $item .= $this->input_checkbox($data);
+                }
+
+                $item .= " {$data['label']}\r\n</label>\r\n";
+
+                # empty the label value so the wrapper function won't build it again
+                $data['label'] = '';
+
+                # wrap it
+                $return .= $this->_wrapper($item, $data);
+            }
+        }
+        elseif ($data['type'] == 'select') {
+            $item = $this->input_select($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'text') {
+            $item = $this->input_text($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'password') {
+            $item = $this->input_password($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'textarea') {
+            $item = $this->input_textarea($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'file') {
+            $item = $this->input_upload($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'color') {
+            $item = $this->input_color($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'email') {
+            $item = $this->input_email($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'date') {
+            $item = $this->input_date($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'datetime' || $data['type'] == 'datetime-local') {
+            $item = $this->input_datetime_local($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'month') {
+            $item = $this->input_month($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'number') {
+            $item = $this->input_number($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'range') {
+            $item = $this->input_range($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'search') {
+            $item = $this->input_search($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'tel') {
+            $item = $this->input_tel($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'time') {
+            $item = $this->input_time($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'url') {
+            $item = $this->input_url($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'week') {
+            $item = $this->input_week($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'reset') {
+            $item = $this->input_reset($data);
+            $return .= $this->_wrapper($item, $data);
+        } else {
+            # default to text
+            $item = $this->input_text($data);
             $return .= $this->_wrapper($item, $data);
         }
-
-        # close the list tag
-        $return .= $this->_close_list_wrapper();
-
-        # if hidden fields are set, print them now
-        if (!empty($hidden)) {
-            foreach ($hidden as $hidval) {
-                $return .= $hidval."\r\n";
-            }
-        }
-
-        # close the fieldset
-        // $return .= $this->fieldset_close();
-
-        # close the <form>
-        $return .= $this->form_close();
-
+        
         return $return;
     }
-
-    public function fastform_multipart($data, $csrf = false)
-    {
-        # for file uploads...
-        
-        return $this->fastform($data, $csrf, 'multipart');
-    }
-
 
 
 
