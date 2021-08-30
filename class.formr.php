@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.3.5)
+ * Formr (1.3.6)
  *
  * a php micro-framework to help you quickly build and validate web forms.
  *
@@ -62,6 +62,10 @@ class Formr
     
     # default doctype
     public $doctype = 'html';
+    
+    # default error message headers
+    public $error_heading_plural = 'Please Correct the Following Errors';
+    public $error_heading_singular = 'Please Correct the Following Error';
     
     # add an error message to messages()
     public $error_message;
@@ -1556,9 +1560,9 @@ class Formr
 
                 # determine the heading message based on how many errors there are
                 if($i > 1) {
-                    $heading = 'Please Correct the Following Errors';
+                    $heading = $this->error_heading_plural;
                 } else {
-                    $heading = 'Please Correct the Following Error';
+                    $heading = $this->error_heading_singular;
                 }
 
                 # display the appropriate error dialogue
@@ -4939,11 +4943,17 @@ class Formr
         return $this->_echo("<input type=\"hidden\" name=\"csrf_token\" value=\"{$string}\">\r\n\r\n");
     }
 
-    public function redirect($url)
+    public function redirect($url = null)
     {
         # redirect to the given url after the form has been submitted
         
+        if(!$url || $url == 'self') {
+            $url = $_SERVER['PHP_SELF'];
+        }
+        
         header('Location: '.$url);
+        
+        exit;
     }
 
     public function unset_session()
