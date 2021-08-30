@@ -1483,23 +1483,25 @@ class Formr
         if (isset($_SESSION['formr']['flash'])) {
 
             if (!empty($_SESSION['formr']['flash']['success'])) {
-                $this->success_message($_SESSION['formr']['flash']['success']);
+                $return .= $this->success_message($_SESSION['formr']['flash']['success']);
             }
 
             if (!empty($_SESSION['formr']['flash']['error'])) {
-                $this->error_message($_SESSION['formr']['flash']['error']);
+                $return .= $this->error_message($_SESSION['formr']['flash']['error']);
             }
 
             if (!empty($_SESSION['formr']['flash']['warning'])) {
-                $this->warning_message($_SESSION['formr']['flash']['warning']);
+                $return .= $this->warning_message($_SESSION['formr']['flash']['warning']);
             }
 
             if (!empty($_SESSION['formr']['flash']['info'])) {
-                $this->info_message($_SESSION['formr']['flash']['info']);
+                $return .= $this->info_message($_SESSION['formr']['flash']['info']);
             }
 
             $_SESSION['formr']['flash'] = NULL;
             unset($_SESSION['formr']['flash']);
+
+            return $this->_echo($return);
         }
 
         # returns a user-defined message
