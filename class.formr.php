@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.3.6)
+ * Formr (1.3.7)
  *
  * a php micro-framework to help you quickly build and validate web forms.
  *
@@ -1696,8 +1696,12 @@ class Formr
 
     private function _bootstrap_alert($type, $message, $heading = null)
     {
-        $return  = "<div class=\"{$this->controls[$type]}\" role=\"alert\">\r\n";
-        $return .= "<button type=\"button\" class=\"close\" data-dismiss=\"alert\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\r\n";
+        $return  = "<div class=\"{$this->controls[$type]} alert-dismissible fade show\" role=\"alert\">\r\n";
+        if($this->wrapper == 'bootstrap5') {
+            $return .= "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>";
+        } else {
+            $return .= "<button type=\"button\" class=\"close\" data-dismiss=\"alert\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\r\n";
+        }
         if ($heading) {
             $return .= "<h4 class=\"alert-heading\">{$this->_get_alert_heading($type,$heading)}</h4>\r\n";
         }
@@ -3005,7 +3009,7 @@ class Formr
         }
 
         # insert the closing bracket
-        $return .= '>';
+        $return .= ' />';
         
         # if using inline validation
         $return .= $this->_inline($data['name']);

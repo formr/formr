@@ -48,15 +48,21 @@ trait Bulma
         $return .= $this->formr->_print_field_comment($data);
         
         # build a checkbox
-        if ($data['type'] == 'checkbox' || $data['type'] == 'radio') {
-            $return .= '<div class="field">' . $this->nl;
-            $return .= '  <div class="control">' . $this->nl;
-            $return .= '    <label class="checkbox">' . $this->nl;
+        if ($data['type'] == 'checkbox' || $data['type'] == 'radio')
+        {
+            if($data['type'] == 'checkbox') {
+                $return .= '<div class="field">' . $this->nl;
+            }
+            
+            $return .= '    <label class="'.$data['type'].'">' . $this->nl;
             $return .=       $element . $this->nl;
             $return .=       $data['label'] . $this->nl;
             $return .= '    </label>' . $this->nl;
-            $return .= '  </div>' . $this->nl;
-            $return .= '</div>' . $this->nl;
+            
+            if($data['type'] == 'checkbox') {
+                $return .= '  </div>' . $this->nl;
+                $return .= '</div>' . $this->nl;
+            }
             
             return $return;
             

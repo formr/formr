@@ -5,6 +5,97 @@ trait Bootstrap
     # Wrapper for the Bootstrap framework
     # https://getbootstrap.com
     
+    public static function bootstrap5_css($key = '')
+    {
+        # bootstrap 4 css classes
+        
+        $array = [
+            'alert-e' => 'alert alert-danger',
+            'alert-i' => 'alert alert-info',
+            'alert-s' => 'alert alert-success',
+            'alert-w' => 'alert alert-warning',
+            'button' => 'btn',
+            'button-danger' => 'btn btn-danger',
+            'button-primary' => 'btn btn-primary',
+            'button-secondary' => 'btn btn-secondary',
+            'checkbox' => 'form-check-input',
+            'checkbox-label' => 'form-check-label',
+            'checkbox-inline' => 'form-check form-check-inline',
+            'div' => 'mb-3',
+            'error' => 'invalid-feedback',
+            'file' => 'form-control-file',
+            'form-check-input' => 'form-check-input',
+            'help' => 'form-text',
+            'input' => 'form-control',
+            'is-invalid' => 'is-invalid',
+            'is-valid' => 'is-valid',
+            'label' => 'form-label',
+            'link' => 'alert-link',
+            'list-dl' => 'list-unstyled',
+            'list-ol' => 'list-unstyled',
+            'list-ul' => 'list-unstyled',
+            'radio' => 'form-check-input',
+            'success' => 'has-success',
+            'text-error' => 'text-danger',
+            'warning' => 'has-warning',
+        ];
+        
+        if ($key) {
+            return $array[$key];
+        } else {
+            return $array;
+        }
+    }
+
+    public function bootstrap5($element = '', $data = '')
+    {
+        # bootstrap 5 field wrapper
+        
+        if (empty($data)) {
+            return false;
+        }
+        
+        # create our $return variable
+        $return = $this->nl;
+        
+        # optional: add a comment for easier debugging in the html
+        $return .= $this->formr->_print_field_comment($data);
+        
+        # open the wrapping div
+        if ($this->formr->type_is_checkbox($data) && ! $this->formr->is_array($data['value'])) {
+            $return .= '<div class="form-check">';
+        } else {
+            $return .= '<div class="mb-3">';  
+        }
+        
+        # checkbox or radio
+        if ($this->formr->type_is_checkbox($data)) {
+            
+            $return .= $element;
+            $return .= '<label class="form-check-label" for="'.$this->formr->make_id($data).'">'.$data['label'].'</label>';
+            
+        } else {
+            
+            # add the label
+            if ($this->formr->is_not_empty($data['label'])) {
+                $return .= '<label for="'.$this->formr->make_id($data).'" class="form-label">'.$data['label'].'</label>';
+            }
+            
+            # add the form element
+            $return .= $element;
+            
+            # add inline help
+            if (! empty($data['inline'])) {
+                $return .= '<div id="'.$data['name'].'Help" class="form-text">'.$data['inline'].'</div>';
+            }
+        }
+        
+        # close the wrapping div
+        $return .= '</div>';
+        
+        return $return;
+    }
+    
     public static function bootstrap_css($key = '')
     {
         # bootstrap 4 css classes
