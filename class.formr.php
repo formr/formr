@@ -675,13 +675,23 @@ class Formr
         return false;
     }
 
-    protected function _fix_classes($element, $data)
+    protected function _fix_classes($element, $data, $keep_old_class=0)
     {
         # 'fixes' the class attribute
         # merges existing and default classes...
 
         $return = null;
-
+		
+		$found = 0;
+		if(!(strpos($element, 'class=') === false) && $keep_old_class){
+			$index1 = strpos($element, 'class="');
+			$index2 = strpos($element, '"', $index1+7);
+			$s = ' '.substr($element,$index1,$index2-$index1);
+			$element = substr($element,0,$index1);
+			//echo $index1.' '.$index2.' '.substr($element,0,$index1);
+			$found=1;
+		}
+		
         if ((strpos($element, 'class=') === false) || (isset($data['string']) && strpos($data['string'], 'class=') === false))
         {
             if (!empty($this->controls['input']))
@@ -690,20 +700,35 @@ class Formr
                 {
                     if($data['type'] == 'file') {
                         # file input gets its own class
-                        $return .= ' class="' . $this->controls['file'];
+						if(!$found)
+							$return .= ' class="' . $this->controls['file'];
+						else
+							$return .= $s. " " . $this->controls['file'];
                     } else {
                         if ($this->wrapper == 'bulma') {
-                            if($data['type'] == 'textarea') {
-                                $return .= ' class="' . $this->controls['textarea'];
+                            if($data['type'] == 'textarea') {								
+								if(!$found)
+									$return .= ' class="' . $this->controls['textarea'];
+								else
+									$return .= $s. " " . $this->controls['textarea'];
                             }
                             elseif($data['type'] == 'file') {
-                                $return .= ' class="' . $this->controls['file'];
+								if(!$found)
+									$return .= ' class="' . $this->controls['file'];
+								else
+									$return .= $s. " " . $this->controls['file'];
                             }
                             else {
-                                $return .= ' class="' . $this->controls['input'];
+								if(!$found)
+									$return .= ' class="' . $this->controls['input'];
+								else
+									$return .= $s. " " . $this->controls['input'];
                             }
                         } else {
-                            $return .= ' class="' . $this->controls['input'];
+							if(!$found)
+								$return .= ' class="' . $this->controls['input'];
+							else
+								$return .= $s. " " . $this->controls['input'];
                         }
                     }
 
@@ -753,7 +778,11 @@ class Formr
                     }
                 }
             }
-        }
+        } else {
+			/*echo '<';
+			print_r($element);
+			echo '>';*/
+		}
 
         return $return;
     }
@@ -2649,7 +2678,7 @@ class Formr
 
 
     # BUTTONS
-    protected function _button($data)
+    protected function _button($data,$keep_old_class=0)
     {
         # build the button tag
         $return  = '<button type="'.$data['type'].'"';
@@ -2675,7 +2704,14 @@ class Formr
         $return .= $this->_attributes($data);
         
         # 'fix' the classes attribute
-        $return .= $this->_fix_classes($return, $data);
+		if(!(strpos($return, 'class=') === false) && $keep_old_class){
+			$index1 = strpos($return, 'class="');
+			$index2 = strpos($return, '"', $index1+7);
+			//echo '<br> Test1: '.$return.'<br />';
+			$return = substr($return,0,$index2);
+			//echo '<br> Test2: '.$return.'<br />';
+		}
+        $return .= $this->_fix_classes($return, $data, $keep_old_class);
 
         # insert the value and close the <button>
         $return .= '>' . $data['value'] . '</button>';
@@ -2743,7 +2779,7 @@ class Formr
         return $this->_echo($this->_create_input($data));
     }
 
-    public function input_button($data = '', $label = '', $value = '', $id = '', $string = '')
+    public function input_button($data = '', $label = '', $value = '', $id = '', $string = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -2758,7 +2794,7 @@ class Formr
             $data['type'] = 'button';
         }
 
-        return $this->_echo($this->_button($data));
+        return $this->_echo($this->_button($data, $keep_old_class));
     }
     
     public function input_button_submit($data = '', $label = '', $value = '', $id = '', $string = '')
@@ -2823,7 +2859,7 @@ class Formr
 
 
     # INPUTS
-    protected function _create_input($data)
+    protected function _create_input($data,$keep_old_class=0)
     {
         # show an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
@@ -3001,7 +3037,14 @@ class Formr
         $return .= $this->_attributes($data);
 
         # 'fix' the classes attribute
-        $return .= $this->_fix_classes($return, $data);
+		if(!(strpos($return, 'class=') === false) && $keep_old_class){
+			$index1 = strpos($return, 'class="');
+			$index2 = strpos($return, '"', $index1+7);
+			//echo '<br> Test1: '.$return.'<br />';
+			$return = substr($return,0,$index2);
+			//echo '<br> Test2: '.$return.'<br />';
+		}
+        $return .= $this->_fix_classes($return, $data, $keep_old_class);
 
         # if required
         if ($this->_check_required($data['name']) && $data['type'] != 'submit' && $data['type'] != 'reset') {
@@ -3025,7 +3068,7 @@ class Formr
         }
     }
 
-    public function input_text($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_text($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3040,7 +3083,7 @@ class Formr
         } else {
             $data['type'] = 'text';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
     public function input_hidden($data, $value = '')
@@ -3060,7 +3103,7 @@ class Formr
         return $this->_echo($return);
     }
 
-    public function input_upload($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_upload($data, $label = '', $value = '', $id = '', $string = '', $inline = '',$keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3075,10 +3118,10 @@ class Formr
         } else {
             $data['type'] = 'file';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class=0);
     }
 
-    public function input_file($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_file($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3093,10 +3136,10 @@ class Formr
         } else {
             $data['type'] = 'file';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
-    public function input_upload_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_upload_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3113,10 +3156,10 @@ class Formr
             $data['type'] = 'file';
             $data['multiple'] = true;
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
-    public function input_password($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_password($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3131,10 +3174,10 @@ class Formr
         } else {
             $data['type'] = 'password';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
-    public function input_radio($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function input_radio($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3150,10 +3193,10 @@ class Formr
         } else {
             $data['type'] = 'radio';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
-    public function input_radio_inline($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function input_radio_inline($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3171,10 +3214,10 @@ class Formr
             $data['type'] = 'radio';
             $data['checkbox-inline'] = 'inline';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
-    public function input_checkbox($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function input_checkbox($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3190,10 +3233,10 @@ class Formr
         } else {
             $data['type'] = 'checkbox';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
-    public function input_checkbox_inline($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function input_checkbox_inline($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3211,7 +3254,7 @@ class Formr
             $data['type'] = 'checkbox';
             $data['checkbox-inline'] = 'inline';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
 
     public function input_image($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
@@ -3236,7 +3279,7 @@ class Formr
 
 
     # ADDITIONAL FIELD ELEMENTS
-    public function input_color($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_color($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3251,10 +3294,10 @@ class Formr
         } else {
             $data['type'] = 'color';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_email($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_email($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3269,10 +3312,10 @@ class Formr
         } else {
             $data['type'] = 'email';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_date($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_date($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3287,7 +3330,7 @@ class Formr
         } else {
             $data['type'] = 'date';
         }
-        return  $this->_create_input($data);
+        return  $this->_create_input($data,$keep_old_class);
     }
     
     public function input_datetime($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
@@ -3308,7 +3351,7 @@ class Formr
         return  $this->_create_input($data);
     }
     
-    public function input_datetime_local($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_datetime_local($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3323,10 +3366,10 @@ class Formr
         } else {
             $data['type'] = 'datetime-local';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_month($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_month($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3341,10 +3384,10 @@ class Formr
         } else {
             $data['type'] = 'month';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_number($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_number($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3359,10 +3402,10 @@ class Formr
         } else {
             $data['type'] = 'number';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_range($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_range($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3377,10 +3420,10 @@ class Formr
         } else {
             $data['type'] = 'range';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_search($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_search($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3395,10 +3438,10 @@ class Formr
         } else {
             $data['type'] = 'search';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_tel($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_tel($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3413,10 +3456,10 @@ class Formr
         } else {
             $data['type'] = 'tel';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_time($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_time($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3431,10 +3474,10 @@ class Formr
         } else {
             $data['type'] = 'time';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_url($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_url($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3449,10 +3492,10 @@ class Formr
         } else {
             $data['type'] = 'url';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
     
-    public function input_week($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_week($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3467,7 +3510,7 @@ class Formr
         } else {
             $data['type'] = 'week';
         }
-        return $this->_create_input($data);
+        return $this->_create_input($data,$keep_old_class);
     }
 
     public function input($data)
@@ -3521,7 +3564,7 @@ class Formr
 
 
     # TEXTAREA
-    protected function _create_textarea($data)
+    protected function _create_textarea($data,$keep_old_class=0)
     {
         # show an error if the field name hasn't been supplied
         if (!$this->is_not_empty($data['name'])) {
@@ -3553,7 +3596,14 @@ class Formr
         $return .= ' ' . $this->_attributes($data);
 
         # 'fix' the classes attribute
-        $return .= $this->_fix_classes($return, $data);
+		if(!(strpos($return, 'class=') === false) && $keep_old_class){
+			$index1 = strpos($return, 'class="');
+			$index2 = strpos($return, '"', $index1+7);
+			//echo '<br> Test1: '.$return.'<br />';
+			$return = substr($return,0,$index2);
+			//echo '<br> Test2: '.$return.'<br />';
+		}
+        $return .= $this->_fix_classes($return, $data, $keep_old_class);
 
         # if required
         if ($this->_check_required($data['name'], $data)) {
@@ -3591,7 +3641,7 @@ class Formr
         }
     }
 
-    public function input_textarea($data, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function input_textarea($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3606,7 +3656,7 @@ class Formr
         } else {
             $data['type'] = 'textarea';
         }
-        return  $this->_create_textarea($data);
+        return  $this->_create_textarea($data,$keep_old_class);
     }
 
 
@@ -3641,7 +3691,14 @@ class Formr
         $return .= ' ' . $this->_attributes($data);
 
         # 'fix' the classes attribute
-        $return .= $this->_fix_classes($return, $data);
+		if(!(strpos($return, 'class=') === false) && $keep_old_class){
+			$index1 = strpos($return, 'class="');
+			$index2 = strpos($return, '"', $index1+7);
+			//echo '<br> Test1: '.$return.'<br />';
+			$return = substr($return,0,$index2);
+			//echo '<br> Test2: '.$return.'<br />';
+		}
+        $return .= $this->_fix_classes($return, $data, $keep_old_class);
 
         # if required
         if ($this->_check_required($data['name'], $data)) {
@@ -3788,7 +3845,7 @@ class Formr
         }
     }
 
-    public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    public function input_select($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null, $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3807,10 +3864,10 @@ class Formr
             $data['type'] = 'select';
         }
 
-        return $this->_create_select($data);
+        return $this->_create_select($data,$keep_old_class);
     }
 
-    public function input_select_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    public function input_select_multiple($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null, $keep_old_class=0)
     {
         if (!is_array($data)) {
             $data = array(
@@ -3831,16 +3888,16 @@ class Formr
 
         $data['multiple'] = 'multiple';
 
-        return $this->_create_select($data);
+        return $this->_create_select($data,$keep_old_class);
     }
 
     
     
     
     # INPUT ALIASES, FOR EVEN FASTER FORM BUILDING
-    public function text($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function text($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_text($name, $label, $value, $id, $string, $inline);
+        return $this->input_text($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
     public function hidden($name, $value = '')
@@ -3848,144 +3905,144 @@ class Formr
         return $this->input_hidden($name, $value);
     }
 
-    public function file($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function file($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_file($name, $label, $value, $id, $string, $inline);
+        return $this->input_file($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function file_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function file_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_upload_multiple($name, $label, $value, $id, $string, $inline);
+        return $this->input_upload_multiple($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function upload($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function upload($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_upload($name, $label, $value, $id, $string, $inline);
+        return $this->input_upload($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function upload_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function upload_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_upload_multiple($name, $label, $value, $id, $string, $inline);
+        return $this->input_upload_multiple($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function password($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function password($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_password($name, $label, $value, $id, $string, $inline);
+        return $this->input_password($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function radio($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function radio($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
-        return $this->input_radio($name, $label, $value, $id, $string, $inline, $selected);
+        return $this->input_radio($name, $label, $value, $id, $string, $inline, $selected, $keep_old_class);
     }
     
-    public function radio_inline($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function radio_inline($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
-        return $this->input_radio_inline($name, $label, $value, $id, $string, $inline, $selected);
+        return $this->input_radio_inline($name, $label, $value, $id, $string, $inline, $selected, $keep_old_class);
     }
 
-    public function checkbox($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function checkbox($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
-        return $this->input_checkbox($name, $label, $value, $id, $string, $inline, $selected);
+        return $this->input_checkbox($name, $label, $value, $id, $string, $inline, $selected, $keep_old_class);
     }
     
-    public function checkbox_inline($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '')
+    public function checkbox_inline($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $keep_old_class=0)
     {
-        return $this->input_checkbox_inline($name, $label, $value, $id, $string, $inline, $selected);
+        return $this->input_checkbox_inline($name, $label, $value, $id, $string, $inline, $selected, $keep_old_class);
     }
 
-    public function email($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function email($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_email($name, $label, $value, $id, $string, $inline);
+        return $this->input_email($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function textarea($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function textarea($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_textarea($name, $label, $value, $id, $string, $inline);
+        return $this->input_textarea($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function select($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    public function select($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null, $keep_old_class=0)
     {
-        return $this->input_select($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+        return $this->input_select($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray, $keep_old_class);
     }
     
-    public function select_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    public function select_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null, $keep_old_class=0)
     {
-        return $this->input_select_multiple($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+        return $this->input_select_multiple($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray, $keep_old_class);
     }
 
-    public function dropdown($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    public function dropdown($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null, $keep_old_class=0)
     {
-        return $this->input_select($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+        return $this->input_select($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray, $keep_old_class);
     }
     
-    public function dropdown_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null)
+    public function dropdown_multiple($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '', $myarray = null, $keep_old_class=0)
     {
-        return $this->input_select_multiple($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray);
+        return $this->input_select_multiple($name, $label, $value, $id, $string, $inline, $selected, $options, $myarray, $keep_old_class);
     }
 
-    public function color($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function color($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_color($name, $label, $value, $id, $string, $inline);
+        return $this->input_color($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function date($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function date($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_date($name, $label, $value, $id, $string, $inline);
+        return $this->input_date($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function datetime($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function datetime($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_datetime_local($name, $label, $value, $id, $string, $inline);
+        return $this->input_datetime_local($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function datetime_local($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function datetime_local($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_datetime_local($name, $label, $value, $id, $string, $inline);
+        return $this->input_datetime_local($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function month($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function month($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_month($name, $label, $value, $id, $string, $inline);
+        return $this->input_month($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function number($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function number($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_number($name, $label, $value, $id, $string, $inline);
+        return $this->input_number($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function range($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function range($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_range($name, $label, $value, $id, $string, $inline);
+        return $this->input_range($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function search($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function search($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_search($name, $label, $value, $id, $string, $inline);
+        return $this->input_search($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function tel($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function tel($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_tel($name, $label, $value, $id, $string, $inline);
+        return $this->input_tel($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function time($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function time($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_time($name, $label, $value, $id, $string, $inline);
+        return $this->input_time($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function url($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function url($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_url($name, $label, $value, $id, $string, $inline);
+        return $this->input_url($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function week($name, $label = '', $value = '', $id = '', $string = '', $inline = '')
+    public function week($name, $label = '', $value = '', $id = '', $string = '', $inline = '', $keep_old_class=0)
     {
-        return $this->input_week($name, $label, $value, $id, $string, $inline);
+        return $this->input_week($name, $label, $value, $id, $string, $inline, $keep_old_class);
     }
 
-    public function button($name = '', $label = '', $value = '', $id = '', $string = '')
+    public function button($name = '', $label = '', $value = '', $id = '', $string = '', $keep_old_class=0)
     {
-        return $this->input_button($name, $label, $value, $id, $string);
+        return $this->input_button($name, $label, $value, $id, $string, $keep_old_class);
     }
 
 
