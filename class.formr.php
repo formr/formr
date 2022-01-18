@@ -3,13 +3,13 @@
 namespace Formr;
 
 /**
- * Formr (1.3.7)
+ * Formr (1.4)
  *
- * a php micro-framework to help you quickly build and validate web forms.
+ * a php micro-framework to help you quickly build and validate web forms
  *
  * https://formr.github.io
  *
- * copyright(c) 2013-2021 Tim Gavin
+ * copyright(c) 2013-2022 Tim Gavin
  * https://github.com/timgavin
  *
  * requires php >= 5.6 and gd2 (for uploads)
@@ -37,7 +37,7 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
 
 class Formr
 {
-    # each of these public properties acts as a 'preference' for Formr,
+    # each of these public properties acts as a 'preference' for Formr 
     # and can be defined at instantiation. see documentation for more info.
 
     # default form action (useful with fastform())
@@ -172,15 +172,18 @@ class Formr
     private $echo;
 
     # exclude these input types from certain operations, namely classes and wrappers
-    private $excluded_types = array('submit', 'button', 'reset', 'checkbox', 'radio');
+    protected $excluded_types = array('submit', 'button', 'reset', 'checkbox', 'radio');
     
     # we don't want to create form attributes from these keywords if they're in the $data array
     private $no_keys = array('string', 'checked', 'selected', 'required', 'inline', 'label', 'fastform', 'options', 'group', 'multiple');
     
-    # use Formr's default wrapper
-    private $use_default_wrapper = true;
+    # use Formr's default <div> wrapper for elements
+    protected $use_default_wrapper = true;
+    
+    # toggle wrapping <div> for elements
+    protected $use_element_wrapper_div;
 
-    function __construct($wrapper = '', $echo = true)
+    function __construct($wrapper = '', $switch = '')
     {
         # determine our field wrapper and CSS classes
 
@@ -232,8 +235,14 @@ class Formr
         # for checkbox array values
         $this->checkbox_values = [];
         
+        # determine if we're switching things on/off
+        $switches = array_map('trim', explode(',', $switch));
+        
         # determines if echoing elements & messages should be suppressed
-        $this->echo = $echo;
+        $this->echo = (in_array('hush', $switches) ? 'hush' : null);
+        
+        # determines if we should *not* wrap our form elements in a <div>
+        $this->use_element_wrapper_div = in_array('nowrap', $switches) ? false : true;
     }
 
     # HELPERS & UTILITY
@@ -355,6 +364,17 @@ class Formr
     {
         # alias of form_info()
         return $this->form_info();
+    }
+    
+    public function honeypot($name)
+    {
+        if ($this->honeypot) {
+            $this->_error_message("Sorry! You can only have one Honeypot per form.<br>Please consider removing <code>\$form->honeypot=\"" . $this->honeypot . "\"</code> from your code.");
+        }
+        
+        $this->honeypot = $name;
+        
+        return $this->_echo('<input type="text" name="' . $name . '" value="" style="display:none">');
     }
 
     public function submit($form_id = null)
@@ -622,6 +642,8 @@ class Formr
 
     protected function _attributes($data)
     {
+        // TODO: thinking this method is no longer needed after _fix_classes was updated in 1.4. keeping it for a while just in case...
+        
         # adds additional attributes and classes to form fields
 
         $string = $classes = null;
@@ -677,85 +699,69 @@ class Formr
 
     protected function _fix_classes($element, $data)
     {
-        # 'fixes' the class attribute
-        # merges existing and default classes...
+        # automatically add Formr (and framework) CSS classes to elements
 
-        $return = null;
+        $return = $classes = null;
+        
+        // get the css classes (if any)
+        if (preg_match('/class="(.*?)"/', $data['string'], $match) == 1) {
+            $classes = $match[1];
+        }
+        
+        # strip the classes - and class element - and get the rest of the string parameter
+        $class_string = 'class="'.$classes.'"';
+        $string = str_replace($class_string, '', $data['string']);
+        
+        # add default classes
+        if (!empty($this->controls['input']) && !in_array($data['type'], $this->excluded_types)) {
+            if($data['type'] == 'file') {
+                $classes .= ' ' . $this->controls['file'];
+            } else {
+                $classes .= ' ' . $this->controls['input'];
+            }
+        }
 
-        if ((strpos($element, 'class=') === false) || (isset($data['string']) && strpos($data['string'], 'class=') === false))
-        {
-            if (!empty($this->controls['input']))
-            {
-                if (!in_array($data['type'], $this->excluded_types))
-                {
-                    if($data['type'] == 'file') {
-                        # file input gets its own class
-                        $return .= ' class="' . $this->controls['file'];
-                    } else {
-                        if ($this->wrapper == 'bulma') {
-                            if($data['type'] == 'textarea') {
-                                $return .= ' class="' . $this->controls['textarea'];
-                            }
-                            elseif($data['type'] == 'file') {
-                                $return .= ' class="' . $this->controls['file'];
-                            }
-                            else {
-                                $return .= ' class="' . $this->controls['input'];
-                            }
-                        } else {
-                            $return .= ' class="' . $this->controls['input'];
-                        }
-                    }
-
-                    if ($this->in_errors($data['name'])) {
-                        # add 'error' class on element
-                        if ($this->_wrapper_is('framework')) {
-                            foreach($_POST as $key => $value) {
-                                if($key == $data['name']) {
-                                    $return .= ' '.$this->controls['is-invalid'];
-                                }
-                            }
-                        }
-                    }
-                    elseif ($this->submitted() && $this->show_valid) {
-                        # add 'success' class on element
-                        if ($this->_wrapper_is('framework')) {
-                            foreach($_POST as $key => $value) {
-                                if($key == $data['name']) {
-                                    $return .= ' '.$this->controls['is-valid'];
-                                }
-                            }
-                        }
-                    }
-
-                    # close the attribute
-                    $return .= '"';
-                }
-
-                # bootstrap 4 inline checkboxes & radios
-                if(isset($data['checkbox-inline']) || ($this->type_is_checkbox($data) && !isset($data['checkbox-inline']))) {
-                    if ($this->_wrapper_is('bootstrap')) {
-                        $return .= ' class="' . $this->controls['form-check-input'] . '"';
+        # bootstrap 4 inline checkboxes & radios
+        if ($this->_wrapper_is('bootstrap') && $this->type_is_checkbox($data)) {
+            if (isset($data['checkbox-inline'])) {
+                $classes .= ' ' . $this->controls['checkbox-inline'];
+            } else {
+                $classes .= ' ' . $this->controls['form-check-input'];
+            }
+        }
+        
+        if ($this->in_errors($data['name'])) {
+            # add 'error' class on element
+            if ($this->_wrapper_is('framework')) {
+                foreach($_POST as $key => $value) {
+                    if($key == $data['name']) {
+                        $classes .= ' ' . $this->controls['is-invalid'];
                     }
                 }
-
-                if ($data['type'] == 'submit' || $data['type'] == 'button') {
-                    if ($this->_wrapper_is('bootstrap')) {
-                        if(!$data['string']) {
-                            $return .= ' class="' . $this->controls['button-primary'] . '"';
-                        } else {
-                            $return .= ' class="' . $this->controls['button'] . '"';
-                        }
-                    } else {
-                        if (!$data['string']) {
-                            $return .= ' class="' . $this->controls['button'] . '"';
-                        }
+            } else {
+                $classes .= ' ' . $this->controls['text-error'];
+            }
+        }
+        elseif ($this->submitted() && $this->show_valid) {
+            # add 'success' class on element
+            if ($this->_wrapper_is('framework')) {
+                foreach($_POST as $key => $value) {
+                    if($key == $data['name']) {
+                        $classes .= ' ' . $this->controls['is-valid'];
                     }
                 }
             }
         }
-
-        return $return;
+        
+        if ($data['type'] == 'submit' || $data['type'] == 'button') {
+            $classes = $this->controls['button'];
+            
+            if($this->_wrapper_is('bootstrap')) {
+                $classes = $this->controls['button-primary'];
+            }
+        }
+        
+        return ' class="' . $classes . '" ' . $string;
     }
 
     protected function _set_array_values($data, $label = '', $value = '', $id = '', $string = '', $inline = '', $selected = '', $options = '')
@@ -1697,7 +1703,7 @@ class Formr
     private function _bootstrap_alert($type, $message, $heading = null)
     {
         $return  = "<div class=\"{$this->controls[$type]} alert-dismissible fade show\" role=\"alert\">\r\n";
-        if($this->wrapper == 'bootstrap5') {
+        if($this->wrapper == 'bootstrap5' || $this->wrapper == 'bootstrap') {
             $return .= "<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>";
         } else {
             $return .= "<button type=\"button\" class=\"close\" data-dismiss=\"alert\"><span aria-hidden=\"true\">&times;</span><span class=\"sr-only\">Close</span></button>\r\n";
@@ -2095,7 +2101,7 @@ class Formr
                 return $data['post'];
             }
 
-            if ((int)$data['post'] > (int)$match)
+            if ($data['post'] > $match)
             {
                 if($this->_suppress_formr_validation_errors($data)) {
                     $this->errors[$data['name']] = $data['string'];
@@ -2125,7 +2131,7 @@ class Formr
                 return $data['post'];
             }
 
-            if ((int)$data['post'] >= (int)$match)
+            if ($data['post'] >= $match)
             {
                 if($this->_suppress_formr_validation_errors($data)) {
                     $this->errors[$data['name']] = $data['string'];
@@ -2151,11 +2157,9 @@ class Formr
                 return $data['post'];
             }
             
-            if(! $match = $this->_get_matches($rule)) {
-                return $data['post'];
-            }
+            $match = $this->_get_matches($rule);
 
-            if ((int)$data['post'] < (int)$match)
+            if ($data['post'] < $match)
             {
                 if($this->_suppress_formr_validation_errors($data)) {
                     $this->errors[$data['name']] = $data['string'];
@@ -2185,7 +2189,7 @@ class Formr
                 return $data['post'];
             }
 
-            if ((int)$data['post'] <= (int)$match)
+            if ($data['post'] <= $match)
             {
                 if($this->_suppress_formr_validation_errors($data)) {
                     $this->errors[$data['name']] = $data['string'];
@@ -2318,7 +2322,7 @@ class Formr
         }
         
         # required
-        elseif ($rule == 'required' && empty($data['post']))
+        elseif ($rule == 'required' && !$this->is_not_empty($data['post']))
         {
             if($this->_suppress_formr_validation_errors($data)) {
                 $this->errors[$data['name']] = $data['string'];
@@ -2342,7 +2346,7 @@ class Formr
         
         # sanitize string
         if ($rule == 'sanitize_string') {
-            return filter_var($string, FILTER_SANITIZE_STRING);
+            return strip_tags($string);
         }
 
         # sanitize URL
@@ -2672,7 +2676,7 @@ class Formr
         }
 
         # add user-entered string and additional attributes
-        $return .= $this->_attributes($data);
+        // $return .= $this->_attributes($data);
         
         # 'fix' the classes attribute
         $return .= $this->_fix_classes($return, $data);
@@ -2998,7 +3002,7 @@ class Formr
         }
 
         # add user-entered string and additional attributes
-        $return .= $this->_attributes($data);
+        // $return .= $this->_attributes($data);
 
         # 'fix' the classes attribute
         $return .= $this->_fix_classes($return, $data);
@@ -3550,7 +3554,7 @@ class Formr
         }
 
         # add user-entered string and additional attributes
-        $return .= ' ' . $this->_attributes($data);
+        // $return .= ' ' . $this->_attributes($data);
 
         # 'fix' the classes attribute
         $return .= $this->_fix_classes($return, $data);
@@ -3638,7 +3642,7 @@ class Formr
         $return .= ' id="' . $data['id'] . '"';
 
         # add user-entered string and additional attributes
-        $return .= ' ' . $this->_attributes($data);
+        // $return .= ' ' . $this->_attributes($data);
 
         # 'fix' the classes attribute
         $return .= $this->_fix_classes($return, $data);
@@ -4244,7 +4248,6 @@ class Formr
         
         return $this->create($string, 'multipart');
     }
-
 
 
 

@@ -50,7 +50,7 @@ trait Bulma
         # build a checkbox
         if ($data['type'] == 'checkbox' || $data['type'] == 'radio')
         {
-            if($data['type'] == 'checkbox') {
+            if($data['type'] == 'checkbox' && $this->formr->use_element_wrapper_div) {
                 $return .= '<div class="field">' . $this->nl;
             }
             
@@ -61,7 +61,10 @@ trait Bulma
             
             if($data['type'] == 'checkbox') {
                 $return .= '  </div>' . $this->nl;
-                $return .= '</div>' . $this->nl;
+                
+                if($this->formr->use_element_wrapper_div) {
+                    $return .= '</div>' . $this->nl;
+                }
             }
             
             return $return;
@@ -70,7 +73,9 @@ trait Bulma
         elseif ($data['type'] == 'file') {
             
             # file element
-            $return .= '<div class="field">' . $this->nl;
+            if($this->formr->use_element_wrapper_div) {
+                $return .= '<div class="field">' . $this->nl;
+            }
             $return .=   $data['label'] ? '' : '<label class="label">' . $data['label'] . '</label>' . $this->nl;
             $return .= '  <div class="file">' . $this->nl;
             $return .= '    <label class="file-label">' . $this->nl;
@@ -85,7 +90,9 @@ trait Bulma
             $return .= '      </span>' . $this->nl;
             $return .= '    </label>' . $this->nl;
             $return .= '  </div>' . $this->nl;
-            $return .= '</div>' . $this->nl;
+            if($this->formr->use_element_wrapper_div) {
+                $return .= '</div>' . $this->nl;
+            }
             
             return $return;
             
@@ -93,31 +100,37 @@ trait Bulma
         elseif ($data['type'] == 'select') {
             
             #select menu
-            $return .= '<div class="field">' . $this->nl;
+            if($this->formr->use_element_wrapper_div) {
+                $return .= '<div class="field">' . $this->nl;
+            }
             $return .=   $data['label'] ? '' : '<label class="label">' . $data['label'] . '</label>' . $this->nl;
             $return .= '  <div class="control">' . $this->nl;
             $return .= '    <div class="select">' . $this->nl;
             $return .=       $element . $this->nl;
             $return .= '    </div>' . $this->nl;
             $return .= '  </div>' . $this->nl;
-            $return .= '</div>' . $this->nl;
+            if($this->formr->use_element_wrapper_div) {
+                $return .= '</div>' . $this->nl;
+            }
             
             return $return;
             
         } else {
         
             # everything else
-            $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="field">' . $this->nl;
+            if($this->formr->use_element_wrapper_div) {
+                $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="field">' . $this->nl;
+            }
             
             if ($this->formr->is_not_empty($data['label'])) {
                 $return .= '<label class="label" for="' . $this->formr->make_id($data) . '">' . $this->nl;
-                $return .=   $data['label'];
-                $return .=   $this->formr->insert_required_indicator($data) . $this->nl;
+                $return .= "\t".$data['label'];
+                $return .= $this->formr->insert_required_indicator($data) . $this->nl;
                 $return .= '</label>' . $this->nl;
             }
             
             $return .= '<div class="control has-icons-right">' . $this->nl;
-            $return .= $element . $this->nl;
+            $return .= "\t" . $element . $this->nl;
             
             # show fontawesome icons and highlight fields if error or success
             if($this->formr->submitted()) {
@@ -135,7 +148,10 @@ trait Bulma
             }
             
             $return .= '</div>' . $this->nl;
-            $return .= '</div>' . $this->nl;
+            
+            if($this->formr->use_element_wrapper_div) {
+                $return .= '</div>' . $this->nl;
+            }
             
             # bulma inline help
             if (!empty($data['inline'])) {

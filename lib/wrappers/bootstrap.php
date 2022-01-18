@@ -5,6 +5,18 @@ trait Bootstrap
     # Wrapper for the Bootstrap framework
     # https://getbootstrap.com
     
+    # default Bootstrap CSS
+    public static function bootstrap_css($key = '')
+    {
+        return static::bootstrap5_css($key);
+    }
+    
+    # default Bootstrap library
+    public function bootstrap($element = '', $data = '')
+    {
+        return $this->bootstrap5($element, $data);
+    }
+    
     public static function bootstrap5_css($key = '')
     {
         # bootstrap 4 css classes
@@ -63,22 +75,24 @@ trait Bootstrap
         
         # open the wrapping div
         if ($this->formr->type_is_checkbox($data) && ! $this->formr->is_array($data['value'])) {
-            $return .= '<div class="form-check">';
+            $return .= '<div class="form-check">' . $this->nl;
         } else {
-            $return .= '<div class="mb-3">';  
+            if ($this->formr->use_element_wrapper_div) {
+                $return .= '<div class="mb-3">' . $this->nl;
+            }
         }
         
         # checkbox or radio
         if ($this->formr->type_is_checkbox($data)) {
             
             $return .= $element;
-            $return .= '<label class="form-check-label" for="'.$this->formr->make_id($data).'">'.$data['label'].'</label>';
+            $return .= '<label class="form-check-label" for="'.$this->formr->make_id($data).'">'.$data['label'].'</label>' . $this->nl;
             
         } else {
             
             # add the label
             if ($this->formr->is_not_empty($data['label'])) {
-                $return .= '<label for="'.$this->formr->make_id($data).'" class="form-label">'.$data['label'].'</label>';
+                $return .= '<label for="'.$this->formr->make_id($data).'" class="form-label">'.$data['label'].'</label>' . $this->nl;
             }
             
             # add the form element
@@ -86,17 +100,28 @@ trait Bootstrap
             
             # add inline help
             if (! empty($data['inline'])) {
-                $return .= '<div id="'.$data['name'].'Help" class="form-text">'.$data['inline'].'</div>';
+                if ($this->formr->is_in_brackets($data['inline'])) {
+                    if ($this->formr->in_errors($data['name'])) {
+                       # if the text is surrounded by square brackets, show only on form error
+                        # trim the brackets and show on error
+                        $return .= '<div id="'.$data['name'].'Help" class="form-text text-danger">'.trim($data['inline'], '[]').'</div>' . $this->nl;
+                    }
+                } else {
+                    # show this text on page load
+                    $return .= '<div id="'.$data['name'].'Help" class="form-text">'.$data['inline'].'</div>' . $this->nl;
+                }
             }
         }
         
         # close the wrapping div
-        $return .= '</div>';
+        if (($this->formr->type_is_checkbox($data) && ! $this->formr->is_array($data['value'])) || $this->formr->use_element_wrapper_div) {
+            $return .= '</div>' . $this->nl;
+        }
         
         return $return;
     }
     
-    public static function bootstrap_css($key = '')
+    public static function bootstrap4_css($key = '')
     {
         # bootstrap 4 css classes
         
@@ -138,7 +163,7 @@ trait Bootstrap
         }
     }
 
-    public function bootstrap($element = '', $data = '')
+    public function bootstrap4($element = '', $data = '')
     {
         # bootstrap 4 field wrapper
         
@@ -161,9 +186,9 @@ trait Bootstrap
                 
                 if (!empty($data['checkbox-inline'])) {
                     # this is an inline checkbox
-                    $return .= static::bootstrap_css('checkbox-inline');
+                    $return .= static::bootstrap4_css('checkbox-inline');
                 } else {
-                    $return .= static::bootstrap_css('checkbox');
+                    $return .= static::bootstrap4_css('checkbox');
                 }
                 
                 # close the <div>
@@ -172,7 +197,9 @@ trait Bootstrap
         
         } else {
             # open the wrapping <div> tag
-            $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="' . static::bootstrap_css('div') . '">';
+            if($this->formr->use_element_wrapper_div) {
+                $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="' . static::bootstrap4_css('div') . '">';
+            }
         }
         
         # add the checkbox/radio element here (before the <label>)
@@ -183,9 +210,9 @@ trait Bootstrap
         # if the <label> is empty add .sr-only
         if ($this->formr->is_not_empty($data['label'])) {
             if ($this->formr->type_is_checkbox($data)) {
-                $label_class = static::bootstrap_css('checkbox-label');
+                $label_class = static::bootstrap4_css('checkbox-label');
             } else {
-                $label_class = static::bootstrap_css('label');
+                $label_class = static::bootstrap4_css('label');
             }
         } else {
             $label_class = 'sr-only';
@@ -232,11 +259,11 @@ trait Bootstrap
             if ($this->formr->is_in_brackets($data['inline'])) {
                 if ($this->formr->in_errors($data['name'])) {
                     # trim the brackets and show on error
-                    $return .= $this->nl . '<p class="'.static::bootstrap_css('help').' '.static::bootstrap_css('text-error').'">' . trim($data['inline'], '[]') . '</p>';
+                    $return .= $this->nl . '<p class="'.static::bootstrap4_css('help').' '.static::bootstrap4_css('text-error').'">' . trim($data['inline'], '[]') . '</p>';
                 }
             } else {
                 # show this text on page load
-                $return .= $this->nl . '<p class="'.static::bootstrap_css('help').'">' . $data['inline'] . '</p>';
+                $return .= $this->nl . '<p class="'.static::bootstrap4_css('help').'">' . $data['inline'] . '</p>';
             }
         }
         
@@ -254,7 +281,7 @@ trait Bootstrap
             $return .= "</label>\r\n";
         }
         
-        if (! $this->formr->is_array($data['value'])) {
+        if (! $this->formr->is_array($data['value']) && $this->formr->use_element_wrapper_div) {
             # close the wrapping <div>
             
             $return .= "</div>\r\n";
