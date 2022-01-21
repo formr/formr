@@ -4532,12 +4532,12 @@ class Formr
             $data['type'] = 'color';
         } elseif ($this->_starts_with($key, 'email')) {
             $data['type'] = 'email';
-        } elseif ($this->_starts_with($key, 'date')) {
-            $data['type'] = 'date';
-        } elseif ($this->_starts_with($key, 'datetime')) {
-            $data['type'] = 'datetime';
         } elseif ($this->_starts_with($key, 'datetime_local')) {
             $data['type'] = 'datetime_local';
+        } elseif ($this->_starts_with($key, 'datetime')) {
+            $data['type'] = 'datetime';
+        } elseif ($this->_starts_with($key, 'date')) {
+            $data['type'] = 'date';
         } elseif ($this->_starts_with($key, 'month')) {
             $data['type'] = 'month';
         } elseif ($this->_starts_with($key, 'number')) {
