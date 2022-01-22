@@ -97,19 +97,24 @@ trait Bootstrap
             
             # add the form element
             $return .= $element;
-            
-            # add inline help
-            if (! empty($data['inline'])) {
-                if ($this->formr->is_in_brackets($data['inline'])) {
-                    if ($this->formr->in_errors($data['name'])) {
-                       # if the text is surrounded by square brackets, show only on form error
-                        # trim the brackets and show on error
-                        $return .= '<div id="'.$data['name'].'Help" class="form-text text-danger">'.trim($data['inline'], '[]').'</div>' . $this->nl;
-                    }
-                } else {
-                    # show this text on page load
-                    $return .= '<div id="'.$data['name'].'Help" class="form-text">'.$data['inline'].'</div>' . $this->nl;
+        }
+        
+        # add inline help
+        if (! empty($data['inline'])) {
+            if ($this->formr->is_in_brackets($data['inline'])) {
+                if ($this->formr->in_errors($data['name'])) {
+                   # if the text is surrounded by square brackets, show only on form error
+                    # trim the brackets and show on error
+                    $return .= '<div id="'.$data['name'].'Help" class="form-text text-danger">'.trim($data['inline'], '[]').'</div>' . $this->nl;
                 }
+            } else {
+                # show this text on page load
+                $return .= '<div id="'.$data['name'].'Help" class="form-text">'.$data['inline'].'</div>' . $this->nl;
+            }
+        } else {
+            # show error message
+            if ($this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
+                $return .= '<div class="text-danger">'.$this->formr->errors[$data['name']].'</div>';
             }
         }
         
@@ -264,6 +269,10 @@ trait Bootstrap
             } else {
                 # show this text on page load
                 $return .= $this->nl . '<p class="'.static::bootstrap4_css('help').'">' . $data['inline'] . '</p>';
+            }
+        } else {
+            if ($this->formr->in_errors($data['name']) &&  $this->formr->inline_errors) {
+                $return .= '<div class="text-danger">'.$this->formr->errors[$data['name']].'</div>';
             }
         }
         
@@ -442,6 +451,10 @@ trait Bootstrap
             } else {
                 # show this text on page load
                 $return .= $this->nl . '<p class="' . static::bootstrap3_css('help') . '">' . $data['inline'] . '</p>';
+            }
+        } else {
+            if ($this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
+                $return .= '<div class="text-danger">'.$this->formr->errors[$data['name']].'</div>';
             }
         }
         
