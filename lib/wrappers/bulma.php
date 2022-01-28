@@ -76,7 +76,7 @@ trait Bulma
             if($this->formr->use_element_wrapper_div) {
                 $return .= '<div class="field">' . $this->nl;
             }
-            $return .=   $data['label'] ? '' : '<label class="label">' . $data['label'] . '</label>' . $this->nl;
+            $return .=   $data['label'] ? '<label class="label">' . $data['label'] . '</label>' . $this->nl : '';
             $return .= '  <div class="file">' . $this->nl;
             $return .= '    <label class="file-label">' . $this->nl;
             $return .=       $element . $this->nl;
@@ -103,7 +103,7 @@ trait Bulma
             if($this->formr->use_element_wrapper_div) {
                 $return .= '<div class="field">' . $this->nl;
             }
-            $return .=   $data['label'] ? '' : '<label class="label">' . $data['label'] . '</label>' . $this->nl;
+            $return .=   $data['label'] ? '<label class="label">' . $data['label'] . '</label>' . $this->nl : '';
             $return .= '  <div class="control">' . $this->nl;
             $return .= '    <div class="select">' . $this->nl;
             $return .=       $element . $this->nl;
