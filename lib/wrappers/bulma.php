@@ -50,7 +50,8 @@ trait Bulma
         # build a checkbox
         if ($data['type'] == 'checkbox' || $data['type'] == 'radio')
         {
-            if($data['type'] == 'checkbox' && $this->formr->use_element_wrapper_div) {
+            # open the wrapper
+            if ($data['type'] == 'checkbox' && $this->formr->use_element_wrapper_div) {
                 $return .= '<div class="field">' . $this->nl;
             }
             
@@ -59,12 +60,14 @@ trait Bulma
             $return .=       $data['label'] . $this->nl;
             $return .= '    </label>' . $this->nl;
             
-            if($data['type'] == 'checkbox') {
-                $return .= '  </div>' . $this->nl;
-                
-                if($this->formr->use_element_wrapper_div) {
-                    $return .= '</div>' . $this->nl;
-                }
+            # show error message
+            if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
+                $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+            }
+            
+            # close the wrapper
+            if ($this->formr->use_element_wrapper_div) {
+                $return .= '</div>' . $this->nl;
             }
             
             return $return;
@@ -73,9 +76,12 @@ trait Bulma
         elseif ($data['type'] == 'file') {
             
             # file element
-            if($this->formr->use_element_wrapper_div) {
+            
+            # open the wrapper
+            if ($this->formr->use_element_wrapper_div) {
                 $return .= '<div class="field">' . $this->nl;
             }
+
             $return .=   $data['label'] ? '<label class="label">' . $data['label'] . '</label>' . $this->nl : '';
             $return .= '  <div class="file">' . $this->nl;
             $return .= '    <label class="file-label">' . $this->nl;
@@ -90,7 +96,14 @@ trait Bulma
             $return .= '      </span>' . $this->nl;
             $return .= '    </label>' . $this->nl;
             $return .= '  </div>' . $this->nl;
-            if($this->formr->use_element_wrapper_div) {
+            
+            # show error message
+            if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
+                $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+            }
+            
+            # close the wrapper
+            if ($this->formr->use_element_wrapper_div) {
                 $return .= '</div>' . $this->nl;
             }
             
@@ -100,16 +113,26 @@ trait Bulma
         elseif ($data['type'] == 'select') {
             
             #select menu
-            if($this->formr->use_element_wrapper_div) {
+            
+            # open the wrapper
+            if ($this->formr->use_element_wrapper_div) {
                 $return .= '<div class="field">' . $this->nl;
             }
+
             $return .=   $data['label'] ? '<label class="label">' . $data['label'] . '</label>' . $this->nl : '';
             $return .= '  <div class="control">' . $this->nl;
             $return .= '    <div class="select">' . $this->nl;
             $return .=       $element . $this->nl;
             $return .= '    </div>' . $this->nl;
             $return .= '  </div>' . $this->nl;
-            if($this->formr->use_element_wrapper_div) {
+            
+            # show error message
+            if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
+                $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+            }
+            
+            # close the wrapper
+            if ($this->formr->use_element_wrapper_div) {
                 $return .= '</div>' . $this->nl;
             }
             
@@ -118,7 +141,9 @@ trait Bulma
         } else {
         
             # everything else
-            if($this->formr->use_element_wrapper_div) {
+            
+            # open the wrapper
+            if ($this->formr->use_element_wrapper_div) {
                 $return .= $this->nl . '<div id="_' . $this->formr->make_id($data) . '" class="field">' . $this->nl;
             }
             
@@ -133,13 +158,13 @@ trait Bulma
             $return .= "\t" . $element . $this->nl;
             
             # show fontawesome icons and highlight fields if error or success
-            if($this->formr->submitted()) {
+            if ($this->formr->submitted()) {
                 if ($this->formr->in_errors($data['name'])) {
                     $return .= '<span class="icon is-small is-right">' . $this->nl;
                     $return .= '    <i class="fas fa-exclamation-triangle"></i>' . $this->nl;
                     $return .= '</span>' . $this->nl;
                 } else {
-                    if($this->formr->show_valid && !in_array($data['type'], $this->formr->excluded_types)) {
+                    if ($this->formr->show_valid && !in_array($data['type'], $this->formr->excluded_types)) {
                         $return .= '<span class="icon is-small is-right">' . $this->nl;
                         $return .= '    <i class="fas fa-check"></i>' . $this->nl;
                         $return .= '</span>' . $this->nl;
@@ -149,11 +174,7 @@ trait Bulma
             
             $return .= '</div>' . $this->nl;
             
-            if($this->formr->use_element_wrapper_div) {
-                $return .= '</div>' . $this->nl;
-            }
-            
-            # bulma inline help
+            # show inline help or error message
             if (!empty($data['inline'])) {
                 if ($this->formr->is_in_brackets($data['inline'])) {
                     if ($this->formr->in_errors($data['name'])) {
@@ -162,6 +183,15 @@ trait Bulma
                 } else {
                     $return .= '<p class="help">' . $data['inline'] . '</p>' . $this->nl;
                 }
+            } else {
+                if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
+                    $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+                }
+            }
+            
+            # close the wrapper
+            if ($this->formr->use_element_wrapper_div) {
+                $return .= '</div>' . $this->nl;
             }
             
             return $return . $this->nl;

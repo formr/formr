@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4)
+ * Formr (1.4.1)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -112,6 +112,7 @@ class Formr
     public $recaptcha_score = 0.5;
     public $recaptcha_secret_key;
     public $recaptcha_site_key;
+    public $recaptcha_use_curl = false;
     
     # form fields are not required by default
     public $required = false;
@@ -5115,19 +5116,35 @@ class Formr
                 'remoteip' => $_SERVER['REMOTE_ADDR']
             ];
             
-            $options = array(
-                'http' => array(
-                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+            $options = [
+                'http' => [
+                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
                     'method'  => 'POST',
                     'content' => http_build_query($data)
-                )
-            );
+                ]
+            ];
             
             # creates and returns stream context with options supplied in options preset 
             $context = stream_context_create($options);
             
-            # file_get_contents() is the preferred way to read the contents of a file into a string
-            $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+            # use curl or file_get_contents()
+            if ($this->recaptcha_use_curl) {
+                $ch = curl_init();
+                curl_setopt_array($ch, [
+                    CURLOPT_URL => 'https://www.google.com/recaptcha/api/siteverify',
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => [
+                        'secret' => $this->recaptcha_secret_key,
+                        'response' => $_POST['formrToken'],
+                        'remoteip' => $_SERVER['REMOTE_ADDR']
+                    ],
+                    CURLOPT_RETURNTRANSFER => true
+                ]);
+                $response = curl_exec($ch);
+                curl_close($ch);
+            } else {
+                $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+            }
             
             # convert the json encoded string to a php variable
             $result = json_decode($response, true);
@@ -5188,6 +5205,6 @@ class Formr
     {
         # will show empty form fields after form is submitted
         
-        $_POST = array();
+        $_POST = [];
     }
 }

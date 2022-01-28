@@ -127,6 +127,10 @@ class Wrapper extends Formr\Formr
                 $return .= '</div>';
             }
         }
+        
+        if ($this->formr->in_errors($data['name'])  && $this->formr->inline_errors) {
+            $return .= '<div class="text-error">'.$this->formr->errors[$data['name']].'</div>';
+        }
 
         return $return . $this->nl;
     }
