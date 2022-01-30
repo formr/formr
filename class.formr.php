@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.1)
+ * Formr (1.4.2)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -4982,6 +4982,10 @@ class Formr
 
     public function ok()
     {
+        if (isset($_POST['csrf_token']) && !isset($_SESSION['formr']['token'])) {
+            return false;
+        }
+        
         if (empty($this->errors)) {
             return true;
         }
@@ -5138,6 +5142,7 @@ class Formr
                         'response' => $_POST['formrToken'],
                         'remoteip' => $_SERVER['REMOTE_ADDR']
                     ],
+                    CURLOPT_SSL_VERIFYPEER => false,
                     CURLOPT_RETURNTRANSFER => true
                 ]);
                 $response = curl_exec($ch);
@@ -5149,7 +5154,7 @@ class Formr
             # convert the json encoded string to a php variable
             $result = json_decode($response, true);
             
-            if ($result['success'] == true && $result['score'] >= $this->recaptcha_score) {
+            if (!empty($result) && ($result['success'] == true) && ($result['score'] >= $this->recaptcha_score)) {
                 return true;
             }
                         

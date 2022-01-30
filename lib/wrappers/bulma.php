@@ -55,14 +55,14 @@ trait Bulma
                 $return .= '<div class="field">' . $this->nl;
             }
             
-            $return .= '    <label class="'.$data['type'].'">' . $this->nl;
-            $return .=       $element . $this->nl;
-            $return .=       $data['label'] . $this->nl;
-            $return .= '    </label>' . $this->nl;
+            $return .= '<label class="' . $data['type'] . '">' . $this->nl;
+            $return .=     $element . $this->nl;
+            $return .=     $data['label'] . $this->nl;
+            $return .= '</label>' . $this->nl;
             
             # show error message
             if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
-                $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+                $return .= '<p class="help is-danger">' . $this->formr->errors[$data['name']] . '</p>';
             }
             
             # close the wrapper
@@ -82,7 +82,13 @@ trait Bulma
                 $return .= '<div class="field">' . $this->nl;
             }
             
-            $return .=   $data['label'] ? '' : '<label class="label">' . $data['label'] . '</label>' . $this->nl;
+            if ($this->formr->is_not_empty($data['label'])) {
+                $return .= '<label class="label" for="' . $this->formr->make_id($data) . '">' . $this->nl;
+                $return .= "\t" . $data['label'];
+                $return .= $this->formr->insert_required_indicator($data) . $this->nl;
+                $return .= '</label>' . $this->nl;
+            }
+            
             $return .= '  <div class="file">' . $this->nl;
             $return .= '    <label class="file-label">' . $this->nl;
             $return .=       $element . $this->nl;
@@ -99,7 +105,7 @@ trait Bulma
             
             # show error message
             if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
-                $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+                $return .= '<p class="help is-danger">' . $this->formr->errors[$data['name']] . '</p>';
             }
             
             # close the wrapper
@@ -119,7 +125,13 @@ trait Bulma
                 $return .= '<div class="field">' . $this->nl;
             }
             
-            $return .=   $data['label'] ? '' : '<label class="label">' . $data['label'] . '</label>' . $this->nl;
+            if ($this->formr->is_not_empty($data['label'])) {
+                $return .= '<label class="label" for="' . $this->formr->make_id($data) . '">' . $this->nl;
+                $return .= "\t" . $data['label'];
+                $return .= $this->formr->insert_required_indicator($data) . $this->nl;
+                $return .= '</label>' . $this->nl;
+            }
+            
             $return .= '  <div class="control">' . $this->nl;
             $return .= '    <div class="select">' . $this->nl;
             $return .=       $element . $this->nl;
@@ -128,7 +140,7 @@ trait Bulma
             
             # show error message
             if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
-                $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+                $return .= '<p class="help is-danger">' . $this->formr->errors[$data['name']] . '</p>';
             }
             
             # close the wrapper
@@ -149,7 +161,7 @@ trait Bulma
             
             if ($this->formr->is_not_empty($data['label'])) {
                 $return .= '<label class="label" for="' . $this->formr->make_id($data) . '">' . $this->nl;
-                $return .= "\t".$data['label'];
+                $return .= "\t" . $data['label'];
                 $return .= $this->formr->insert_required_indicator($data) . $this->nl;
                 $return .= '</label>' . $this->nl;
             }
@@ -185,7 +197,7 @@ trait Bulma
                 }
             } else {
                 if ($this->formr->submitted() && $this->formr->in_errors($data['name']) && $this->formr->inline_errors) {
-                    $return .= '<p class="help is-danger">'.$this->formr->errors[$data['name']].'</p>';
+                    $return .= '<p class="help is-danger">' . $this->formr->errors[$data['name']] . '</p>';
                 }
             }
             
