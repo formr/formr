@@ -4905,6 +4905,13 @@ class Formr
         return false;
     }
     
+    public function is_inline($data){
+        if(isset($data['checkbox-inline']) && $data['checkbox-inline']=="inline"){
+            return true;
+
+        }
+        return false;
+    }
     public function is_array($data)
     {
         # determines is the element's name is an array
