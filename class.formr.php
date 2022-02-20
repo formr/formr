@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.2)
+ * Formr (1.4.3)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -722,7 +722,7 @@ class Formr
             }
         }
 
-        # bootstrap 4 inline checkboxes & radios
+        # bootstrap inline checkboxes & radios
         if ($this->_wrapper_is('bootstrap') && $this->type_is_checkbox($data)) {
             if (isset($data['checkbox-inline'])) {
                 $classes .= ' ' . $this->controls['checkbox-inline'];
@@ -754,11 +754,13 @@ class Formr
             }
         }
         
-        if ($data['type'] == 'submit' || $data['type'] == 'button') {
-            $classes = $this->controls['button'];
-            
-            if($this->_wrapper_is('bootstrap')) {
-                $classes = $this->controls['button-primary'];
+        if (empty($class_string)) {
+            if ($data['type'] == 'submit' || $data['type'] == 'button') {
+                $classes = $this->controls['button'];
+                
+                if($this->_wrapper_is('bootstrap')) {
+                    $classes = $this->controls['button-primary'];
+                }
             }
         }
         
@@ -1842,8 +1844,6 @@ class Formr
                         if(@!in_array($value, $_SESSION[$this->session][$name])) {
                             $_SESSION[$this->session][$name][] = $value;
                         }
-                    } else {
-                        $post[$name] = $value;
                     }
                 }
             } else {
@@ -1852,8 +1852,6 @@ class Formr
                         if (@!in_array($value, $_SESSION[$this->session][$name])) {
                             $_SESSION[$this->session][$name][] = $value;
                         }
-                    } else {
-                        $post[$name] = $value;
                     }
                 }
             }
@@ -2049,7 +2047,7 @@ class Formr
                 return $data['post'];
             }
 
-            if (strlen($data['post']) > $match)
+            if ($this->is_not_empty($data['post']) && (strlen($data['post']) > $match))
             {
                 if($this->_suppress_formr_validation_errors($data)) {
                     $this->errors[$data['name']] = $data['string'];
