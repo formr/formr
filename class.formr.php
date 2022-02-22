@@ -4345,6 +4345,7 @@ class Formr
             $data['inline'] = '';
             $data['selected'] = '';
             $data['options'] = '';
+	    $data['class'] = '';
             
             $item = $this->input_submit($data);
             $return .= $this->_wrapper($item, $data);
