@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.3)
+ * Formr (1.4.4)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -38,7 +38,7 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
 class Formr
 {
     # each of these public properties acts as a 'preference' for Formr 
-    # and can be defined at instantiation. see documentation for more info.
+    # and can be defined after instantiation. see documentation for more info.
 
     # default form action (useful with fastform())
     public $action;
@@ -1658,17 +1658,21 @@ class Formr
         
         return $this->_echo($return);
     }
-    private function _error_message($str)
+    private function _error_message($message)
     {
-        $return = "\r\n<style>";
-        $return .= '.formr-error {margin: 20px; padding:15px; background: #CB444A; color: white; border-radius: 5px; text-align: center;}';
-        $return .= 'code {color: yellow;}';
-        $return .= "</style>\r\n";
-        $return .= '<div class="formr-error">';
-        $return .=      $str;
-        $return .= '</div>';
-        
-        return $this->_echo($return);
+        if ($this->wrapper) {
+            $this->error_message($message);
+        } else {
+            $return = "\r\n<style>";
+            $return .= '.formr-error {margin: 20px; padding:15px; background: #CB444A; color: white; border-radius: 5px; text-align: center;}';
+            $return .= 'code {color: yellow;}';
+            $return .= "</style>\r\n";
+            $return .= '<div class="formr-error">';
+            $return .=      $message;
+            $return .= '</div>';
+            
+            return $this->_echo($return);
+        }
     }
 
     private function _get_alert_heading($type, $heading = null)
@@ -4269,7 +4273,12 @@ class Formr
         }
 
         if ($csrf) {
-            $return .= $this->csrf();
+            if (is_integer($csrf)) {
+               $timeout = (int)$csrf;
+               $return .= $this->csrf($timeout); 
+            } else {
+                $return .= $this->csrf();
+            }
         }
 
         # lets see if we need to wrap this in a list...
@@ -4345,7 +4354,7 @@ class Formr
             $data['inline'] = '';
             $data['selected'] = '';
             $data['options'] = '';
-	    $data['class'] = '';
+	        $data['class'] = '';
             
             $item = $this->input_submit($data);
             $return .= $this->_wrapper($item, $data);
@@ -4749,28 +4758,25 @@ class Formr
         }
     }
 
-    public function send_email($to, $subject, $message, $from = '', $html = false)
+    public function send_email($to, $subject, $message, $from = '', $html = false, $headers = null)
     {
         # really simple method for firing off a quick email
         # something I was playing around with and forgot about...
-        # TODO? may add to / improve this in the future
+        # TODO? may add to/improve this in the future
 
-        $headers = null;
         $msg = null;
-
-        if ($from) {
-            $from = "From: " . $this->_clean_value($from) . "\r\n";
-        }
 
         if ($html) {
 
             # we're sending an HTML email
-
-            $headers .= "MIME-Version: 1.0\r\n";
-            $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-
-            if ($from) {
-                $headers .= $from;
+            
+            if (!$headers) {
+                $headers .= "MIME-Version: 1.0\r\n";
+                $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+                
+                if ($from) {
+                    $headers .= "From: " . $this->_clean_value($from) . "\r\n";
+                }
             }
 
             $msg .= "<html>\r\n";
@@ -4783,7 +4789,7 @@ class Formr
 
             foreach ($_POST as $key => $value) {
 
-                if ($key != 'submit' && $key != 'button') {
+                if ($key != 'submit' && $key != 'button' && $key != 'FormrID') {
 
                     # make sure it's a valid email address
                     if (!empty($value) && (strpos(strtolower($key), 'email') !== false) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
@@ -4849,9 +4855,9 @@ class Formr
         return false;
     }
 
-    public function send_html_email($to, $subject, $message, $from = '')
+    public function send_html_email($to, $subject, $message, $from = '', $headers = null)
     {
-        return $this->send_email($to, $subject, $message, $from, true);
+        return $this->send_email($to, $subject, $message, $from, true, $headers);
     }
 
     public function get_ip_address($mysql = false)
@@ -5006,7 +5012,7 @@ class Formr
     private function _check_for_csrf()
     {
         # check if we're using csrf
-        if (isset($_POST['csrf_token'])) {
+        if (isset($_POST['csrf_token']) && isset($_SESSION['formr']['token'])) {
             # grab the token and expiration time from the hidden element
             $parts = explode('|', $_POST['csrf_token']);
             
@@ -5014,18 +5020,15 @@ class Formr
             if (hash_equals((string) $_SESSION['formr']['token'], strval($parts[0]))) {
                 # compare current time to time of token expiration
                 if (time() >= $parts[1]) {
-                    $this->_error_message('Your session has timed out. Please refresh the page.');
+                    $this->_error_message('Your session has expired. Please refresh the page.');
                     
                     # reset the token
                     $_SESSION['formr']['token'] = null;
                 }
-            } else {
-                if($_SESSION['formr']['token']) {
-                    $this->_error_message('Token mismatch. Please refresh the page.');
-                }
-                
-                # reset the token
-                $_SESSION['formr']['token'] = null;
+            }
+            
+            if (isset($message)) {
+                $this->error_message($message);
             }
         }
     }
