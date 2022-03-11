@@ -32,7 +32,7 @@ trait Bootstrap
             'button-secondary' => 'btn btn-secondary',
             'checkbox' => 'form-check-input',
             'checkbox-label' => 'form-check-label',
-            'checkbox-inline' => 'form-check form-check-inline',
+            'checkbox-inline' => 'form-check-input',
             'div' => 'mb-3',
             'error' => 'invalid-feedback',
             'file' => 'form-control-file',
@@ -75,7 +75,11 @@ trait Bootstrap
         
         # open the wrapping div
         if ($this->formr->type_is_checkbox($data) && ! $this->formr->is_array($data['value'])) {
-            $return .= '<div class="form-check">' . $this->nl;
+            if (!empty($data['checkbox-inline'])) {
+                $return .= '<div class="form-check form-check-inline">' . $this->nl;
+            } else {
+                $return .= '<div class="form-check">' . $this->nl;
+            }
         } else {
             if ($this->formr->use_element_wrapper_div) {
                 $return .= '<div class="mb-3">' . $this->nl;
@@ -407,7 +411,7 @@ trait Bootstrap
         }
         
         # see if we're in a checkbox array...
-        if (substr($data['name'], -1) == ']') {
+        if (substr($data['name'], -1) == ']' && ($data['type'] == 'checkbox' || $data['type'] == 'radio')) {
             # we are. we don't want to color each checkbox label if there's an error - we only want to color the main label for the group
             # we'll add the label text later...
             $return .= '<label for="' . $this->formr->make_id($data) . '">' . $this->nl;

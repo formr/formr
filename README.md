@@ -1,6 +1,6 @@
 # Formr
 
-Formr is a PHP micro-framework which installs easily and helps you build, layout and validate forms quickly, painlessly, and without all the complicated, messy overhead.
+Formr is a ridiculously fast and easy PHP form builder, with support for Bootstrap and Bulma right out of the box!
 
 Find docs here: [http://formr.github.io](http://formr.github.io)
 
