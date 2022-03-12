@@ -4470,10 +4470,6 @@ class Formr
                 $data['options'] = '';
             }
 
-            # hidden types don't really require an id, so we'll insert the id into the value
-            if ($data['type'] == 'hidden') {
-                $data['value'] = $data['id'];
-            }
         } else {
 
             # determine the field's type
