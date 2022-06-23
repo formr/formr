@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.4)
+ * Formr (1.4.5)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -1036,7 +1036,7 @@ class Formr
         if (mb_substr($this->upload_rename, 0, 6) == 'string')
         {
             # strip everything which surrounds our new filename
-            $string = trim($this->upload_rename, 'string[]');
+            $string = str_replace('string[', '', rtrim($this->upload_rename, ']'));
 
             # append the uploaded file's extension to our new filename
             $new_filename = $string . '.' . $handle['ext'];
@@ -4471,9 +4471,9 @@ class Formr
             }
 
             # hidden types don't really require an id, so we'll insert the id into the value
-            if ($data['type'] == 'hidden') {
-                $data['value'] = $data['id'];
-            }
+            # if ($data['type'] == 'hidden') {
+            #     $data['value'] = $data['id'];
+            # }
         } else {
 
             # determine the field's type
@@ -5213,5 +5213,14 @@ class Formr
         # will show empty form fields after form is submitted
         
         $_POST = [];
+    }
+
+    public function error($key)
+    {
+        foreach ($this->errors as $k => $message) {
+            if ($key == $k) {
+                $this->_echo($message);
+            }
+        }
     }
 }
