@@ -19,7 +19,7 @@ trait Bootstrap
     
     public static function bootstrap5_css($key = '')
     {
-        # bootstrap 4 css classes
+        # bootstrap 5 css classes
         
         $array = [
             'alert-e' => 'alert alert-danger',
@@ -35,7 +35,7 @@ trait Bootstrap
             'checkbox-inline' => 'form-check-input',
             'div' => 'mb-3',
             'error' => 'invalid-feedback',
-            'file' => 'form-control-file',
+            'file' => 'form-control',
             'form-check-input' => 'form-check-input',
             'help' => 'form-text',
             'input' => 'form-control',
