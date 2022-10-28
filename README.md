@@ -1,5 +1,8 @@
 # Formr
 
+[![Latest Version on Packagist][ico-version]][link-packagist]
+[![Total Downloads][ico-downloads]][link-downloads]
+
 Formr is a ridiculously fast and easy PHP form builder, with support for Bootstrap and Bulma right out of the box!
 
 Find docs here: [http://formr.github.io](http://formr.github.io)
@@ -390,3 +393,9 @@ if($form->submitted())
 </body>
 </html>
 ```
+[ico-version]: https://img.shields.io/packagist/v/formr/formr.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/formr/formr.svg?style=flat-square
+
+[link-packagist]: https://packagist.org/packages/formr/formr
+[link-downloads]: https://packagist.org/packages/formr/formr
+[link-author]: https://github.com/timgavin
