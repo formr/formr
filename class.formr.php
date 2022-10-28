@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.5)
+ * Formr (1.4.6)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -705,13 +705,13 @@ class Formr
         $return = $classes = null;
         
         // get the css classes (if any)
-        if (preg_match('/class="(.*?)"/', $data['string'], $match) == 1) {
+        if (!empty($data['string']) && preg_match('/class="(.*?)"/', $data['string'], $match) == 1) {
             $classes = $match[1];
         }
         
         # strip the classes - and class element - and get the rest of the string parameter
         $class_string = 'class="'.$classes.'"';
-        $string = str_replace($class_string, '', $data['string']);
+        $string = !empty($data['string']) ? (str_replace($class_string, '', $data['string'])) : '';
         
         # add default classes
         if (!empty($this->controls['input']) && !in_array($data['type'], $this->excluded_types)) {
@@ -2563,7 +2563,7 @@ class Formr
         
         # add the honeypot
         if($this->honeypot) {
-            $return .= '<input type="text" name="'.$this->honeypot.'" style="display:none">';
+            $return .= '<input type="text" name="'.$this->honeypot.'" value="" style="display:none">';
         }
 
         if($this->wrapper == 'ul' || $this->wrapper == 'ol' || $this->wrapper == 'dl') {
