@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.6)
+ * Formr (1.4.7)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -37,7 +37,9 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
 
 class Formr
 {
-    # each of these public properties acts as a 'preference' for Formr 
+	public $version = '1.4.7';
+    
+	# each of these public properties acts as a 'preference' for Formr 
     # and can be defined after instantiation. see documentation for more info.
 
     # default form action (useful with fastform())
@@ -105,6 +107,9 @@ class Formr
     
     # form's name
     public $name;
+	
+	# adds a new line: \r\n
+	public $nl;
     
     # Google ReCaptcha v3
     # get keys here: https://www.google.com/recaptcha/admin/create
@@ -178,11 +183,23 @@ class Formr
     # we don't want to create form attributes from these keywords if they're in the $data array
     private $no_keys = array('string', 'checked', 'selected', 'required', 'inline', 'label', 'fastform', 'options', 'group', 'multiple');
     
-    # use Formr's default <div> wrapper for elements
+	# used with checkbox arrays
+	protected $checkbox_values;
+	
+	# used in lib classes
+	protected $formr;
+    
+	# used when validating input
+	protected $required_fields;
+	
+	# use Formr's default <div> wrapper for elements
     protected $use_default_wrapper = true;
     
     # toggle wrapping <div> for elements
     protected $use_element_wrapper_div;
+	
+	# the formr wrapper
+	protected $wrapper;
 
     function __construct($wrapper = '', $switch = '')
     {
@@ -300,6 +317,8 @@ class Formr
 
         # set some defaults
         $info = array(
+			'Formr Version' => $this->version,
+			'PHP Version' => phpversion(),
             'Form ID' => '',
             'Form name' => '',
             'Form method' => '',
@@ -1339,7 +1358,6 @@ class Formr
         # checks the field name to see if that field is required
 
         $this->required_fields = array();
-        // $this->typested_fields = array();
 
         # all fields are required
         if ($this->required === '*') {
@@ -1897,7 +1915,7 @@ class Formr
 
         # validation rules are a string; let's put them into an array
         if(! is_array($rules)) {
-            $rules = explode($this->delimiter[1], $rules);
+            $rules = explode($this->delimiter[1], $rules ?? '');
         }
 
         # push 'allow_html' to the back so it processes last
@@ -4354,7 +4372,7 @@ class Formr
             $data['inline'] = '';
             $data['selected'] = '';
             $data['options'] = '';
-	        $data['class'] = '';
+            $data['class'] = '';
             
             $item = $this->input_submit($data);
             $return .= $this->_wrapper($item, $data);
@@ -4789,7 +4807,7 @@ class Formr
 
             foreach ($_POST as $key => $value) {
 
-                if ($key != 'submit' && $key != 'button' && $key != 'FormrID') {
+                if ($key != 'submit' && $key != 'button' && $key != 'FormrID' && $key != 'csrf_token') {
 
                     # make sure it's a valid email address
                     if (!empty($value) && (strpos(strtolower($key), 'email') !== false) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
