@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.7)
+ * Formr (1.4.8)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -37,7 +37,7 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
 
 class Formr
 {
-	public $version = '1.4.7';
+	public $version = '1.4.8';
     
 	# each of these public properties acts as a 'preference' for Formr 
     # and can be defined after instantiation. see documentation for more info.
@@ -1864,7 +1864,7 @@ class Formr
                 foreach ($_POST[$name] as $key => $value) {
                     if ($this->session) {
                         if(@!in_array($value, $_SESSION[$this->session][$name])) {
-                            $_SESSION[$this->session][$name][] = $value;
+                            $_SESSION[$this->session][$name] = $value;
                         }
                     }
                 }
@@ -1872,7 +1872,7 @@ class Formr
                 foreach ($_GET[$name] as $key => $value) {
                     if ($this->session) {
                         if (@!in_array($value, $_SESSION[$this->session][$name])) {
-                            $_SESSION[$this->session][$name][] = $value;
+                            $_SESSION[$this->session][$name] = $value;
                         }
                     }
                 }
@@ -3733,7 +3733,9 @@ class Formr
                             $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
                         }
                     } else {
-                        $return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
+						if(! isset($data['multiple'])) {
+                        	$return .= $this->_t(2) . '<option value="' . $key . '" selected>' . $value . '</option>' . $this->_nl(1);
+						}
                     }
                 }
                 # print remaining options
@@ -4532,7 +4534,11 @@ class Formr
 
         # determines if the field name is in the array's key or value
         if ($this->_starts_with($key, 'select') || $this->_starts_with($key, 'dropdown') || $this->_starts_with($key, 'state') || $this->_starts_with($key, 'states') || $this->_starts_with($key, 'country')) {
-            $data['type'] = 'select';
+            if ($key == 'select_multiple') {
+				$data['type'] = 'select_multiple';
+			} else {
+				$data['type'] = 'select';
+			}
         } elseif ($this->_starts_with($key, 'fieldset')) {
             $data['type'] = 'fieldset';
         } elseif ($this->_starts_with($key, 'submit')) {
@@ -4640,7 +4646,10 @@ class Formr
                 $return .= $this->_wrapper($item, $data);
             }
         }
-        elseif ($data['type'] == 'select') {
+        elseif ($data['type'] == 'select_multiple') {
+            $item = $this->input_select_multiple($data);
+            $return .= $this->_wrapper($item, $data);
+        } elseif ($data['type'] == 'select') {
             $item = $this->input_select($data);
             $return .= $this->_wrapper($item, $data);
         } elseif ($data['type'] == 'text') {
