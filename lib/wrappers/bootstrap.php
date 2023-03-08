@@ -90,13 +90,19 @@ trait Bootstrap
         if ($this->formr->type_is_checkbox($data)) {
             
             $return .= $element;
-            $return .= '<label class="form-check-label" for="'.$this->formr->make_id($data).'">'.$data['label'].'</label>' . $this->nl;
+            $return .= '<label class="form-check-label" for="'.$this->formr->make_id($data).'">';
+            $return .= $data['label'];
+            $return .= $this->formr->insert_required_indicator($data);
+            $return .= '</label>' . $this->nl;
             
         } else {
             
             # add the label
             if ($this->formr->is_not_empty($data['label'])) {
-                $return .= '<label for="'.$this->formr->make_id($data).'" class="form-label">'.$data['label'].'</label>' . $this->nl;
+                $return .= '<label for="'.$this->formr->make_id($data).'" class="form-label">';
+                $return .= $data['label'];
+                $return .= $this->formr->insert_required_indicator($data);
+                $return .= '</label>' . $this->nl;
             }
             
             # add the form element
