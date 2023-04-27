@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.8)
+ * Formr (1.4.9)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -37,7 +37,7 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
 
 class Formr
 {
-	public $version = '1.4.8';
+	public $version = '1.4.9';
     
 	# each of these public properties acts as a 'preference' for Formr 
     # and can be defined after instantiation. see documentation for more info.
@@ -1996,6 +1996,10 @@ class Formr
     protected function _validate_bool_rules($rule, $data)
     {
         # the following rules evaluate the posted string
+
+        if ($rule != 'required' && empty($data['post'])) {
+            return;
+        }
         
         # this rule must match a user-defined regex
         if (mb_substr($rule, 0, 5) == 'regex')
