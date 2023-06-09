@@ -4318,7 +4318,7 @@ class Formr
             if(strstr($key, 'fieldset') !== false)
             {
                 # open the fieldset and add the legend text
-                $return .= $this->fieldset_open($value['legend']);
+                $return .= $this->fieldset_open($value['legend'], $value['string']);
                 
                 # loop through the fieldset array and get each form field
                 foreach($value['fields'] as $fieldKey => $fieldValue) {
