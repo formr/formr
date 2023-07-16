@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.9)
+ * Formr (1.4.10)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -37,7 +37,7 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
 
 class Formr
 {
-	public $version = '1.4.9';
+	public $version = '1.4.10';
     
 	# each of these public properties acts as a 'preference' for Formr 
     # and can be defined after instantiation. see documentation for more info.
@@ -1741,12 +1741,30 @@ class Formr
 
         return $return;
     }
+	
+	private function _my_wrapper_alert($type, $message, $heading = null)
+	{
+		$return  = "<div class=\"alert {$this->controls[$type]}\">\r\n";
+		$return .= "  <div class=\"alert-header\">\r\n";
+		$return .= "    <p>{$this->_get_alert_heading($type,$heading)}</p>\r\n";
+		$return .= "  </div>\r\n";
+		$return .= "  <div class=\"alert-body\">\r\n";
+		$return .= "    {$message}\r\n";
+		$return .= "  </div>\r\n";
+		$return .= "</div>\r\n";
+		
+		return $return;
+	}
 
     private function _formr_alert($type, $message, $heading = null)
     {
-        if($type == 'alert-s') {
+        if ($type == 'alert-s') {
             return $this->_success_message($message);
         }
+		
+		if ($this->wrapper) {
+			return $this->_my_wrapper_alert($type, $message, $heading);
+		}
 
         return $this->_error_message($message);
     }
