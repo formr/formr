@@ -30,7 +30,7 @@ trait Bootstrap
             'button-danger' => 'btn btn-danger',
             'button-primary' => 'btn btn-primary',
             'button-secondary' => 'btn btn-secondary',
-            'checkbox' => 'form-check-input',
+            'checkbox' => 'form-check',
             'checkbox-label' => 'form-check-label',
             'checkbox-inline' => 'form-check-input',
             'div' => 'mb-3',

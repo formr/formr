@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.4.10)
+ * Formr (1.4.11)
  *
  * a php micro-framework to help you quickly build and validate web forms
  *
@@ -37,7 +37,7 @@ if (file_exists(dirname(__FILE__) . '/my_classes/my.forms.php')) {
 
 class Formr
 {
-	public $version = '1.4.10';
+	public $version = '1.4.11';
     
 	# each of these public properties acts as a 'preference' for Formr 
     # and can be defined after instantiation. see documentation for more info.
@@ -1878,20 +1878,26 @@ class Formr
         }
 
         if (is_array($post)) {
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                foreach ($_POST[$name] as $key => $value) {
-                    if ($this->session) {
-                        if(@!in_array($value, $_SESSION[$this->session][$name])) {
-                            $_SESSION[$this->session][$name] = $value;
+            if ($this->session) {
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                    foreach ($_POST[$name] as $key => $value) {
+                        # make sure the session array exists and that it's actually an array
+                        if (! isset($_SESSION[$this->session][$name]) || ! is_array($_SESSION[$this->session][$name])) {
+                            $_SESSION[$this->session][$name] = [];
                         }
+
+                        # replace the session array values from POST
+                        $_SESSION[$this->session][$name] = is_array($_POST[$name]) ? $_POST[$name] : [];
                     }
-                }
-            } else {
-                foreach ($_GET[$name] as $key => $value) {
-                    if ($this->session) {
-                        if (@!in_array($value, $_SESSION[$this->session][$name])) {
-                            $_SESSION[$this->session][$name] = $value;
+                } else {
+                    foreach ($_GET[$name] as $key => $value) {
+                        # make sure the session array exists and that it's actually an array
+                        if (! isset($_SESSION[$this->session][$name]) || ! is_array($_SESSION[$this->session][$name])) {
+                            $_SESSION[$this->session][$name] = [];
                         }
+
+                        # replace the session array values from GET
+                        $_SESSION[$this->session][$name] = is_array($_GET[$name]) ? $_GET[$name] : [];
                     }
                 }
             }
