@@ -53,6 +53,10 @@ trait Bulma
             # open the wrapper
             if ($data['type'] == 'checkbox' && $this->formr->use_element_wrapper_div) {
                 $return .= '<div class="field">' . $this->nl;
+            } else {
+                if ($this->formr->use_element_wrapper_div) {
+                    $return .= '<div class="field">' . $this->nl;
+                }                
             }
             
             $return .= '<label class="' . $data['type'] . '">' . $this->nl;
