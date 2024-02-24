@@ -1,22 +1,21 @@
 <?php
 
-class Forms extends Formr\Formr
+use Formr\Formr;
+
+class Forms extends Formr
 {
     # these methods are used to wrap your form elements.
     # documentation: https://github.com/formr/extend
 
-    public static function contact($validate = '')
+    public static function contact($validate = ''): array
     {
-        if (!$validate)
-        {
+        if (! $validate) {
             /**
-                this section is where we'll build the form using an array. the array key contains 
-                the input type, and the array value contains all of the field's attributes.
-
-                'array_key'  => 'array value'
-
-                'field input type' => 'name , label text , value , input ID , string , .inline-text , selected/checked , $options'
-            */
+             * this section is where we'll build the form using an array. the array key contains
+             * the input type, and the array value contains all of the field's attributes.
+             * 'array_key'  => 'array value'
+             * 'field input type' => 'name , label text , value , input ID , string , .inline-text , selected/checked , $options'
+             */
 
             return [
                 'text1' => 'fname,First name:,,fname,,[please enter your first name]',
@@ -30,13 +29,11 @@ class Forms extends Formr\Formr
                 'submit' => 'submit,,Submit Form,submit'
             ];
         } else {
-
             /**
-                now we'll build the corresponding key and human readable text and validation rules for the fastpost() method.
-                the key MUST match the field name! Separate your validation rules with a pipe | character, NOT a comma!
-
-                'field name' => '[human readable text, validation rules']
-            */
+             * now we'll build the corresponding key and human readable text and validation rules for the fastpost() method.
+             * the key MUST match the field name! Separate your validation rules with a pipe | character, NOT a comma!
+             * 'field name' => '[human readable text, validation rules']
+             */
 
             return [
                 'fname' => ['Please enter your first name'],
@@ -51,9 +48,9 @@ class Forms extends Formr\Formr
         }
     }
 
-    public static function short_contact($validate = '')
+    public static function short_contact($validate = ''): array
     {
-        if (!$validate) {
+        if (! $validate) {
             # here we'll build the form array for the fastform() function
             return [
                 'text1' => 'fname,First name:,,fname',
@@ -72,9 +69,9 @@ class Forms extends Formr\Formr
         }
     }
 
-    public static function signup($validate = '')
+    public static function signup($validate = ''): array
     {
-        if (!$validate) {
+        if (! $validate) {
             # here we'll build the form array for the fastform() function
             return [
                 'text1' => 'email,Email:,,email',
@@ -92,14 +89,14 @@ class Forms extends Formr\Formr
     }
 
     # alias for signup
-    public static function registration($validate = '')
+    public static function registration($validate = ''): array
     {
         return static::signup($validate);
     }
 
-    public static function login($validate = '')
+    public static function login($validate = ''): array
     {
-        if (!$validate) {
+        if (! $validate) {
             # here we'll build the form array for the fastform() function
             return [
                 'text' => 'username,,,username,placeholder="username"',
@@ -115,9 +112,9 @@ class Forms extends Formr\Formr
         }
     }
 
-    public static function canadian_contact($validate = '')
+    public static function canadian_contact($validate = ''): array
     {
-        if (!$validate) {
+        if (! $validate) {
             # here we'll build the form array for the fastform() function
             return [
                 'text1' => 'fname,First name:,,fname',
@@ -130,7 +127,7 @@ class Forms extends Formr\Formr
                 'textarea' => 'comments,Comments:,,comments'
             ];
         } else {
-            # build the cooresponding key, human readable text and validation rules for the fastpost() function
+            # build the corresponding key, human readable text and validation rules for the fastpost() function
             return [
                 'fname' => ['First name'],
                 'lname' => ['Last name'],

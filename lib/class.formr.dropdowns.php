@@ -1,13 +1,15 @@
 <?php
 
-class Dropdowns extends Formr\Formr
+use Formr\Formr;
+
+class Dropdowns extends Formr
 {
     # these methods contain arrays which are to be used in dropdown menus.
     # documentation: https://formr.github.io/methods/#drop-downs-use-strings
     # extend formr and create your own: https://github.com/formr/extend
 
     # months with full name as key
-    public static function months()
+    public static function months(): array
     {
         return [
             'January' => 'January',
@@ -25,7 +27,7 @@ class Dropdowns extends Formr\Formr
         ];
     }
 
-    public static function days()
+    public static function days(): array
     {
         $stop_day = 31;
 
@@ -45,12 +47,11 @@ class Dropdowns extends Formr\Formr
     }
 
     # displays every year starting from 1930, good for registration forms
-    public static function years()
+    public static function years(): array
     {
         $stop_date = date('Y');
 
-        # get the current year
-        $start_date = 1930;
+        $start_date = 1940;
 
         # initialize the years array
         $years = [];
@@ -62,24 +63,22 @@ class Dropdowns extends Formr\Formr
         }
 
         # reverse the array so we have 1930 at the bottom of the menu
-        $return = array_reverse($years, true);
-
-        return $return;
+        return array_reverse($years, true);
     }
 
     # displays months of the year with a numeric key
-    public static function months_alpha()
+    public static function months_alpha(): array
     {
         return [
-            1  => 'January',
-            2  => 'February',
-            3  => 'March',
-            4  => 'April',
-            5  => 'May',
-            6  => 'June',
-            7  => 'July',
-            8  => 'August',
-            9  => 'September',
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
             10 => 'October',
             11 => 'November',
             12 => 'December'
@@ -87,18 +86,18 @@ class Dropdowns extends Formr\Formr
     }
 
     # another months - good for credit cards
-    public static function cc_months()
+    public static function cc_months(): array
     {
         return [
-            1  => '01 - January',
-            2  => '02 - February',
-            3  => '03 - March',
-            4  => '04 - April',
-            5  => '05 - May',
-            6  => '06 - June',
-            7  => '07 - July',
-            8  => '08 - August',
-            9  => '09 - September',
+            1 => '01 - January',
+            2 => '02 - February',
+            3 => '03 - March',
+            4 => '04 - April',
+            5 => '05 - May',
+            6 => '06 - June',
+            7 => '07 - July',
+            8 => '08 - August',
+            9 => '09 - September',
             10 => '10 - October',
             11 => '11 - November',
             12 => '12 - December'
@@ -107,11 +106,10 @@ class Dropdowns extends Formr\Formr
 
 
     # years - for credit cards
-    public static function cc_years()
+    public static function cc_years(): array
     {
         $stop_date = 2025;
 
-        # get the current year
         $current_year = date('Y');
 
         # initialize the years array
@@ -127,7 +125,7 @@ class Dropdowns extends Formr\Formr
     }
 
 
-    public static function height()
+    public static function height(): array
     {
         return [
             '3-0' => "Under 4'",
@@ -161,7 +159,7 @@ class Dropdowns extends Formr\Formr
 
 
     # makes sure a person is of a certain age - in this case: 18
-    public static function years_old()
+    public static function years_old(): array
     {
         $stop_date = date('Y', strtotime('-18 year'));
 
@@ -177,13 +175,11 @@ class Dropdowns extends Formr\Formr
         }
 
         # reverse the array so we have the start date at the bottom of the menu
-        $return = array_reverse($years, true);
-
-        return $return;
+        return array_reverse($years, true);
     }
 
 
-    public static function age()
+    public static function age(): array
     {
         foreach (range(18, 24) as $value) {
             $ages[$value] = $value;
@@ -200,7 +196,7 @@ class Dropdowns extends Formr\Formr
 
 
     # u.s. states
-    public static function states()
+    public static function states(): array
     {
         return [
             '' => 'Select a State...',
@@ -259,14 +255,14 @@ class Dropdowns extends Formr\Formr
     }
 
     # alias of states()
-    public static function state()
+    public static function state(): array
     {
         return static::states();
     }
 
 
     # canadian provinces and territories
-    public static function provinces()
+    public static function provinces(): array
     {
         return [
             '' => 'Province or Territory...',
@@ -287,7 +283,7 @@ class Dropdowns extends Formr\Formr
     }
 
     # u.s. states and canadian provinces
-    public static function states_provinces()
+    public static function states_provinces(): array
     {
         return [
             '' => 'Select a State or Province...',
@@ -343,7 +339,7 @@ class Dropdowns extends Formr\Formr
                 'WV' => 'West Virginia',
                 'WI' => 'Wisconsin',
                 'WY' => 'Wyoming'
-        ],
+            ],
             'Provinces' => [
                 'AB' => 'Alberta',
                 'BC' => 'British Columbia',
@@ -364,7 +360,7 @@ class Dropdowns extends Formr\Formr
 
 
     # countries
-    public static function countries()
+    public static function countries(): array
     {
         return [
             '' => 'Select a Country...',
@@ -612,7 +608,7 @@ class Dropdowns extends Formr\Formr
     }
 
     # alias of countries()
-    public static function country()
+    public static function country(): array
     {
         return static::countries();
     }
