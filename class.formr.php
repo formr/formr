@@ -1398,6 +1398,8 @@ class Formr
                 $return = $this->_bulma_alert($alert_control, $message, $heading);
             } elseif ($this->_wrapper_is('tailwind')) {
                 $return = $this->_tailwind_alert($alert_control, $message, $heading);
+            } elseif ($this->_wrapper_is('uikit')) {
+                $return = $this->_uikit_alert($alert_control, $message, $heading);
             } else {
                 $return = $this->_formr_alert($alert_control, $message, $heading);
             }
@@ -1491,6 +1493,8 @@ class Formr
                     return $this->_echo($this->_bulma_alert('alert-e', $return, $heading));
                 } elseif ($this->_wrapper_is('tailwind')) {
                     return $this->_echo($this->_tailwind_alert('alert-e', $return, $heading));
+                } elseif ($this->_wrapper_is('uikit')) {
+                    return $this->_echo($this->_uikit_alert('alert-e', $return, $heading));
                 } else {
                     return $this->_echo($this->_formr_alert('alert-e', $return, $heading));
                 }
@@ -1512,6 +1516,8 @@ class Formr
             $return = $this->_bulma_alert('alert-w', $message, $heading);
         } elseif ($this->_wrapper_is('tailwind')) {
             $return = $this->_tailwind_alert('alert-w', $message, $heading);
+        } elseif ($this->_wrapper_is('uikit')) {
+            $return = $this->_uikit_alert('alert-w', $message, $heading);
         } else {
             $return = $this->_formr_alert('alert-w', $message, $heading);
         }
@@ -1531,6 +1537,8 @@ class Formr
             $return = $this->_bulma_alert('alert-s', $message, $heading);
         } elseif ($this->_wrapper_is('tailwind')) {
             $return = $this->_tailwind_alert('alert-s', $message, $heading);
+        } elseif ($this->_wrapper_is('uikit')) {
+            $return = $this->_uikit_alert('alert-s', $message, $heading);
         } else {
             $return = $this->_formr_alert('alert-s', $message, $heading);
         }
@@ -1550,6 +1558,8 @@ class Formr
             $return = $this->_bulma_alert('alert-e', $message, $heading);
         } elseif ($this->_wrapper_is('tailwind')) {
             $return = $this->_tailwind_alert('alert-e', $message, $heading);
+        } elseif ($this->_wrapper_is('uikit')) {
+            $return = $this->_uikit_alert('alert-e', $message, $heading);
         } else {
             $return = $this->_formr_alert('alert-e', $message, $heading);
         }
@@ -1569,6 +1579,8 @@ class Formr
             $return = $this->_bulma_alert('alert-i', $message, $heading);
         } elseif ($this->_wrapper_is('tailwind')) {
             $return = $this->_tailwind_alert('alert-i', $message, $heading);
+        } elseif ($this->_wrapper_is('uikit')) {
+            $return = $this->_uikit_alert('alert-i', $message, $heading);
         } else {
             $return = $this->_formr_alert('alert-i', $message, $heading);
         }
@@ -1637,6 +1649,18 @@ class Formr
     }
 
     private function _tailwind_alert($type, $message, $heading = '')
+    {
+        $return = "<div class=\"{$this->controls[$type]}\">\r\n";
+        $return .= "  <h4 class=\"{$this->controls['message-header']}\">{$this->_get_alert_heading($type,$heading)}</h4>\r\n";
+        $return .= "  <div class=\"{$this->controls['message-body']}\">\r\n";
+        $return .= "    {$message}\r\n";
+        $return .= "  </div>\r\n";
+        $return .= "</div>\r\n";
+
+        return $return;
+    }
+
+    private function _uikit_alert($type, $message, $heading = '')
     {
         $return = "<div class=\"{$this->controls[$type]}\">\r\n";
         $return .= "  <h4 class=\"{$this->controls['message-header']}\">{$this->_get_alert_heading($type,$heading)}</h4>\r\n";
@@ -4521,6 +4545,10 @@ class Formr
             }
 
             if (str_contains($this->wrapper, 'tailwind')) {
+                return true;
+            }
+
+            if (str_contains($this->wrapper, 'uikit')) {
                 return true;
             }
 

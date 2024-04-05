@@ -12,7 +12,7 @@ If you find Formr useful, please consider starring the project and/or making a [
 ## Features
 
 - Create complex forms with server-side processing and validation in seconds
-- Built-in support for Bootstrap and Bulma
+- Built-in support for Bootstrap, Bulma, Tailwind and Uikit
 - Built-in support for reCAPTCHA v3
 - Built-in `POST` validation rules, including validating email, regex, comparisons, slugging, and hashing
 - Instantly make one field required, all fields required, or all but one field required
