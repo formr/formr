@@ -9,6 +9,7 @@ class Wrapper extends Formr
     use Bootstrap;
     use Bulma;
     use Tailwind;
+    use Uikit;
 
     public function __construct(Formr $formr)
     {
