@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.5.0)
+ * Formr (1.5.1)
  * a php library for rapid form development
  * https://formr.github.io
  * requires php >= 8.1 and gd (for uploads)
@@ -31,7 +31,7 @@ if (file_exists(__DIR__.'/my_classes/my.forms.php')) {
 
 class Formr
 {
-    public $version = '1.5.0';
+    public $version = '1.5.1';
 
     # each of these public properties acts as a 'preference' for Formr
     # and can be defined after instantiation. see documentation for more info.
@@ -778,8 +778,8 @@ class Formr
 
                 # perform basic sanitization...
                 if (! $allow_html) {
-                    # strip html tags and prevent against xss
-                    $str = strip_tags($str);
+                    # help prevent against xss
+                    $str = htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
                 } else {
                     # allow html
                     if ($this->sanitize_html) {
@@ -794,8 +794,8 @@ class Formr
 
                 foreach ($str as $value) {
                     if (! $allow_html) {
-                        # strip html tags and prevent against xss
-                        $value = strip_tags($value);
+                        # help prevent against xss
+                        $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
                     } else {
                         # allow html
                         if ($this->sanitize_html) {
@@ -1439,7 +1439,7 @@ class Formr
         }
 
         # prints form errors
-        if ($this->inline_errors) {
+        if (! $this->inline_errors) {
             if (empty($open_tag) && empty($close_tag)) {
                 $open_tag = null;
                 $close_tag = null;
@@ -1813,11 +1813,11 @@ class Formr
         # see if we're dealing with $_POST or $_GET
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($_POST[$name]) && $_POST[$name] != '') {
-                $post = $_POST[$name];
+                $post = htmlspecialchars($_POST[$name], ENT_QUOTES, 'UTF-8');
             }
         } else {
             if (isset($_GET[$name]) && $_GET[$name] != '') {
-                $post = $_GET[$name];
+                $post = htmlspecialchars($_GET[$name], ENT_QUOTES, 'UTF-8');
             }
         }
 
@@ -3406,7 +3406,7 @@ class Formr
 
         # insert the posted value if available
         if (! empty($_POST[$data['name']])) {
-            $return .= $_POST[$data['name']];
+            $return .= $this->_clean_value($_POST[$data['name']]);
         } else {
             # insert the default value if available
             if ($this->is_not_empty($data['value'])) {
