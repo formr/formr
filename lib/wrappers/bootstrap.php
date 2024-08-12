@@ -74,13 +74,17 @@ trait Bootstrap
         $return .= $this->formr->_print_field_comment($data);
 
         # open the wrapping div
-        if ($this->formr->use_element_wrapper_div) {
+        if ($this->formr->use_element_wrapper_div && !isset($data['checkbox-inline'])) {
             $return .= "<div class=\"mb-3\">".PHP_EOL;
         }
 
         # checkbox or radio
         if ($this->formr->type_is_checkbox($data)) {
-            $return .= "<div class=\"form-check\">".PHP_EOL;
+            if (isset($data['checkbox-inline'])) {
+                $return .= "<div class=\"form-check form-check-inline\">".PHP_EOL;
+            } else {
+                $return .= "<div class=\"form-check\">".PHP_EOL;
+            }
             $return .= $element.PHP_EOL;
             $return .= "<label class=\"form-check-label\" for=\"{$this->formr->make_id($data)}\">".PHP_EOL;
             $return .= $data['label'].$this->formr->insert_required_indicator($data).PHP_EOL;
@@ -98,7 +102,7 @@ trait Bootstrap
         }
 
         # add inline help
-        if (! empty($data['inline'])) {
+        if (!empty($data['inline'])) {
             if ($this->formr->is_in_brackets($data['inline'])) {
                 if ($this->formr->in_errors($data['name'])) {
                     # if the text is surrounded by square brackets, show only on form error
@@ -116,7 +120,7 @@ trait Bootstrap
         }
 
         # close the wrapping div
-        if ($this->formr->use_element_wrapper_div) {
+        if ($this->formr->use_element_wrapper_div && !isset($data['checkbox-inline'])) {
             $return .= "</div>".PHP_EOL;
         }
 
@@ -182,11 +186,11 @@ trait Bootstrap
         if ($this->formr->type_is_checkbox($data)) {
             # input is a checkbox or radio
             # don't print the <label> if we're printing an array
-            if (! $this->formr->is_array($data['value'])) {
+            if (!$this->formr->is_array($data['value'])) {
                 # add an ID to the wrapping <div> so that we can access it via javascript
                 $return .= PHP_EOL.'<div id="_'.$this->formr->make_id($data).'" class="';
 
-                if (! empty($data['checkbox-inline'])) {
+                if (!empty($data['checkbox-inline'])) {
                     # this is an inline checkbox
                     $return .= static::bootstrap4_css('checkbox-inline');
                 } else {
@@ -239,22 +243,22 @@ trait Bootstrap
         }
 
         # add a required field indicator if applicable
-        if (! $this->formr->type_is_checkbox($data)) {
+        if (!$this->formr->type_is_checkbox($data)) {
             $return .= $this->formr->insert_required_indicator($data);
         }
 
         # close the <label> if NOT a checkbox or radio
-        if (! $this->formr->type_is_checkbox($data)) {
+        if (!$this->formr->type_is_checkbox($data)) {
             $return .= "</label>".PHP_EOL;
         }
 
         # add the field element here if NOT a checkbox or radio
-        if (! $this->formr->type_is_checkbox($data)) {
+        if (!$this->formr->type_is_checkbox($data)) {
             $return .= $element.PHP_EOL;
         }
 
         # inline help text
-        if (! empty($data['inline'])) {
+        if (!empty($data['inline'])) {
             # help-block text
             # if the text is surrounded by square brackets, show only on form error
             if ($this->formr->is_in_brackets($data['inline'])) {
@@ -286,7 +290,7 @@ trait Bootstrap
             $return .= "</label>".PHP_EOL;
         }
 
-        if (! $this->formr->is_array($data['value']) && $this->formr->use_element_wrapper_div) {
+        if (!$this->formr->is_array($data['value']) && $this->formr->use_element_wrapper_div) {
             # close the wrapping <div>
 
             $return .= "</div>".PHP_EOL;
@@ -345,7 +349,7 @@ trait Bootstrap
         }
 
         # set the label array value to null if a label is not present
-        if (! isset($data['label'])) {
+        if (!isset($data['label'])) {
             $data['label'] = null;
         }
 
@@ -354,11 +358,11 @@ trait Bootstrap
         if ($data['type'] == 'checkbox') {
             # input is a checkbox
             # notice that we're adding an id to the enclosing div, so that you may prepend/append jQuery, etc.
-            if (! str_ends_with($data['value'], ']')) {
+            if (!str_ends_with($data['value'], ']')) {
                 $return = PHP_EOL.'<div id="_'.$this->formr->make_id($data).'" class="';
 
                 # inline checkbox
-                if (! empty($data['checkbox-inline'])) {
+                if (!empty($data['checkbox-inline'])) {
                     $return .= static::bootstrap3_css('checkbox-inline');
                 } else {
                     $return .= static::bootstrap3_css('checkbox');
@@ -369,11 +373,11 @@ trait Bootstrap
         } elseif ($data['type'] == 'radio') {
             # input is a radio
             # don't print the label if we're printing an array
-            if (! str_ends_with($data['value'], ']')) {
+            if (!str_ends_with($data['value'], ']')) {
                 $return = PHP_EOL.'<div id="_'.$this->formr->make_id($data).'" class="'.static::bootstrap3_css('radio');
 
                 # inline radio
-                if (! empty($data['radio-inline'])) {
+                if (!empty($data['radio-inline'])) {
                     $return .= static::bootstrap3_css('radio-inline');
                 } else {
                     $return .= static::bootstrap3_css('radio');
@@ -390,7 +394,7 @@ trait Bootstrap
             $return .= ' '.static::bootstrap3_css('error');
         }
 
-        if (! str_ends_with($data['value'], ']')) {
+        if (!str_ends_with($data['value'], ']')) {
             $return .= '">';
         }
 
@@ -435,7 +439,7 @@ trait Bootstrap
         $return .= $element;
 
         # inline help text
-        if (! empty($data['inline'])) {
+        if (!empty($data['inline'])) {
             # help-block text
             # if the text is surrounded by square brackets, show only on form error
             if (mb_substr($data['inline'], 0, 1) == '[') {
@@ -454,7 +458,7 @@ trait Bootstrap
         }
 
         # checkbox/radio: add the label text and close the label tag
-        if (! empty($data['label']) && $data['type'] == 'checkbox' || $data['type'] == 'radio') {
+        if (!empty($data['label']) && $data['type'] == 'checkbox' || $data['type'] == 'radio') {
             $return .= ' '.$data['label'];
 
             # add a required field indicator

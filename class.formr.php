@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.5.1)
+ * Formr (1.5.2)
  * a php library for rapid form development
  * https://formr.github.io
  * requires php >= 8.1 and gd (for uploads)
@@ -31,7 +31,7 @@ if (file_exists(__DIR__.'/my_classes/my.forms.php')) {
 
 class Formr
 {
-    public $version = '1.5.1';
+    public $version = '1.5.2';
 
     # each of these public properties acts as a 'preference' for Formr
     # and can be defined after instantiation. see documentation for more info.
@@ -705,6 +705,11 @@ class Formr
                     }
                 }
             }
+        }
+
+        # append any custom classes
+        if (!empty($data['class'])) {
+            $classes .= ' ' . $data['class'];
         }
 
         if (empty($class_string)) {
