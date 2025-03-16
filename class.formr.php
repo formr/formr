@@ -3,11 +3,11 @@
 namespace Formr;
 
 /**
- * Formr (1.5.2)
+ * Formr (1.5.3)
  * a php library for rapid form development
  * https://formr.github.io
  * requires php >= 8.1 and gd (for uploads)
- * copyright(c) 2013-2024 Tim Gavin
+ * copyright(c) 2013-2025 Tim Gavin
  * https://github.com/timgavin
  **/
 
@@ -31,7 +31,7 @@ if (file_exists(__DIR__.'/my_classes/my.forms.php')) {
 
 class Formr
 {
-    public $version = '1.5.2';
+    public $version = '1.5.3';
 
     # each of these public properties acts as a 'preference' for Formr
     # and can be defined after instantiation. see documentation for more info.
@@ -135,6 +135,9 @@ class Formr
 
     # show valid status (green outline) on fields if using a framework
     public $show_valid = false;
+    
+    # helps prevent backslash accumulation in fields with quotes
+    public $strip_slashes = false;
 
     # default submit button value
     public $submit = 'Submit';
@@ -952,7 +955,7 @@ class Formr
         $parts = getimagesize($handle['tmp_name']);
 
         # see if it's in the accepted mime types
-        if ($this->upload_accepted_mimes && ! in_array($parts['mime'], $this->_upload_accepted_mimes())) {
+        if ($this->upload_accepted_mimes && ! in_array($handle['type'], $this->_upload_accepted_mimes())) {
             $this->errors['accepted-types'] = 'Oops! The file was not uploaded because it is an unsupported mime type.';
             return false;
         }
@@ -2694,7 +2697,14 @@ class Formr
                         }
                     }
                 } else {
-                    $data['value'] = $this->_clean_value($_POST[$data['name']], 'allow_html');
+                    $cleaned_value = $this->_clean_value($_POST[$data['name']], 'allow_html');
+                    
+                    # apply stripslashes if enabled
+                    if ($this->strip_slashes) {
+                        $cleaned_value = stripslashes($cleaned_value);
+                    }
+                    
+                    $data['value'] = $cleaned_value;
                 }
             }
 
@@ -2714,7 +2724,10 @@ class Formr
 
                         # if the POST array key matches the field's id, print the value
                         if ($key == $data['id']) {
-                            $data['value'] = $_POST[$name][$key];
+                            # apply stripslashes if enabled
+                            if ($this->strip_slashes) {
+                                $data['value'] = stripslashes($data['value']);
+                            }
                         }
                     }
                 }
