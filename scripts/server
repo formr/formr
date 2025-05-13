@@ -1,0 +1,10 @@
+#!/bin/bash
+set -ex
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+cd "${SCRIPT_DIR}/.."
+
+docker run \
+    -v "$(pwd):/var/www/html/public" \
+    -e "SSL_MODE=off" \
+    -p 12346:8080  \
+    serversideup/php:8.2-fpm-nginx

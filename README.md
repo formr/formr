@@ -393,6 +393,13 @@ if($form->submitted())
 </body>
 </html>
 ```
+
+## Running tests
+
+1. Run `selenium-server standalone` to start Selenium. Needs to be installed first, e.g. `brew install selenium-server` on macOS
+2. Run `scripts/server`. Starts a local PHP server. Needs docker installed.
+3. Run `scripts/test`
+
 [ico-version]: https://img.shields.io/packagist/v/formr/formr.svg?style=flat-square
 [ico-downloads]: https://img.shields.io/packagist/dt/formr/formr.svg?style=flat-square
 
