@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.5.3)
+ * Formr (1.5.4)
  * a php library for rapid form development
  * https://formr.github.io
  * requires php >= 8.1 and gd (for uploads)
@@ -31,7 +31,7 @@ if (file_exists(__DIR__.'/my_classes/my.forms.php')) {
 
 class Formr
 {
-    public $version = '1.5.3';
+    public $version = '1.5.4';
 
     # each of these public properties acts as a 'preference' for Formr
     # and can be defined after instantiation. see documentation for more info.
@@ -747,7 +747,7 @@ class Formr
         return $data;
     }
 
-    protected function _clean_value($str = '', $allow_html = false)
+    protected function _clean_value(string|array|null $value = '', bool|null $allow_html = false)
     {
         # makes entered values a little safer.
 
@@ -759,7 +759,7 @@ class Formr
         # http://htmlpurifier.org
 
         # return an empty value
-        if ($str == '') {
+        if ($value === null || $value == '') {
             return '';
         }
 
@@ -773,7 +773,7 @@ class Formr
                 # set it up using default settings (feel free to alter these if needed)
                 $p_config = \HTMLPurifier_Config::createDefault();
                 $purifier = new \HTMLPurifier($p_config);
-                return $purifier->purify($str);
+                return $purifier->purify($value);
             } else {
                 $config = \HTMLPurifier_Config::createDefault();
                 $config->set('Core', 'Encoding', $this->charset);
@@ -781,37 +781,35 @@ class Formr
                 $purifier = new \HTMLPurifier($config);
             }
         } else {
-            if (is_string($str)) {
-                $str = trim($str);
+            if (is_string($value)) {
+                $value = trim($value);
 
                 # perform basic sanitization...
                 if (! $allow_html) {
                     # help prevent against xss
-                    $str = htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+                    $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
                 } else {
                     # allow html
                     if ($this->sanitize_html) {
-                        $str = filter_var($str, FILTER_SANITIZE_SPECIAL_CHARS);
+                        $value = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
                     }
                 }
 
-                return $str;
+                return $value;
             } else {
                 # clean and return the array
-                $value = '';
-
-                foreach ($str as $value) {
+                foreach ($value as $array_key => $array_value) {
                     if (! $allow_html) {
                         # help prevent against xss
-                        $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                        $value[$array_key] = htmlspecialchars($array_value, ENT_QUOTES, 'UTF-8');
                     } else {
                         # allow html
                         if ($this->sanitize_html) {
-                            $value = filter_var($value, FILTER_SANITIZE_SPECIAL_CHARS);
-                        }
+                            $value[$array_key] = filter_var($array_value, FILTER_SANITIZE_SPECIAL_CHARS);
+                            }
                     }
                 }
-
+                
                 return $value;
             }
         }
@@ -1821,11 +1819,27 @@ class Formr
         # see if we're dealing with $_POST or $_GET
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($_POST[$name]) && $_POST[$name] != '') {
-                $post = htmlspecialchars($_POST[$name], ENT_QUOTES, 'UTF-8');
+                if (is_array($_POST[$name])) {
+                    $post = $_POST[$name];
+                    // apply htmlspecialchars to each array element
+                    foreach ($post as $key => $value) {
+                        $post[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                    }
+                } else {
+                    $post = htmlspecialchars($_POST[$name], ENT_QUOTES, 'UTF-8');
+                }
             }
         } else {
             if (isset($_GET[$name]) && $_GET[$name] != '') {
-                $post = htmlspecialchars($_GET[$name], ENT_QUOTES, 'UTF-8');
+                if (is_array($_GET[$name])) {
+                    $post = $_GET[$name];
+                    // apply htmlspecialchars to each array element
+                    foreach ($post as $key => $value) {
+                        $post[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                    }
+                } else {
+                    $post = htmlspecialchars($_GET[$name], ENT_QUOTES, 'UTF-8');
+                }
             }
         }
 
