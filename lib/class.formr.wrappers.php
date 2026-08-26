@@ -1,6 +1,6 @@
 <?php
 
-require_once 'wrappers/autoload.php';
+require_once __DIR__.'/wrappers/autoload.php';
 
 use Formr\Formr;
 

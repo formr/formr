@@ -3,6 +3,19 @@
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Total Downloads][ico-downloads]][link-downloads]
 
+---
+
+## Formr is discontinued. Please use [Flick](https://flickphp.com)
+
+Flick is very similar to Formr, but it's actually easier to use and is far more powerful. I've created a handy [migration assistant](https://github.com/flickphp/migrate) to help you migrate your forms to Flick.
+
+Flick has most of the same features as Formr, plus a lot more (like stupidly simple multistep forms). It's easier to set up and use, and has a [pro package](https://flickphp.com/pro) that helps you accomplish pretty much everything else you need (mail, SQL, uploads, auth, client-side validation, etc.), but with the same ease of use you've come to expect.
+
+- [Flick website](https://flickphp.com)
+- [Flick repo](https://github.com/flickphp/flick)
+
+---
+
 Formr is a ridiculously fast and easy PHP form builder, with support for Bootstrap and Bulma right out of the box!
 
 Find docs here: [http://formr.github.io](http://formr.github.io)

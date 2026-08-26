@@ -3,7 +3,7 @@
 namespace Formr;
 
 /**
- * Formr (1.5.4)
+ * Formr (1.5.5)
  * a php library for rapid form development
  * https://formr.github.io
  * requires php >= 8.1 and gd (for uploads)
@@ -12,9 +12,9 @@ namespace Formr;
  **/
 
 # load the default classes
-require_once 'lib/class.formr.dropdowns.php';
-require_once 'lib/class.formr.forms.php';
-require_once 'lib/class.formr.wrappers.php';
+require_once __DIR__.'/lib/class.formr.dropdowns.php';
+require_once __DIR__.'/lib/class.formr.forms.php';
+require_once __DIR__.'/lib/class.formr.wrappers.php';
 
 # load the 'plugin' classes
 if (file_exists(__DIR__.'/my_classes/my.wrappers.php')) {
@@ -31,7 +31,7 @@ if (file_exists(__DIR__.'/my_classes/my.forms.php')) {
 
 class Formr
 {
-    public $version = '1.5.4';
+    public $version = '1.5.5';
 
     # each of these public properties acts as a 'preference' for Formr
     # and can be defined after instantiation. see documentation for more info.
@@ -3602,25 +3602,11 @@ class Formr
         $element = null;
 
         if (empty($data['fastform'])) {
-            if (! $this->wrapper) {
-                if ($this->comments) {
-                    $element .= PHP_EOL.'<!-- '.$data['name'].' -->'.PHP_EOL;
-                }
-                if (! empty($data['label'])) {
-                    # output the element and label without a wrapper
-                    $element .= $this->label($data).PHP_EOL;
-                    $element .= $return.PHP_EOL;
-                    return $element;
-                } else {
-                    # just return the element
-                    $element .= $return.PHP_EOL;
-                    return $this->_wrapper($element, $data);
-                }
-            } else {
-                # wrap the element
-                $element .= $return;
-                return $this->_wrapper($element, $data);
+            if ($this->comments) {
+                $element .= PHP_EOL.'<!-- '.$data['name'].' -->'.PHP_EOL;
             }
+            $element .= $return;
+            return $this->_wrapper($element, $data);
         }
 
         # we're using fastform(), which will run the element through wrapper()

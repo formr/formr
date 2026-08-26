@@ -1,7 +1,7 @@
 <?php
 
 # load framework traits
-require_once 'bootstrap.php';
-require_once 'bulma.php';
-require_once 'tailwind.php';
-require_once 'uikit.php';
+require_once __DIR__.'/Bootstrap.php';
+require_once __DIR__.'/Bulma.php';
+require_once __DIR__.'/Tailwind.php';
+require_once __DIR__.'/Uikit.php';
